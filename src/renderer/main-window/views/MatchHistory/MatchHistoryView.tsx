@@ -3,8 +3,9 @@ import { PlayersApi, PlayerMatchHistoryEntry } from 'deadlock_api_client';
 import { deadlockApiConfig } from '../../../../shared/services/deadlock-api/deadlockApiClient';
 import { useSteamId } from '../../../hooks/useSteamId';
 import { steamIdToAccountId } from '../../../../shared/utils/steamUtils';
-import { apiCache } from '../../../../shared/utils/apiCache';
+import { matchCache } from '../../../services/matchCache';
 import { getHero } from '../../../../shared/data/heroes';
+import MatchDetailView from './MatchDetailView';
 
 const playersApi = new PlayersApi(deadlockApiConfig);
 
@@ -27,6 +28,7 @@ const MatchHistoryView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
 
   const accountId = steamId ? steamIdToAccountId(steamId) : null;
 
@@ -38,10 +40,7 @@ const MatchHistoryView: React.FC = () => {
 
       try {
         if (!forceRefresh) {
-          const cached = apiCache.get<PlayerMatchHistoryEntry[]>(
-            'match_history',
-            accountId,
-          );
+          const cached = await matchCache.getHistory(accountId);
           if (cached) {
             setMatches(cached);
             setIsCached(true);
@@ -56,12 +55,7 @@ const MatchHistoryView: React.FC = () => {
           onlyStoredHistory: true,
         });
         const data = response.data ?? [];
-        apiCache.set(
-          'match_history',
-          accountId,
-          data,
-          apiCache.TTL.MATCH_HISTORY,
-        );
+        await matchCache.setHistory(accountId, data);
         setMatches(data);
       } catch (err) {
         setError('Failed to load match history. Please try again.');
@@ -76,6 +70,16 @@ const MatchHistoryView: React.FC = () => {
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+
+  if (selectedMatchId !== null && accountId !== null) {
+    return (
+      <MatchDetailView
+        matchId={selectedMatchId}
+        accountId={accountId}
+        onBack={() => setSelectedMatchId(null)}
+      />
+    );
+  }
 
   if (!steamId) {
     return (
@@ -148,6 +152,12 @@ const MatchHistoryView: React.FC = () => {
               <div
                 key={match.match_id}
                 className={`match-card ${isWin ? 'match-card--win' : 'match-card--loss'}`}
+                onClick={() => setSelectedMatchId(match.match_id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && setSelectedMatchId(match.match_id)
+                }
               >
                 <div className="match-card__outcome">
                   {isWin ? 'WIN' : 'LOSS'}

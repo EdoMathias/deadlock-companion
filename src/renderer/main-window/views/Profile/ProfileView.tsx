@@ -9,6 +9,7 @@ import { fetchSteamProfileDirect } from '../../../../shared/services/steamWebApi
 import { useSteamId } from '../../../hooks/useSteamId';
 import { steamIdToAccountId } from '../../../../shared/utils/steamUtils';
 import { apiCache } from '../../../../shared/utils/apiCache';
+import { matchCache } from '../../../services/matchCache';
 import { getHero, HeroInfo } from '../../../../shared/data/heroes';
 
 const playersApi = new PlayersApi(deadlockApiConfig);
@@ -124,10 +125,7 @@ const ProfileView: React.FC = () => {
 
         if (!forceRefresh) {
           steamProfile = apiCache.get<SteamProfile>('steam_profile', accountId);
-          matchHistory = apiCache.get<PlayerMatchHistoryEntry[]>(
-            'match_history',
-            accountId,
-          );
+          matchHistory = await matchCache.getHistory(accountId);
         }
 
         if (steamProfile && matchHistory) {
@@ -174,14 +172,9 @@ const ProfileView: React.FC = () => {
           fetches.push(
             playersApi
               .matchHistory({ accountId, onlyStoredHistory: true })
-              .then((res) => {
+              .then(async (res) => {
                 matchHistory = res.data ?? [];
-                apiCache.set(
-                  'match_history',
-                  accountId,
-                  matchHistory,
-                  apiCache.TTL.MATCH_HISTORY,
-                );
+                await matchCache.setHistory(accountId, matchHistory!);
               }),
           );
         }

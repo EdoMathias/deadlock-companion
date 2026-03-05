@@ -1,15 +1,16 @@
 /**
- * Lightweight localStorage-based TTL cache for deadlock-api.com responses.
+ * Lightweight localStorage-based TTL cache for small, frequently-read
+ * deadlock-api.com responses (e.g. Steam profiles, account stats).
  *
- * This reduces redundant API calls when navigating between views or
- * refreshing the window. Data is considered fresh within its TTL window;
- * stale entries are pruned on next read.
+ * Large or immutable match data (match history lists, full match metadata)
+ * is stored in IndexedDB via matchCache instead — see
+ * src/renderer/services/matchCache.ts.
  *
  * Usage:
- *   const cached = apiCache.get<PlayerMatchHistoryEntry[]>('match_history', accountId);
+ *   const cached = apiCache.get<SteamProfile>('steam_profile', accountId);
  *   if (!cached) {
  *     const data = await fetchFromApi();
- *     apiCache.set('match_history', accountId, data, apiCache.TTL.MATCH_HISTORY);
+ *     apiCache.set('steam_profile', accountId, data, apiCache.TTL.STEAM_PROFILE);
  *   }
  */
 
@@ -22,8 +23,6 @@ interface CacheEntry<T> {
 
 /** TTL values in milliseconds for each data type. */
 export const CACHE_TTL = {
-  /** Match history — 30 min; onlyStoredHistory makes refetch cheap. */
-  MATCH_HISTORY: 30 * 60 * 1000,
   /** Steam profile (name/avatar) — rarely changes, cache for 24 h. */
   STEAM_PROFILE: 24 * 60 * 60 * 1000,
   /** Account/hero stats — 30 min. */
