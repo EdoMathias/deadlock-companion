@@ -23,6 +23,13 @@ interface HistoryCacheEntry {
   expiry: number;
 }
 
+/** Serialisable subset of SteamProfile stored per-player within a match. */
+export interface CachedSteamProfile {
+  account_id: number;
+  personaname?: string;
+  avatarmedium?: string;
+}
+
 const historyStore = createSimpleStore<HistoryCacheEntry>(
   'dl-match-history',
   'history',
@@ -30,6 +37,11 @@ const historyStore = createSimpleStore<HistoryCacheEntry>(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const metadataStore = createSimpleStore<any>('dl-match-metadata', 'metadata');
+
+const steamProfileStore = createSimpleStore<CachedSteamProfile[]>(
+  'dl-steam-profiles',
+  'profiles',
+);
 
 export const matchCache = {
   async getHistory(
@@ -74,6 +86,27 @@ export const matchCache = {
   async setMetadata<T extends object>(matchId: number, data: T): Promise<void> {
     try {
       await metadataStore.set(String(matchId), data);
+    } catch {
+      // Best-effort
+    }
+  },
+
+  async getSteamProfiles(
+    matchId: number,
+  ): Promise<CachedSteamProfile[] | null> {
+    try {
+      return (await steamProfileStore.get(String(matchId))) ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setSteamProfiles(
+    matchId: number,
+    profiles: CachedSteamProfile[],
+  ): Promise<void> {
+    try {
+      await steamProfileStore.set(String(matchId), profiles);
     } catch {
       // Best-effort
     }

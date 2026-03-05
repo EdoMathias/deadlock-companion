@@ -6,6 +6,17 @@
  * Based on the response shape from api.deadlock-api.com/v1/matches/{id}/metadata.
  */
 
+/**
+ * Per-interval cumulative stats snapshot. The last entry in the array
+ * (at time_stamp_s ≈ match duration) holds full-match totals.
+ */
+export interface PlayerStatEntry {
+  time_stamp_s: number;
+  player_damage: number;
+  player_healing: number;
+  self_healing: number;
+}
+
 export interface MatchPlayer {
   account_id: number;
   hero_id: number;
@@ -17,6 +28,7 @@ export interface MatchPlayer {
   last_hits: number;
   level: number;
   player_slot: number;
+  stats: PlayerStatEntry[];
 }
 
 export interface MatchInfo {

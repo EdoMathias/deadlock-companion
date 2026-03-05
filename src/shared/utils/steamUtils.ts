@@ -28,6 +28,14 @@ export function steamIdToAccountId(steamId: string): number | null {
 }
 
 /**
+ * Converts a 32-bit account ID back to a Steam ID64 string.
+ * Reverse of steamIdToAccountId.
+ */
+export function accountIdToSteamId64(accountId: number): string {
+  return String(BigInt(accountId) + STEAM_ID_64_BASE);
+}
+
+/**
  * Validates that a string looks like a 17-digit Steam ID64.
  */
 export function isValidSteamId64(steamId: string): boolean {
