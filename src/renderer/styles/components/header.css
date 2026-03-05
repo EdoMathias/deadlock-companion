@@ -1,0 +1,213 @@
+/* ------------------------------
+   App Header
+--------------------------------*/
+
+.app-header {
+  display: flex;
+  align-items: center;
+  z-index: 9999;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  height: 60px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.app-header img {
+  padding-left: 10px;
+  margin: 0;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent-primary) 40%, transparent));
+  width: 35px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.app-header h1 {
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  padding-left: 12px;
+  margin: 0;
+  cursor: inherit;
+  font-family: var(--font-ark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.app-header .app-version-tag {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  color: var(--color-accent-primary);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.5px;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-header .hotkey-text {
+  margin: 0 auto;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+}
+
+.app-header .hotkey-text kbd {
+  color: var(--color-accent-primary);
+  font-weight: var(--font-weight-medium);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  font-family: var(--font-ark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.app-header.draggable {
+  user-select: none;
+  cursor: grab;
+}
+
+.app-header.draggable:active {
+  cursor: grabbing;
+}
+
+.header-drag-handle {
+  flex: 1;
+  height: 100%;
+  cursor: inherit;
+}
+
+/* ------------------------------
+   Header Actions
+--------------------------------*/
+
+.header-actions-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: 12px;
+  align-items: center;
+}
+
+.header-action-button {
+  background-color: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+.header-action-button:hover {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+  color: var(--color-accent-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.header-action-button:active {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  transform: scale(0.95);
+}
+
+/* ------------------------------
+   Window Controls
+--------------------------------*/
+
+.window-controls-group {
+  display: flex;
+  z-index: 1001;
+  margin-left: 0;
+}
+
+.window-control {
+  background-color: transparent;
+  transition: all 0.15s ease-in-out;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.window-control:hover,
+.window-control:active {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+}
+
+.window-control:before {
+  display: block;
+  content: '';
+  width: 30px;
+  height: 30px;
+  mask: url('img/window_minimize.svg') center center no-repeat;
+  -webkit-mask: url('img/window_minimize.svg') center center no-repeat;
+  background-color: var(--color-text-muted);
+  transition: inherit;
+}
+
+.window-control:hover:before,
+.window-control:active:before {
+  background-color: var(--color-accent-primary);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent-primary) 60%, transparent));
+}
+
+.window-control-minimize:before {
+  mask-image: url('img/window_minimize.svg');
+  -webkit-mask-image: url('img/window_minimize.svg');
+}
+
+.window-control-maximize:before {
+  mask-image: url('img/window_maximize.svg');
+  -webkit-mask-image: url('img/window_maximize.svg');
+}
+
+.window-control-restore:before {
+  mask-image: url('img/window_restore.svg');
+  -webkit-mask-image: url('img/window_restore.svg');
+}
+
+.window-control-settings:before {
+  mask-image: url('img/window_settings.svg');
+  -webkit-mask-image: url('img/window_settings.svg');
+}
+
+.window-control-support:before {
+  mask-image: url('img/window_support.svg');
+  -webkit-mask-image: url('img/window_support.svg');
+}
+
+.window-control-close:before {
+  mask-image: url('img/window_close.svg');
+  -webkit-mask-image: url('img/window_close.svg');
+}
+
+.window-control-close:hover,
+.window-control-close:active {
+  background-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
+}
+
+.window-control-close:hover:before,
+.window-control-close:active:before {
+  background-color: var(--color-danger);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-danger) 60%, transparent));
+}

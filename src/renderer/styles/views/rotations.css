@@ -1,0 +1,1323 @@
+/* ------------------------------
+   Rotations View Styles
+   Coming soon screen
+--------------------------------*/
+
+/* ------------------------------
+   Rotations Container
+--------------------------------*/
+
+.rotations-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0px 4px 20px 4px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ------------------------------
+   Rotations Header
+--------------------------------*/
+
+.rotations-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rotations-header-row-1 {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.rotations-header-row-2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.rotations-header-title {
+  font-family: var(--font-ark);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--foreground);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.rotations-header-hotkey-hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.rotations-header-hotkey-hint kbd {
+  color: var(--color-accent-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.rotations-header-button {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.rotations-header-button:hover {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  color: var(--color-accent-primary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+.rotations-header-button:active {
+  transform: scale(0.95);
+}
+
+.rotations-header-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rotations-header-button--danger:hover {
+  background-color: color-mix(in srgb, var(--color-destructive, #ef4444) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-destructive, #ef4444) 40%, transparent);
+  color: var(--color-destructive, #ef4444);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-destructive, #ef4444) 20%, transparent);
+}
+
+.rotations-header-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ark);
+  font-size: 11px;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.rotations-header-select {
+  padding: 6px 10px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 160px;
+}
+
+.rotations-header-select:hover {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 5%, transparent);
+}
+
+.rotations-header-select:focus {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+}
+
+.rotations-header-select option {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: 8px;
+}
+
+.rotations-header-preset-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  outline: none;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.rotations-header-preset-input:hover {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 5%, transparent);
+}
+
+.rotations-header-preset-input:focus {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+}
+
+.rotations-header-preset-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ------------------------------
+   Rotations Coming Soon
+--------------------------------*/
+
+.rotations-coming-soon {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.rotations-coming-soon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+  padding: 40px 32px;
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+}
+
+.rotations-coming-soon-badge {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-primary);
+  margin-bottom: 12px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--color-accent-primary) 12%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.rotations-coming-soon-title {
+  font-family: var(--font-ark);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+  letter-spacing: 0.02em;
+}
+
+.rotations-coming-soon-lead {
+  font-family: var(--font-ark);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  margin: 0 0 20px 0;
+}
+
+.rotations-coming-soon-features {
+  list-style: none;
+  margin: 0 0 20px 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.rotations-coming-soon-features li {
+  font-family: var(--font-ark);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 8px 0 8px 24px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.rotations-coming-soon-features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent-primary);
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+.rotations-coming-soon-hint {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ------------------------------
+   Rotations Operator Card
+--------------------------------*/
+
+.rotations-operator-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  border-radius: var(--radius-sm);
+  min-width: 72px;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rotations-operator-card--clickable {
+  cursor: pointer;
+}
+
+.rotations-operator-card--clickable:hover:not(.rotations-operator-card--disabled) {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.rotations-operator-card--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rotations-operator-card--selected {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 18%, var(--color-bg-secondary));
+  border-color: color-mix(in srgb, var(--color-accent-primary) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+}
+
+.rotations-operator-card--selected.rotations-operator-card--clickable:hover {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 25%, var(--color-bg-secondary));
+  border-color: color-mix(in srgb, var(--color-accent-primary) 65%, transparent);
+}
+
+.rotations-operator-card-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--color-destructive, #ef4444) 20%, transparent);
+  color: var(--color-destructive, #ef4444);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  z-index: 1;
+}
+
+.rotations-operator-card-remove:hover {
+  background-color: color-mix(in srgb, var(--color-destructive, #ef4444) 35%, transparent);
+  transform: scale(1.08);
+}
+
+.rotations-operator-card-image {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.rotations-operator-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rotations-operator-card-name {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------
+   Squad selection header row
+--------------------------------*/
+
+.rotations-header-row-3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.rotations-header-squad-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------
+   Squad Selection Modal
+--------------------------------*/
+
+/* ------------------------------
+   Rotations Scoped Modal Overlay
+--------------------------------*/
+
+.rotations-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius);
+  animation: squadModalFadeIn 0.2s ease-out;
+}
+
+/* ------------------------------
+   Squad Selection Modal
+--------------------------------*/
+
+.squad-selection-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius);
+  animation: squadModalFadeIn 0.2s ease-out;
+}
+
+@keyframes squadModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.squad-selection-modal-content {
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  width: 440px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  animation: squadModalContentFadeIn 0.2s ease-out;
+  overflow: hidden;
+}
+
+@keyframes squadModalContentFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.squad-selection-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.squad-selection-modal-title {
+  font-family: var(--font-ark);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.squad-selection-modal-close {
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease-in-out;
+}
+
+.squad-selection-modal-close:hover {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  color: var(--color-accent-primary);
+}
+
+.squad-selection-modal-close:active {
+  transform: scale(0.95);
+}
+
+.squad-selection-modal-body {
+  padding: 20px;
+  overflow: auto;
+  max-height: calc(90vh - 100px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.squad-selection-modal-section-title {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+}
+
+.squad-selection-modal-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* ------------------------------
+   Rotations Editor
+--------------------------------*/
+
+.rotations-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+}
+
+.rotations-editor-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rotations-editor-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rotations-editor-show-squad-index {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ark);
+  font-size: 12px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  user-select: none;
+}
+
+.rotations-editor-show-squad-index-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+}
+
+.rotations-editor-title {
+  font-family: var(--font-ark);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rotations-editor-description {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.rotations-editor-body {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 8px;
+}
+
+
+.rotations-editor-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 120px;
+}
+
+.rotations-editor-step-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.rotations-editor-step {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rotations-editor-arrow {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  margin: 0 8px;
+  flex-shrink: 0;
+  user-select: none;
+  opacity: 0.6;
+}
+
+/* Add step circle button */
+.rotations-editor-add-step {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.rotations-editor-add-step:hover {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+}
+
+.rotations-editor-add-step:active {
+  transform: scale(0.95);
+}
+
+.rotations-editor-add-step-icon {
+  font-family: var(--font-ark);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-text-muted);
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.rotations-editor-add-step:hover .rotations-editor-add-step-icon {
+  color: var(--color-accent-primary);
+}
+
+/* ------------------------------
+   Rotation Step Node
+--------------------------------*/
+
+.rotation-step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rotation-step-node-circle {
+  position: relative;
+}
+
+.rotation-step-node-circle-button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  background-color: var(--color-bg-secondary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.rotation-step-node-circle-button:hover {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.rotation-step-node-circle-button--empty {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  background-color: transparent;
+}
+
+.rotation-step-node-circle-button--empty:hover {
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 5%, transparent);
+}
+
+.rotation-step-node-circle-button--editing {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+}
+
+.rotation-step-node-circle-empty {
+  font-family: var(--font-ark);
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--color-text-muted);
+  line-height: 1;
+}
+
+.rotation-step-node-circle-empty-text {
+  font-family: var(--font-ark);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.rotation-step-node-ability {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotation-step-node-action-type {
+  font-family: var(--font-ark);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+/* Delete step button */
+.rotation-step-node-delete-button {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--color-destructive, #ef4444) 20%, transparent);
+  color: var(--color-destructive, #ef4444);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.rotation-step-node-circle:hover .rotation-step-node-delete-button {
+  opacity: 1;
+}
+
+.rotation-step-node-delete-button:hover {
+  background-color: color-mix(in srgb, var(--color-destructive, #ef4444) 40%, transparent);
+  transform: scale(1.1);
+}
+
+.rotation-step-node-delete-button:active {
+  transform: scale(0.95);
+}
+
+.rotation-step-node-delete-button-icon {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Step number */
+.rotation-step-node-number {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* ------------------------------
+   Ability Picker Dropdown
+--------------------------------*/
+
+.ability-picker {
+  position: fixed;
+  transform: translateY(-50%);
+  display: flex;
+  z-index: 1000;
+  animation: abilityPickerFadeIn 0.15s ease-out;
+}
+
+.ability-picker--left {
+  flex-direction: row-reverse;
+  animation-name: abilityPickerFadeInLeft;
+}
+
+@keyframes abilityPickerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+@keyframes abilityPickerFadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.ability-picker-characters {
+  width: 180px;
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius) 0 0 var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ability-picker--left .ability-picker-characters {
+  border-radius: 0 var(--radius) var(--radius) 0;
+  border-left: none;
+  border-right: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+}
+
+.ability-picker-panel-header {
+  font-family: var(--font-ark);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  background-color: var(--color-bg-secondary);
+}
+
+.ability-picker-characters-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ability-picker-character-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.ability-picker-character-item:hover,
+.ability-picker-character-item--active {
+  background-color: var(--color-bg-secondary);
+  border-left-color: var(--color-accent-primary);
+}
+
+.ability-picker-character-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ability-picker-character-name {
+  font-family: var(--font-ark);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ability-picker-character-chevron {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-left: 8px;
+  line-height: 1;
+}
+
+/* Ability picker - actions panel */
+.ability-picker-actions {
+  width: 200px;
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: abilityPickerActionsFadeIn 0.1s ease-out;
+}
+
+.ability-picker--left .ability-picker-actions {
+  border-radius: var(--radius) 0 0 var(--radius);
+  border-left: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-right: none;
+}
+
+@keyframes abilityPickerActionsFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ability-picker-actions-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ability-picker-action-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.ability-picker-action-item:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.ability-picker-action-item:active {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+}
+
+.ability-picker-action-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ability-picker-action-name {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ability-picker-action-type {
+  font-family: var(--font-ark);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+/* Read-only step node (in-game rotation window) */
+.rotation-step-node-circle-button--readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
+.rotation-step-node-circle-button--readonly:hover {
+  transform: none;
+}
+
+/* ------------------------------
+   Rotation In-Game Window
+--------------------------------*/
+
+.rotation-window {
+  padding: 16px;
+  min-height: 100%;
+  box-sizing: border-box;
+  background-color: transparent;
+  position: relative;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.rotation-window-body {
+  background-color: transparent;
+}
+
+.rotation-window-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.rotation-window-drag-handle {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  -webkit-app-region: drag;
+  app-region: drag;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 80%, transparent);
+}
+
+.rotation-window-drag-handle::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath d='M94.2422,43.7578l-12-12a5.9994,5.9994,0,0,0-8.4844,8.4844L75.5156,42H54V20.4844l1.7578,1.7578a5.9994,5.9994,0,0,0,8.4844-8.4844l-12-12a5.9979,5.9979,0,0,0-8.4844,0l-12,12a5.9994,5.9994,0,0,0,8.4844,8.4844L42,20.4844V42H20.4844l1.7578-1.7578a5.9994,5.9994,0,0,0-8.4844-8.4844l-12,12a5.9979,5.9979,0,0,0,0,8.4844l12,12a5.9994,5.9994,0,1,0,8.4844-8.4844L20.4844,54H42V75.5156l-1.7578-1.7578a5.9994,5.9994,0,0,0-8.4844,8.4844l12,12a5.9979,5.9979,0,0,0,8.4844,0l12-12a5.9994,5.9994,0,0,0-8.4844-8.4844L54,75.5156V54H75.5156l-1.7578,1.7578a5.9994,5.9994,0,1,0,8.4844,8.4844l12-12A5.9979,5.9979,0,0,0,94.2422,43.7578Z' fill='%23ffffff'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.7;
+}
+
+.rotation-window-hotkey-reminder {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  text-align: center;
+  white-space: nowrap;
+  min-width: 0;
+  padding: 4px 8px;
+  line-height: 1.25;
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.rotation-window-settings-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 80%, transparent);
+  color: #ffffff;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.rotation-window-settings-button:hover {
+  border-color: var(--color-accent-primary);
+  background-color: var(--color-bg-secondary);
+}
+
+.rotation-window-settings-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  z-index: 100;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.rotation-window-settings-panel-inner {
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.rotation-window-settings-title {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rotation-window-settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-family: var(--font-ark);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rotation-window-settings-label--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.rotation-window-settings-label--checkbox span {
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.rotation-window-settings-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rotation-window-settings-input {
+  padding: 6px 8px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rotation-window-settings-slider {
+  width: 100%;
+  accent-color: var(--color-accent-primary);
+}
+
+.rotation-window-settings-close {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.rotation-window-settings-close:hover {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 12%, transparent);
+}
+
+.rotation-window-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  padding: 24px;
+  text-align: center;
+  background-color: transparent;
+  flex: 1;
+  min-width: 0;
+}
+
+.rotation-window-empty p {
+  font-family: var(--font-ark);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.rotation-window-content {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  padding-bottom: 8px;
+}
+
+.rotation-window-steps-outer {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.rotation-window-steps {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 88px;
+  transform-origin: top left;
+}
+
+.rotation-window-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.rotation-window-step-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.rotation-window-step {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rotation-window-arrow {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  margin: 0 8px;
+  flex-shrink: 0;
+  user-select: none;
+  opacity: 0.6;
+}
+
+/* Smaller circles in rotation window */
+.rotation-window .rotation-step-node {
+  gap: 4px;
+}
+
+.rotation-window .rotation-step-node-circle-button {
+  width: 56px;
+  height: 56px;
+  padding: 4px;
+  border-width: 2px;
+  gap: 1px;
+}
+
+.rotation-window .rotation-step-node-ability {
+  font-size: 9px;
+}
+
+.rotation-window .rotation-step-node-action-type {
+  font-size: 10px;
+}
+
+.rotation-window .rotation-step-node-number {
+  font-size: 9px;
+}
+
+.rotation-window .rotation-step-node-circle-empty {
+  font-size: 16px;
+}
+
+.rotation-window .rotation-window-steps {
+  min-height: 88px;
+}
+
+.rotation-window .rotation-window-arrow {
+  font-size: 14px;
+  margin: 0 4px;
+}

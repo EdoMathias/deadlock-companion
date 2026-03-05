@@ -1,0 +1,149 @@
+/* ------------------------------
+   Global Base Styles
+--------------------------------*/
+
+* {
+  border-color: var(--border);
+  outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-ark);
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: var(--font-size);
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* ------------------------------
+   Base Typography
+--------------------------------*/
+
+h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+p,
+label,
+button,
+input {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
+
+/* ------------------------------
+   Scrollbar (Default)
+--------------------------------*/
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-secondary);
+}
+
+/* ------------------------------
+   Custom Scrollbar Class
+--------------------------------*/
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-accent-primary);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-secondary);
+}
+
+/* ------------------------------
+   Custom Range Slider
+--------------------------------*/
+
+.opacity-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-primary);
+  cursor: pointer;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+}
+
+.opacity-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+}
+
+/* ------------------------------
+   Sci-fi Glow Effect
+--------------------------------*/
+
+.cyber-glow {
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+}

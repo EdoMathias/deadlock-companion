@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020", "dom"],
+    "sourceMap": true,
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "removeComments": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "deadlock_api_client": ["./src/shared/vendor/deadlock-api-client/index.ts"]
+    },
+    "types": [
+      "@overwolf/types"
+    ],
+    "rootDirs": [
+      "./src"
+    ],
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

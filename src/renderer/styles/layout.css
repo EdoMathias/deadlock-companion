@@ -1,0 +1,322 @@
+/* ------------------------------
+   Main Layout
+--------------------------------*/
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  background-color: var(--color-bg-primary);
+}
+
+.app-header-wrapper {
+  flex: 0 0 auto;
+}
+
+.app-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+.side-nav-wrapper {
+  width: 56px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.side-nav-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  cursor: default;
+  z-index: 100;
+  animation: side-nav-overlay-fade-in 0.2s ease;
+}
+
+@keyframes side-nav-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.side-nav {
+  width: 56px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  position: relative;
+  z-index: 2;
+  transition:
+    width 0.2s ease,
+    box-shadow 0.2s ease;
+  overflow: visible;
+}
+
+.side-nav-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-nav--expanded {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+  z-index: 20;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+}
+
+.side-nav-button-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.side-nav-button-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px 12px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 13px;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 0 8px color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 100;
+}
+
+.side-nav-button-wrap:hover .side-nav-button-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.side-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  font-family: var(--font-ark);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.side-nav-button:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 10%,
+    transparent
+  );
+  color: var(--color-accent-primary);
+}
+
+.side-nav-button--active {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 10%,
+    transparent
+  );
+  color: var(--color-text-primary);
+}
+
+.side-nav-button img,
+.side-nav-button-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 1; /* Icon is always visible */
+  position: relative;
+}
+
+/* ── "New" feature badge on sidebar buttons ────────────── */
+.side-nav-new-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: var(--color-accent-primary);
+  color: #fff;
+  font-family: var(--font-ark);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: new-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes new-badge-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Hide title text when collapsed */
+.side-nav-button span:not(.side-nav-button-icon) {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.2s ease,
+    max-width 0.2s ease;
+}
+
+/* Show title text when expanded */
+.side-nav--expanded .side-nav-button span:not(.side-nav-button-icon) {
+  opacity: 1;
+  max-width: 200px;
+}
+
+.side-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  color: var(--color-text-muted);
+  font-family: var(--font-ark);
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.side-nav-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 8%,
+    transparent
+  );
+}
+
+.side-nav-toggle span {
+  opacity: 1;
+  max-width: none;
+}
+
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--color-bg-primary);
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.main-content-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ------------------------------
+   Ad Container Sidebar
+--------------------------------*/
+
+.ad-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  flex-shrink: 0;
+  width: 440px;
+  height: 100%;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.ad-sidebar--high-impact {
+  padding: 0;
+  gap: 0;
+}
+
+.ad-container-base {
+  background-color: var(--color-bg-card);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-family: var(--font-ark);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}

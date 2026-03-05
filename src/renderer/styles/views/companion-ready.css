@@ -1,0 +1,133 @@
+/* ------------------------------
+   Companion App Ready Window
+--------------------------------*/
+
+.companion-ready-body {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.companion-ready-window {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  padding-top: 12px;
+  box-sizing: border-box;
+}
+
+.companion-ready-content {
+  background-color: rgba(12, 16, 24, 0.92);
+  border: 1px solid rgba(248, 245, 70, 0.25);
+  border-radius: 8px;
+  padding: 20px 28px 16px;
+  min-width: 320px;
+  max-width: 420px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 0 1px rgba(248, 245, 70, 0.3);
+  animation: companion-ready-fade-in 0.3s ease-out;
+}
+
+@keyframes companion-ready-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.companion-ready-title {
+  font-family: var(--font-ark);
+  font-size: 18px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent-primary);
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(248, 245, 70, 0.3);
+}
+
+/* Hotkeys Section */
+
+.companion-ready-hotkeys {
+  margin-bottom: 14px;
+}
+
+.companion-ready-hotkeys-label {
+  font-family: var(--font-ark);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.companion-ready-hotkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.companion-ready-hotkey-row:last-child {
+  border-bottom: none;
+}
+
+.companion-ready-hotkey-name {
+  font-family: var(--font-ark);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.companion-ready-hotkey-binding {
+  font-family: var(--font-ark);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  background: rgba(248, 245, 70, 0.08);
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(248, 245, 70, 0.15);
+  letter-spacing: 0.3px;
+}
+
+/* Timer / Progress Section */
+
+.companion-ready-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.companion-ready-timer-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.companion-ready-timer-bar-fill {
+  height: 100%;
+  background: var(--color-accent-primary);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+
+.companion-ready-timer-text {
+  font-family: var(--font-ark);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.3px;
+}

@@ -1,0 +1,317 @@
+/* =========================
+   Widgets Page
+   ========================= */
+
+.widgets-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 18px;
+}
+
+/* ------------------------------
+   Header
+--------------------------------*/
+
+.widgets-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.widgets-page-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.widgets-page-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0;
+}
+
+.widgets-page-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0;
+}
+
+.widgets-page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ------------------------------
+   Widgets Grid
+--------------------------------*/
+
+.widgets-page-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+/* ------------------------------
+   Widget Card Base
+--------------------------------*/
+
+.widget {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+    transition: border-color 120ms ease, background 120ms ease;
+}
+
+.widget:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ------------------------------
+   Widget Header
+--------------------------------*/
+
+.widget-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    letter-spacing: 0.3px;
+}
+
+.widget-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.widget-header-tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+}
+
+.widget-tooltip-icon {
+    font-size: 12px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.widget-header-tooltip:hover .widget-tooltip-icon {
+    opacity: 1;
+}
+
+.widget-tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 8px;
+    background: rgba(20, 20, 20, 0.98);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: normal;
+    max-width: 250px;
+    min-width: 200px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.widget-tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(20, 20, 20, 0.98) transparent transparent transparent;
+}
+
+.widget-header-tooltip:hover .widget-tooltip-content {
+    opacity: 1;
+}
+
+.game-events-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    cursor: help;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.widget-header-tooltip:hover .game-events-indicator {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+/* ------------------------------
+   Widget Content
+--------------------------------*/
+
+.widget-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.widget-empty-state {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px;
+}
+
+/* ------------------------------
+   Recent Maps Widget
+--------------------------------*/
+
+/* Span 2 columns */
+.recent-maps-widget {
+    grid-column: span 2;
+    min-height: auto;
+}
+
+.recent-maps-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.recent-map-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.recent-map-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.recent-map-item.active {
+    background: rgba(45, 244, 167, 0.08);
+    border-color: rgba(45, 244, 167, 0.3);
+}
+
+.recent-map-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.recent-map-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.recent-map-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.recent-map-live {
+    color: rgba(45, 244, 167, 1);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recent-map-total {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.widget-empty-state {
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    padding: 20px;
+}
+
+/* ------------------------------
+   Hotkeys Widget
+--------------------------------*/
+
+.hotkeys-widget {
+    min-height: 180px;
+}
+
+.hotkeys-widget .hotkeys-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.hotkeys-widget .hotkey-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 120ms ease, background 120ms ease;
+}
+
+.hotkeys-widget .hotkey-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.hotkeys-widget .hotkey-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 6px;
+}
+
+.hotkeys-widget .hotkey-binding {
+    font-size: 11px;
+    color: rgba(45, 244, 167, 0.9);
+    font-weight: 700;
+    padding: 5px 10px;
+    background: rgba(45, 244, 167, 0.1);
+    border-radius: 6px;
+    white-space: nowrap;
+}
