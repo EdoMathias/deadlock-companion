@@ -47,7 +47,8 @@
         "http://*.google-analytics.com",
         "https://www.googleapis.com",
         "https://*.deadlock-api.com",
-        "https://*.steampowered.com"
+        "https://*.steampowered.com",
+        "http://*.valve.net"
       ]
     },
     "force_browser": "user",

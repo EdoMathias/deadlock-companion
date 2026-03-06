@@ -13,7 +13,12 @@ import { WindowsController } from './windows.controller';
 import { TrayIconService } from '../services/tray-icon.service';
 import onMenuItemClickedEvent = overwolf.os.tray.onMenuItemClickedEvent;
 import AppLaunchTriggeredEvent = overwolf.extensions.AppLaunchTriggeredEvent;
-import { GameEventsService } from '../services/game-events.service';
+import {
+  GameEventPayload,
+  GameEventsService,
+} from '../services/game-events.service';
+import type { GameEventMatchEntry } from '../../shared/types/matchHistoryEvent';
+import { HEROES } from '../../shared/data/heroes';
 
 const logger = createLogger('BackgroundController');
 
@@ -36,6 +41,8 @@ export class BackgroundController {
   private _isGameRunning: boolean = false;
   private _companionReadyDismissTimer: ReturnType<typeof setTimeout> | null =
     null;
+  private _localPlayerRosterData: Record<string, unknown> | null = null;
+  private _currentMatchId: string | null = null;
 
   private constructor() {
     // Initialize MessageChannel first (used by other services)
@@ -58,11 +65,15 @@ export class BackgroundController {
     this._gameEventsService = new GameEventsService({
       // TODO: Move to separate logic later, just logging for now
       onGameEvent: (payload) => {
-        payload.events.forEach((e) => logger.warn('Event:', e.name, e.data));
+        logger.warn(
+          `Event [${payload.events[0]?.name}]:`,
+          payload.events[0]?.data,
+        );
+        this.handleGameEvent(payload);
       },
-      // TODO: Move to separate logic later, just logging for now
       onInfoUpdate: (info) => {
         logger.warn(`Info [${info.feature}]:`, info.info);
+        this.handleInfoUpdate(info);
       },
     });
 
@@ -115,11 +126,241 @@ export class BackgroundController {
         logger.log('Game was Deadlock, showing main desktop window');
         await this._windowsController.onGameExit();
         this._isGameRunning = false;
+
+        // Prompt user to scan httpcache after game exit
+        try {
+          const dismissed = localStorage.getItem('dl_ingest_prompt_dismissed');
+          if (dismissed !== 'true') {
+            logger.log('Sending ingest prompt to desktop window');
+            await this._messageChannel.sendMessage(
+              kWindowNames.mainDesktop,
+              MessageType.INGEST_PROMPT,
+            );
+          }
+        } catch (err) {
+          logger.warn('Failed to send ingest prompt:', err);
+        }
       }
       // If the game is not Deadlock, don't do anything
       else {
         logger.log('Game was not Deadlock, not showing main desktop window');
         return;
+      }
+    }
+  }
+
+  /**
+   * Handles GEP info updates — forwards match_history events to renderer windows
+   * and tracks match_info roster updates for the local player.
+   */
+  private handleInfoUpdate(
+    info: overwolf.games.events.InfoUpdates2Event,
+  ): void {
+    // Track match_info updates (roster, match_id) for match_end handling
+    if (info.feature === 'match_info') {
+      this.handleMatchInfoUpdate((info as any).info);
+      return;
+    }
+
+    if (info.feature !== 'game_info') {
+      logger.warn('handleInfoUpdate: no game_info key, skipping', info.feature);
+      return;
+    }
+
+    const gameInfo = info.info;
+    if (!gameInfo) {
+      logger.warn(
+        'handleInfoUpdate: game_info key present but empty, skipping',
+      );
+      return;
+    }
+
+    // The match_history key contains a JSON array of match entries
+    // @ts-ignore
+    const matchHistoryRaw = gameInfo.match_history;
+    if (matchHistoryRaw == null) {
+      logger.warn(
+        'handleInfoUpdate: game_info present but no match_history key',
+        Object.keys(gameInfo),
+      );
+      return;
+    }
+
+    logger.log(
+      'handleInfoUpdate: received match_history raw data, length:',
+      String(matchHistoryRaw).length,
+    );
+
+    try {
+      const parsed =
+        typeof matchHistoryRaw === 'string'
+          ? JSON.parse(matchHistoryRaw)
+          : matchHistoryRaw;
+
+      if (!Array.isArray(parsed)) {
+        logger.warn(
+          'handleInfoUpdate: match_history parsed but is not an array:',
+          typeof parsed,
+        );
+        return;
+      }
+
+      const matchIds = parsed.map((e: any) => e.match_id).filter(Boolean);
+      logger.log(
+        `handleInfoUpdate: parsed ${parsed.length} entries, match IDs: [${matchIds.join(', ')}]`,
+      );
+
+      this._messageChannel.broadcastMessage(
+        [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+        MessageType.MATCH_HISTORY_UPDATE,
+        parsed,
+      );
+      logger.log(
+        'handleInfoUpdate: broadcast MATCH_HISTORY_UPDATE to desktop + ingame windows',
+      );
+    } catch (err) {
+      logger.error(
+        'handleInfoUpdate: failed to parse match_history event:',
+        err,
+      );
+    }
+  }
+
+  private handleGameEvent(payload: GameEventPayload): void {
+    const eventName = payload.events[0]?.name;
+
+    if (eventName === 'match_start') {
+      this.handleMatchStart();
+    } else if (eventName === 'match_end') {
+      this.handleMatchEnd();
+    }
+  }
+
+  /**
+   * On match_start: call getInfo to snapshot current match_info,
+   * find the local player's roster entry, and store match_id.
+   */
+  private handleMatchStart(): void {
+    this._localPlayerRosterData = null;
+    this._currentMatchId = null;
+
+    overwolf.games.events.getInfo((result) => {
+      if (!result.success) {
+        logger.error('getInfo failed on match_start:', result);
+        return;
+      }
+
+      const matchInfo = (result.res as any).match_info;
+      if (!matchInfo) {
+        logger.warn('match_start: no match_info in getInfo result');
+        return;
+      }
+
+      if (matchInfo.match_id) {
+        this._currentMatchId = String(matchInfo.match_id);
+        logger.log('match_start: match_id =', this._currentMatchId);
+      }
+
+      this.extractLocalPlayerRoster(matchInfo);
+    });
+  }
+
+  /**
+   * On match_end: use the last cached local player roster
+   * to build a GameEventMatchEntry and broadcast it.
+   * Roster data is empty at match_end, so we rely on the last
+   * roster update received via match_info info updates.
+   */
+  private handleMatchEnd(): void {
+    if (!this._localPlayerRosterData) {
+      logger.warn('match_end: no local player roster data available');
+      return;
+    }
+
+    const roster = this._localPlayerRosterData;
+    const heroId = String(roster.hero_id ?? '');
+    const heroInfo = HEROES[Number(heroId)];
+
+    const matchEntry: GameEventMatchEntry = {
+      match_id: this._currentMatchId ?? '',
+      hero_id: heroId,
+      kills: Number(roster.kills ?? 0),
+      deaths: Number(roster.deaths ?? 0),
+      assists: Number(roster.assist ?? 0),
+      hero_name: heroInfo?.name ?? String(roster.hero_name ?? 'Unknown'),
+    };
+
+    logger.log('match_end: broadcasting match entry:', matchEntry);
+
+    this._messageChannel.broadcastMessage(
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      MessageType.MATCH_HISTORY_UPDATE,
+      [matchEntry],
+    );
+
+    // Reset state for next match
+    this._localPlayerRosterData = null;
+    this._currentMatchId = null;
+  }
+
+  /**
+   * Iterates over match_info keys looking for roster entries,
+   * parses each one, and keeps the entry where is_local is true.
+   */
+  private extractLocalPlayerRoster(matchInfo: Record<string, unknown>): void {
+    for (const key of Object.keys(matchInfo)) {
+      if (!key.startsWith('roster_')) continue;
+
+      try {
+        const raw = matchInfo[key];
+        const rosterEntry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+        if (
+          rosterEntry?.is_local === true ||
+          rosterEntry?.is_local === 'true'
+        ) {
+          this._localPlayerRosterData = rosterEntry;
+          logger.log('Found local player roster:', key, rosterEntry);
+          break;
+        }
+      } catch (err) {
+        logger.warn(`Failed to parse roster entry ${key}:`, err);
+      }
+    }
+  }
+
+  /**
+   * Handles incremental match_info updates (roster changes, match_id).
+   * Keeps _localPlayerRosterData up-to-date between match_start and match_end.
+   */
+  private handleMatchInfoUpdate(infoData: Record<string, unknown>): void {
+    if (!infoData) return;
+
+    if (infoData.match_id) {
+      this._currentMatchId = String(infoData.match_id);
+      logger.log('match_info update: match_id =', this._currentMatchId);
+    }
+
+    // Check for roster updates containing the local player
+    for (const key of Object.keys(infoData)) {
+      if (!key.startsWith('roster_')) continue;
+
+      try {
+        const raw = infoData[key];
+        const rosterEntry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+        if (
+          rosterEntry?.is_local === true ||
+          rosterEntry?.is_local === 'true'
+        ) {
+          this._localPlayerRosterData = rosterEntry;
+          logger.log(
+            'match_info update: updated local player roster from',
+            key,
+          );
+        }
+      } catch (err) {
+        logger.warn(`match_info update: failed to parse ${key}:`, err);
       }
     }
   }

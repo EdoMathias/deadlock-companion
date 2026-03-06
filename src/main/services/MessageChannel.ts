@@ -11,6 +11,8 @@ export enum MessageType {
   CHECK_FTUE_STATUS = 'check-ftue-status',
   FTUE_STATUS_RESPONSE = 'ftue-status-response',
   HOTKEY_UPDATED = 'hotkey-updated',
+  MATCH_HISTORY_UPDATE = 'match-history-update',
+  INGEST_PROMPT = 'ingest-prompt',
   CUSTOM = 'custom',
 }
 
@@ -27,7 +29,10 @@ export interface MessagePayload {
  * MessageChannel handles inter-window communication using overwolf.windows.sendMessage()
  */
 export class MessageChannel {
-  private _messageHandlers: Map<MessageType, Array<(payload: MessagePayload) => void>> = new Map();
+  private _messageHandlers: Map<
+    MessageType,
+    Array<(payload: MessagePayload) => void>
+  > = new Map();
   private _isInitialized: boolean = false;
 
   constructor() {
@@ -42,9 +47,11 @@ export class MessageChannel {
       return;
     }
 
-    overwolf.windows.onMessageReceived.addListener((message: overwolf.windows.MessageReceivedEvent) => {
-      this.handleMessage(message);
-    });
+    overwolf.windows.onMessageReceived.addListener(
+      (message: overwolf.windows.MessageReceivedEvent) => {
+        this.handleMessage(message);
+      },
+    );
 
     this._isInitialized = true;
   }
@@ -61,9 +68,10 @@ export class MessageChannel {
     try {
       // Overwolf API sends: { content: payload, ... }
       // The payload we sent has { type, data, timestamp }
-      const payload: MessagePayload = typeof message.content === 'string'
-        ? JSON.parse(message.content)
-        : message.content;
+      const payload: MessagePayload =
+        typeof message.content === 'string'
+          ? JSON.parse(message.content)
+          : message.content;
 
       // Also check if type is directly on message (some Overwolf API versions)
       const messageType = payload.type || (message as any).type;
@@ -75,7 +83,7 @@ export class MessageChannel {
 
       const handlers = this._messageHandlers.get(messageType as MessageType);
       if (handlers && handlers.length > 0) {
-        handlers.forEach(handler => {
+        handlers.forEach((handler) => {
           try {
             handler(payload);
           } catch (error) {
@@ -83,9 +91,9 @@ export class MessageChannel {
           }
         });
       } else {
-        logger.debug(`No handlers registered for message type: ${messageType}`, {
+        logger.warn(`No handlers registered for message type: ${messageType}`, {
           availableTypes: Array.from(this._messageHandlers.keys()),
-          receivedPayload: payload
+          receivedPayload: payload,
         });
       }
     } catch (error) {
@@ -103,21 +111,24 @@ export class MessageChannel {
   public async sendMessage(
     targetWindow: string,
     type: MessageType,
-    data?: any
+    data?: any,
   ): Promise<boolean> {
     return new Promise((resolve) => {
       const payload: MessagePayload = {
         type,
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       overwolf.windows.sendMessage(targetWindow, type, payload, (result) => {
         if (result.success) {
-          logger.debug(`Message sent to ${targetWindow}:`, type, data);
+          logger.warn(`Message sent to ${targetWindow}:`, type, data);
           resolve(true);
         } else {
-          logger.error(`Failed to send message to ${targetWindow}:`, result.error);
+          logger.error(
+            `Failed to send message to ${targetWindow}:`,
+            result.error,
+          );
           resolve(false);
         }
       });
@@ -134,9 +145,11 @@ export class MessageChannel {
   public async broadcastMessage(
     targetWindows: string[],
     type: MessageType,
-    data?: any
+    data?: any,
   ): Promise<boolean[]> {
-    const promises = targetWindows.map(window => this.sendMessage(window, type, data));
+    const promises = targetWindows.map((window) =>
+      this.sendMessage(window, type, data),
+    );
     return Promise.all(promises);
   }
 
@@ -148,7 +161,7 @@ export class MessageChannel {
    */
   public onMessage(
     type: MessageType,
-    handler: (payload: MessagePayload) => void
+    handler: (payload: MessagePayload) => void,
   ): () => void {
     if (!this._messageHandlers.has(type)) {
       this._messageHandlers.set(type, []);
@@ -181,4 +194,3 @@ export class MessageChannel {
     this._messageHandlers.clear();
   }
 }
-

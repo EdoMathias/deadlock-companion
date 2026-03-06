@@ -35,20 +35,30 @@ const waitForOwAd = (): Promise<any> => {
   });
 };
 
-export const AdContainer: React.FC<AdContainerProps> = ({ width, height, className = '' }) => {
+export const AdContainer: React.FC<AdContainerProps> = ({
+  width,
+  height,
+  className = '',
+}) => {
   const adContainerRef = useRef<HTMLDivElement>(null);
   const hiddenElementsRef = useRef<HTMLElement[]>([]);
   const { isFTUEComplete } = useFTUE();
 
   useEffect(() => {
     if (!isFTUEComplete) {
-      logger.debug('Delaying ad initialization until FTUE is complete', { width, height });
+      logger.warn('Delaying ad initialization until FTUE is complete', {
+        width,
+        height,
+      });
       return;
     }
 
     let owAdInstance: any = null;
     let isMounted = true;
-    const eventHandlers: Array<{ event: string; handler: (eventData: any) => void }> = [];
+    const eventHandlers: Array<{
+      event: string;
+      handler: (eventData: any) => void;
+    }> = [];
     let handleHighImpactAdLoaded: (() => void) | null = null;
     let handleHighImpactAdRemoved: (() => void) | null = null;
     let enableHighImpactForInstance = false;
@@ -57,7 +67,7 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
       try {
         // Wait for OwAd to be available
         const OwAd = await waitForOwAd();
-        
+
         if (!isMounted || !adContainerRef.current) {
           return;
         }
@@ -76,20 +86,21 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
         };
 
         // @ts-ignore
-        owAdInstance = new OwAd(
-          adContainerRef.current,
-          owAdOptions
-        );
-        logger.log('OwAd instance initialized', { width, height, enableHighImpact });
+        owAdInstance = new OwAd(adContainerRef.current, owAdOptions);
+        logger.log('OwAd instance initialized', {
+          width,
+          height,
+          enableHighImpact,
+        });
 
         // Handle high impact ad events
         handleHighImpactAdLoaded = () => {
           if (!enableHighImpact || !adContainerRef.current) return;
           logger.log('High impact ad loaded', { width, height });
 
-            // Set ad container to 100% width and height for high impact ad
-            adContainerRef.current.style.width = '100%';
-            adContainerRef.current.style.height = '100%';
+          // Set ad container to 100% width and height for high impact ad
+          adContainerRef.current.style.width = '100%';
+          adContainerRef.current.style.height = '100%';
 
           // Find the parent ad zone (ad-sidebar)
           const parentAdZone = adContainerRef.current.parentElement;
@@ -103,7 +114,10 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
           // Store and hide all sibling containers except the current one
           hiddenElementsRef.current = [];
           Array.from(parentAdZone.children).forEach((child) => {
-            if (child !== adContainerRef.current && child instanceof HTMLElement) {
+            if (
+              child !== adContainerRef.current &&
+              child instanceof HTMLElement
+            ) {
               hiddenElementsRef.current.push(child);
               child.style.display = 'none';
             }
@@ -137,8 +151,14 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
 
         // Add event listeners for high impact ad events
         if (enableHighImpact) {
-          owAdInstance.addEventListener('high-impact-ad-loaded', handleHighImpactAdLoaded);
-          owAdInstance.addEventListener('high-impact-ad-removed', handleHighImpactAdRemoved);
+          owAdInstance.addEventListener(
+            'high-impact-ad-loaded',
+            handleHighImpactAdLoaded,
+          );
+          owAdInstance.addEventListener(
+            'high-impact-ad-removed',
+            handleHighImpactAdRemoved,
+          );
         }
 
         const interestingEvents = [
@@ -155,9 +175,9 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
           'overwolf_ad_iframe_loaded',
         ];
 
-        interestingEvents.forEach(event => {
+        interestingEvents.forEach((event) => {
           const handler = (eventData: any) => {
-            logger.debug(`Ad event: ${event}`, eventData);
+            logger.warn(`Ad event: ${event}`, eventData);
           };
           eventHandlers.push({ event, handler });
           owAdInstance.addEventListener(event, handler);
@@ -172,7 +192,7 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
 
     return () => {
       isMounted = false;
-      
+
       // Restore hidden elements and sidebar padding on cleanup
       if (hiddenElementsRef.current.length > 0 && adContainerRef.current) {
         hiddenElementsRef.current.forEach((element) => {
@@ -187,10 +207,20 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
 
       if (owAdInstance) {
         try {
-          if (enableHighImpactForInstance && handleHighImpactAdLoaded && handleHighImpactAdRemoved) {
-            owAdInstance.removeEventListener('high-impact-ad-loaded', handleHighImpactAdLoaded);
-            owAdInstance.removeEventListener('high-impact-ad-removed', handleHighImpactAdRemoved);
-            logger.debug('Removed high impact ad listeners');
+          if (
+            enableHighImpactForInstance &&
+            handleHighImpactAdLoaded &&
+            handleHighImpactAdRemoved
+          ) {
+            owAdInstance.removeEventListener(
+              'high-impact-ad-loaded',
+              handleHighImpactAdLoaded,
+            );
+            owAdInstance.removeEventListener(
+              'high-impact-ad-removed',
+              handleHighImpactAdRemoved,
+            );
+            logger.warn('Removed high impact ad listeners');
           }
 
           eventHandlers.forEach(({ event, handler }) => {
@@ -212,4 +242,3 @@ export const AdContainer: React.FC<AdContainerProps> = ({ width, height, classNa
     />
   );
 };
-

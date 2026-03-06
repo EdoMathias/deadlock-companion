@@ -1,2 +1,2 @@
-# Arknights Companion
-Overwolf app with small utilities for Arknights: Endfield
+# Deadlock Companion
+Overwolf app with small utilities for Deadlock

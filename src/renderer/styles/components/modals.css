@@ -27,7 +27,8 @@
 
 .modal-content {
   background-color: var(--color-bg-card);
-  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
   border-radius: 8px;
   padding: 24px;
   max-width: 500px;
@@ -92,8 +93,16 @@
 }
 
 .modal-button-cancel:hover {
-  background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 10%,
+    transparent
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 30%,
+    transparent
+  );
   color: var(--color-accent-primary);
 }
 
@@ -110,8 +119,16 @@
 }
 
 .modal-button-danger {
-  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent) !important;
-  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-danger) 10%,
+    transparent
+  ) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--color-danger) 30%,
+    transparent
+  ) !important;
   color: var(--color-danger) !important;
 }
 
@@ -170,7 +187,8 @@
   padding: 16px;
   border-radius: 6px;
   background: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   color: var(--color-text-muted);
   font-family: var(--font-ark);
   line-height: 1.6;
@@ -215,6 +233,79 @@
 }
 
 /* ------------------------------
+   Data Contribution Modal
+--------------------------------*/
+
+.data-contribution-modal {
+  max-width: 560px;
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.data-contribution-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.data-contribution-section h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+}
+
+.data-contribution-section p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.data-contribution-section--dimmed {
+  opacity: 0.7;
+  padding: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.data-contribution-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  color: var(--color-accent-primary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-ark);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.data-contribution-link:hover {
+  background: color-mix(in srgb, var(--color-accent-primary) 12%, transparent);
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 40%,
+    transparent
+  );
+}
+
+/* ------------------------------
    Launching Overlay
 --------------------------------*/
 
@@ -250,7 +341,8 @@
   gap: 16px;
   padding: 32px 48px;
   background-color: color-mix(in srgb, var(--color-bg-card) 95%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
@@ -258,7 +350,8 @@
 .launching-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border: 3px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-top-color: var(--color-accent-primary);
   border-radius: 50%;
   animation: launchingSpin 0.8s linear infinite;

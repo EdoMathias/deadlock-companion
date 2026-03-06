@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MatchesApi, PlayersApi, SteamProfile } from 'deadlock_api_client';
 import { deadlockApiConfig } from '../../../../shared/services/deadlock-api/deadlockApiClient';
+import { fetchMatchMetadataWithFallback } from '../../../../shared/services/matchMetadataFetcher';
 import { fetchSteamProfileDirect } from '../../../../shared/services/steamWebApi';
 import { accountIdToSteamId64 } from '../../../../shared/utils/steamUtils';
 import { matchCache } from '../../../services/matchCache';
 import { getHero } from '../../../../shared/data/heroes';
 import type { MatchMetadataResponse, MatchPlayer } from './matchMetadata.types';
+import { createLogger } from '../../../../shared/services/Logger';
+
+const logger = createLogger('MatchDetailView');
 
 const matchesApi = new MatchesApi(deadlockApiConfig);
 const playersApi = new PlayersApi(deadlockApiConfig);
@@ -30,6 +34,10 @@ interface MatchDetailViewProps {
   matchId: number;
   accountId: number;
   onBack: () => void;
+  onMatchVerified?: (
+    matchId: number,
+    info: import('./matchMetadata.types').MatchInfo,
+  ) => void;
 }
 
 interface PlayerCardProps {
@@ -167,6 +175,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
   matchId,
   accountId,
   onBack,
+  onMatchVerified,
 }) => {
   const [metadata, setMetadata] = useState<MatchMetadataResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -178,26 +187,45 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
   const fetchMetadata = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    logger.log(`Fetching metadata for match ${matchId}…`);
     try {
       const cached =
         await matchCache.getMetadata<MatchMetadataResponse>(matchId);
       if (cached) {
+        logger.log(`Match ${matchId}: loaded from IndexedDB cache`);
         setMetadata(cached);
+        if (cached.match_info) onMatchVerified?.(matchId, cached.match_info);
         setIsLoading(false);
         return;
       }
+      logger.log(`Match ${matchId}: not in cache, fetching from API…`);
     } catch {
-      // IDB unavailable — fall through to API fetch
+      logger.warn(
+        `Match ${matchId}: IndexedDB unavailable, falling through to API`,
+      );
     }
 
     try {
-      const response = await matchesApi.metadata({ matchId });
-      const data = response.data as unknown as MatchMetadataResponse;
-      await matchCache.setMetadata(matchId, data);
-      setMetadata(data);
+      // Use the fallback pipeline: metadata → salts → ingest → retry
+      const data = await fetchMatchMetadataWithFallback(matchId);
+      if (data) {
+        logger.log(
+          `Match ${matchId}: metadata fetched successfully (${data.match_info?.players?.length ?? 0} players)`,
+        );
+        await matchCache.setMetadata(matchId, data);
+        setMetadata(data);
+        if (data.match_info) onMatchVerified?.(matchId, data.match_info);
+      } else {
+        logger.warn(
+          `Match ${matchId}: fallback pipeline returned null — match not yet available`,
+        );
+        setError(
+          'Match details not yet available. The match may still be processing.',
+        );
+      }
     } catch (err) {
       setError('Failed to load match details. Please try again.');
-      console.error('Match metadata fetch error:', err);
+      logger.error(`Match ${matchId}: fetch error:`, err);
     } finally {
       setIsLoading(false);
     }
@@ -308,6 +336,29 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
           >
             Retry
           </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="match-detail-contribute-cta">
+          <div className="match-detail-contribute-cta__icon">📂</div>
+          <div className="match-detail-contribute-cta__body">
+            <p>
+              <strong>This match isn't in the database yet.</strong> You can
+              help by scanning your Steam cache — it only takes a moment and
+              makes matches available for everyone.
+            </p>
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Contribute' }),
+                )
+              }
+            >
+              Go to Contribute
+            </button>
+          </div>
         </div>
       )}
 

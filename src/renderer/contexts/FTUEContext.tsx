@@ -11,7 +11,8 @@ export type FTUEStep =
   | 'welcome'
   | 'live_match_header'
   | 'match_history_header'
-  | 'profile_header';
+  | 'profile_header'
+  | 'match_history_data_contribution';
 
 export type FTUEScreen = 'main';
 
@@ -22,6 +23,9 @@ const MAIN_STEPS: FTUEStep[] = [
   'match_history_header',
   'profile_header',
 ];
+
+const DATA_CONTRIBUTION_STORAGE_KEY =
+  'deadlock_companion_data_contribution_seen';
 
 interface FTUEContextType {
   isFTUEComplete: boolean;
@@ -37,6 +41,10 @@ interface FTUEContextType {
    * Returns true when a view has an FTUE the user hasn't seen yet.
    */
   hasUnseenFTUE: (viewName: string) => boolean;
+  /** Whether the user has already dismissed the data contribution modal. */
+  hasSeenDataContribution: boolean;
+  /** Mark the data contribution modal as dismissed. */
+  markDataContributionSeen: () => void;
 }
 
 interface FTUEProviderProps {
@@ -66,6 +74,25 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       return false;
     }
   });
+
+  // ── Data Contribution ─────────────────────────────────────
+  const [hasSeenDataContribution, setHasSeenDataContribution] =
+    useState<boolean>(() => {
+      try {
+        return localStorage.getItem(DATA_CONTRIBUTION_STORAGE_KEY) === 'true';
+      } catch {
+        return false;
+      }
+    });
+
+  const markDataContributionSeen = useCallback(() => {
+    setHasSeenDataContribution(true);
+    try {
+      localStorage.setItem(DATA_CONTRIBUTION_STORAGE_KEY, 'true');
+    } catch {
+      // Ignore errors
+    }
+  }, []);
 
   // ── Rotations FTUE ────────────────────────────────────────
   const [isRotationsFTUEComplete] = useState<boolean>(true);
@@ -116,6 +143,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       localStorage.removeItem(STEPS_STORAGE_KEY);
       localStorage.removeItem(ROTATIONS_FTUE_STORAGE_KEY);
       localStorage.removeItem(INTERACTIVE_MAP_FTUE_STORAGE_KEY);
+      localStorage.removeItem(DATA_CONTRIBUTION_STORAGE_KEY);
     } catch {
       // Ignore errors
     }
@@ -186,6 +214,8 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
         startRotationsFTUE,
         markInteractiveMapSeen,
         hasUnseenFTUE,
+        hasSeenDataContribution,
+        markDataContributionSeen,
       }}
     >
       {children}

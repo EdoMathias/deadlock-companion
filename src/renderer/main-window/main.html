@@ -1,38 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../../css/general.css" />
+    <link rel="stylesheet" href="../../css/header.css" />
+    <link rel="stylesheet" href="../../css/ingame.css" />
+    <link rel="stylesheet" href="../../css/modal.css" />
+    <title>Deadlock Companion - Desktop</title>
+    <script
+      src="https://content.overwolf.com/libs/ads/latest/owads.min.js"
+      async
+      onerror="onAdsSDKNotLoaded()"
+      onload="onAdsSDKReady()"
+    ></script>
+    <script>
+      const endfieldLoggerFactory = window.endfieldLoggerFactory;
+      const endfieldLogger = endfieldLoggerFactory
+        ? endfieldLoggerFactory('EndfieldHTML')
+        : console;
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="stylesheet" href="../../css/general.css" />
-  <link rel="stylesheet" href="../../css/header.css" />
-  <link rel="stylesheet" href="../../css/ingame.css" />
-  <link rel="stylesheet" href="../../css/modal.css" />
-  <title>Arknights Companion - Desktop</title>
-  <script src="https://content.overwolf.com/libs/ads/latest/owads.min.js" async onerror="onAdsSDKNotLoaded()"
-    onload="onAdsSDKReady()"></script>
-  <script>
-    const endfieldLoggerFactory = window.endfieldLoggerFactory;
-    const endfieldLogger = endfieldLoggerFactory ? endfieldLoggerFactory('EndfieldHTML') : console;
-
-    // Reached if the SDK's script failed to load (took too long, couldn't be found, etc)
-    function onAdsSDKNotLoaded() {
-      // If this happens, it is up to the app to decide how to proceed.
-      endfieldLogger.error("Couldn't load owads.min.js!");
-    }
-
-    function onAdsSDKReady() {
-      if (!OwAd) {
-        // Reached if the SDK's script failed to properly load.
+      // Reached if the SDK's script failed to load (took too long, couldn't be found, etc)
+      function onAdsSDKNotLoaded() {
         // If this happens, it is up to the app to decide how to proceed.
-        // onAdsSDKNotLoaded();
-        return;
+        endfieldLogger.error("Couldn't load owads.min.js!");
       }
-    }
-  </script>
-</head>
 
-<body class="dark">
-  <div id="root"></div>
-</body>
+      function onAdsSDKReady() {
+        if (!OwAd) {
+          // Reached if the SDK's script failed to properly load.
+          // If this happens, it is up to the app to decide how to proceed.
+          // onAdsSDKNotLoaded();
+          return;
+        }
+      }
+    </script>
+  </head>
 
+  <body class="dark">
+    <div id="root"></div>
+  </body>
 </html>

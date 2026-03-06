@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   PlayersApi,
   PlayerMatchHistoryEntry,
@@ -11,6 +11,18 @@ import { steamIdToAccountId } from '../../../../shared/utils/steamUtils';
 import { apiCache } from '../../../../shared/utils/apiCache';
 import { matchCache } from '../../../services/matchCache';
 import { getHero, HeroInfo } from '../../../../shared/data/heroes';
+import { GAME_MODE_LABELS } from '../../../../shared/consts';
+import { RefreshButton } from '../../../components/RefreshButton';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const playersApi = new PlayersApi(deadlockApiConfig);
 
@@ -108,9 +120,13 @@ const ProfileView: React.FC = () => {
   const { steamId } = useSteamId();
   const [steam, setSteam] = useState<SteamProfile | null>(null);
   const [stats, setStats] = useState<AggregateStats | null>(null);
+  const [matchHistory, setMatchHistory] = useState<PlayerMatchHistoryEntry[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
 
   const accountId = steamId ? steamIdToAccountId(steamId) : null;
 
@@ -131,6 +147,7 @@ const ProfileView: React.FC = () => {
         if (steamProfile && matchHistory) {
           setSteam(steamProfile);
           setStats(computeStats(matchHistory));
+          setMatchHistory(matchHistory);
           setIsCached(true);
           setIsLoading(false);
           return;
@@ -180,8 +197,11 @@ const ProfileView: React.FC = () => {
         }
 
         await Promise.all(fetches);
+        const finalHistory = matchHistory ?? [];
         setSteam(steamProfile);
-        setStats(computeStats(matchHistory ?? []));
+        setStats(computeStats(finalHistory));
+        setMatchHistory(finalHistory);
+        setLastRefreshTime(Date.now());
       } catch (err) {
         setError('Failed to load profile. Please try again.');
         console.error('Profile fetch error:', err);
@@ -217,6 +237,72 @@ const ProfileView: React.FC = () => {
   const signatureHero: HeroInfo | undefined =
     stats?.signatureHeroId != null ? getHero(stats.signatureHeroId) : undefined;
 
+  const gameModeCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    for (const m of matchHistory) {
+      const mode = m.game_mode ?? 0;
+      if (mode === 0) continue;
+      counts[mode] = (counts[mode] ?? 0) + 1;
+    }
+    return counts;
+  }, [matchHistory]);
+
+  const gameModeChartData = useMemo(() => {
+    const entries = Object.entries(gameModeCounts)
+      .map(([key, count]) => ({
+        label: GAME_MODE_LABELS[Number(key)] ?? `Mode ${key}`,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      labels: entries.map((e) => e.label),
+      datasets: [
+        {
+          data: entries.map((e) => e.count),
+          backgroundColor: 'rgba(100, 180, 255, 0.6)',
+          borderColor: 'rgba(100, 180, 255, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+      ],
+    };
+  }, [gameModeCounts]);
+
+  const gameModeChartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (ctx: { parsed: { y: number } }) =>
+              `${ctx.parsed.y} matches`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#b0b0b0', font: { size: 11 } },
+          grid: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: '#b0b0b0',
+            font: { size: 11 },
+            stepSize: 1,
+            precision: 0,
+          },
+          grid: {
+            color: 'rgba(255,255,255,0.06)',
+          },
+        },
+      },
+    }),
+    [],
+  );
+
   const winRatePct = stats ? Math.min(100, Math.max(0, stats.winRate)) : 0;
 
   return (
@@ -251,13 +337,13 @@ const ProfileView: React.FC = () => {
               </span>
             </div>
           )}
-          <button
-            className="btn btn--secondary btn--sm"
-            onClick={() => fetchProfile(true)}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Loading…' : isCached ? 'Refresh (cached)' : 'Refresh'}
-          </button>
+          <RefreshButton
+            onRefresh={() => fetchProfile(true)}
+            isLoading={isLoading}
+            isCached={isCached}
+            lastRefreshTime={lastRefreshTime}
+            tooltipText="Refresh profile data from the Deadlock API"
+          />
         </div>
       </div>
 
@@ -401,6 +487,21 @@ const ProfileView: React.FC = () => {
               </span>
               <span className="stat-feature-card__sub">Per match average</span>
             </div>
+
+            {/* Game Mode Breakdown */}
+            {gameModeChartData.labels.length > 0 && (
+              <div className="stat-feature-card stat-feature-card--full-width">
+                <span className="stat-feature-card__label">
+                  FAVORITE GAME MODE
+                </span>
+                <div className="profile-game-mode-chart">
+                  <Bar
+                    data={gameModeChartData}
+                    options={gameModeChartOptions}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

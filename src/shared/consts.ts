@@ -26,3 +26,12 @@ export type HotkeyData = {
 
 export const DEADLOCK_API_BASE_URL = 'https://api.deadlock-api.com';
 export const DEADLOCK_ASSETS_BASE_URL = 'https://assets.deadlock-api.com';
+
+export const GAME_MODE_LABELS: Record<number, string> = {
+  0: 'Invalid',
+  1: 'Normal',
+  2: '1v1 Test',
+  3: 'Sandbox',
+  4: 'Street Brawl',
+  5: 'Explore NYC',
+};

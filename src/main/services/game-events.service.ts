@@ -109,7 +109,7 @@ export class GameEventsService {
     }
 
     if (requiredFeatures.length === 0) {
-      logger.debug(
+      logger.warn(
         'No required features specified — skipping setRequiredFeatures',
       );
       return undefined;
@@ -225,12 +225,13 @@ export class GameEventsService {
   }
 
   private onGameEvent(payload: GameEventPayload): void {
-    logger.warn('Game events received:', payload.events);
+    logger.warn('Game events received:', payload);
     this._onGameEvent?.(payload);
   }
 
   private onInfoUpdate(info: InfoUpdatePayload): void {
     logger.warn(`Info update [${info.feature}]:`, info.info);
+    logger.log(JSON.stringify(info.info, null, 2));
     this._onInfoUpdate?.(info);
   }
 

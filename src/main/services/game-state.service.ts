@@ -63,7 +63,7 @@ export class GameStateService {
   ): void {
     // Ignore events for unsupported games or invalid events
     if (!event) {
-      logger.debug('Invalid game state change event:', event);
+      logger.warn('Invalid game state change event:', event);
       return;
     }
 
@@ -78,7 +78,7 @@ export class GameStateService {
 
   private handleGameLaunched(event: overwolf.games.GameInfoUpdatedEvent): void {
     if (!this.isSupportedGame(event.gameInfo)) {
-      logger.debug(
+      logger.warn(
         'Ignoring game state change for unsupported game:',
         event.gameInfo?.classId,
       );
@@ -105,7 +105,7 @@ export class GameStateService {
       logger.log('Game is supported:', gameInfo.classId);
       return true;
     } else {
-      logger.debug('Game is not supported:', gameInfo.classId);
+      logger.warn('Game is not supported:', gameInfo.classId);
       return false;
     }
   }

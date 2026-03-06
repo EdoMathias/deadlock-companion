@@ -4,6 +4,7 @@ import '../styles/index.css';
 
 // Components
 import { AppHeader, FTUEWelcomeModal, ReleaseNotesModal } from '../components';
+import { IngestPromptModal } from '../components/IngestPromptModal';
 import { AdContainer } from './components/AdContainer/AdContainer';
 import SideNav from './components/SideNav/SideNav';
 import { Settings } from './views/Settings';
@@ -20,6 +21,7 @@ import { useReleaseNotes } from '../hooks/useReleaseNotes';
 import { viewsConfig } from './config/views.config';
 import { kHotkeys } from '../../shared/consts';
 import { HotkeysAPI } from '../../shared/services/hotkeys';
+import { MessageType } from '../../main/services/MessageChannel';
 
 const DEFAULT_HOTKEYS = {
   toggleMainIngameWindow: 'Ctrl+T',
@@ -84,6 +86,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     return defaultViewName;
   });
   const [navExpanded, setNavExpanded] = React.useState(false);
+  const [showIngestPrompt, setShowIngestPrompt] = React.useState(false);
 
   // Persist active view to localStorage
   useEffect(() => {
@@ -133,6 +136,47 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     };
   }, [loadHotkeys]);
 
+  // Allow any nested component to trigger sidebar navigation via a custom DOM event
+  useEffect(() => {
+    const onNavigate = (e: Event) => {
+      const viewName = (e as CustomEvent<string>).detail;
+      if (viewName && viewsConfig.some((v) => v.name === viewName)) {
+        setShowSettings(false);
+        setActiveView(viewName);
+      }
+    };
+    window.addEventListener('navigate-view', onNavigate);
+    return () => window.removeEventListener('navigate-view', onNavigate);
+  }, []);
+
+  // Listen for INGEST_PROMPT messages from background (sent after Deadlock exits)
+  useEffect(() => {
+    if (isIngameWindow) return;
+    const onMessage = (message: overwolf.windows.MessageReceivedEvent) => {
+      try {
+        const payload =
+          typeof message?.content === 'string'
+            ? JSON.parse(message.content)
+            : message?.content;
+        if (payload?.type === MessageType.INGEST_PROMPT) {
+          setShowIngestPrompt(true);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    };
+    overwolf.windows.onMessageReceived.addListener(onMessage);
+    return () => {
+      overwolf.windows.onMessageReceived.removeListener(onMessage);
+    };
+  }, [isIngameWindow]);
+
+  const handleIngestGoToScanner = React.useCallback(() => {
+    setShowIngestPrompt(false);
+    setShowSettings(false);
+    setActiveView('Contribute');
+  }, []);
+
   //------------------------HEADER ACTION BUTTONS-----------------------------
   const handleSettingsClick = () => {
     setSettingsInitialTab('general');
@@ -181,6 +225,11 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
 
   return (
     <div className="app-layout">
+      <IngestPromptModal
+        isOpen={showIngestPrompt}
+        onClose={() => setShowIngestPrompt(false)}
+        onGoToScanner={handleIngestGoToScanner}
+      />
       <div className="app-header-wrapper">
         <AppHeader
           title={

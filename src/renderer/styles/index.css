@@ -20,6 +20,8 @@
 @import './components/cards.css';
 @import './components/header.css';
 @import './components/widgets.css';
+@import './components/refresh-button.css';
+@import './components/ingest.css';
 
 /* 5. View-Specific Styles */
 @import './views/overview.css';
@@ -33,6 +35,7 @@
 @import './views/rotations.css';
 @import './views/deadlock-views.css';
 @import './views/companion-ready.css';
+@import './views/contribute.css';
 
 /* 
  * CSS Modules Migration Guide:

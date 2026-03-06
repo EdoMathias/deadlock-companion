@@ -15,6 +15,10 @@
 
 import { PlayerMatchHistoryEntry } from 'deadlock_api_client';
 import { createSimpleStore } from '../../shared/utils/indexedDBStorage';
+import type { GameEventMatchEntry } from '../../shared/types/matchHistoryEvent';
+import { createLogger } from '../../shared/services/Logger';
+
+const logger = createLogger('matchCache');
 
 const MATCH_HISTORY_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -41,6 +45,15 @@ const metadataStore = createSimpleStore<any>('dl-match-metadata', 'metadata');
 const steamProfileStore = createSimpleStore<CachedSteamProfile[]>(
   'dl-steam-profiles',
   'profiles',
+);
+
+/**
+ * Stores match entries discovered via Overwolf game events (match_history).
+ * Keyed by match_id string. No TTL — these are the user's own matches.
+ */
+const gameEventMatchStore = createSimpleStore<GameEventMatchEntry>(
+  'dl-game-event-matches',
+  'matches',
 );
 
 export const matchCache = {
@@ -109,6 +122,36 @@ export const matchCache = {
       await steamProfileStore.set(String(matchId), profiles);
     } catch {
       // Best-effort
+    }
+  },
+
+  // ---- Game-event match entries (from Overwolf GEP match_history) ----
+
+  async getGameEventMatches(): Promise<GameEventMatchEntry[]> {
+    try {
+      const results = await gameEventMatchStore.getAll();
+      logger.warn(`getGameEventMatches: returning ${results.length} entries`);
+      return results;
+    } catch (err) {
+      logger.error('getGameEventMatches: IndexedDB read failed:', err);
+      return [];
+    }
+  },
+
+  async mergeGameEventMatches(entries: GameEventMatchEntry[]): Promise<void> {
+    try {
+      logger.log(
+        `mergeGameEventMatches: writing ${entries.length} entries to IndexedDB`,
+      );
+      for (const entry of entries) {
+        logger.warn(
+          `  storing match ${entry.match_id} (hero: ${entry.hero_name}, KDA: ${entry.kills}/${entry.deaths}/${entry.assists})`,
+        );
+        await gameEventMatchStore.set(String(entry.match_id), entry);
+      }
+      logger.log('mergeGameEventMatches: all entries written successfully');
+    } catch (err) {
+      logger.error('mergeGameEventMatches: failed to write:', err);
     }
   },
 };

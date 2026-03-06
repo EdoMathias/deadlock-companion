@@ -1,0 +1,309 @@
+/* ─────────────────────────────────────
+   Contribute View
+   ───────────────────────────────────── */
+
+.contribute-container {
+  max-width: none;
+}
+
+/* ── Two-column layout ──────────────── */
+
+.contribute-columns {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.contribute-columns__main {
+  flex: 1;
+  min-width: 0;
+  max-width: 640px;
+}
+
+.contribute-columns__side {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.contribute-intro {
+  margin-bottom: 20px;
+}
+
+.contribute-intro p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.contribute-intro code {
+  font-size: 12px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  color: var(--color-text-primary);
+}
+
+.contribute-privacy {
+  font-size: 12px !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* ── Steps Guide ─────────────────────── */
+
+.contribute-steps {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.contribute-steps__title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.contribute-steps__list {
+  margin: 0;
+  padding: 0 0 0 22px;
+  list-style: none;
+  counter-reset: step;
+}
+
+.contribute-steps__list li {
+  position: relative;
+  counter-increment: step;
+  padding: 4px 0 4px 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.contribute-steps__list li::before {
+  content: counter(step);
+  position: absolute;
+  left: -22px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  color: var(--color-accent-primary);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  top: 6px;
+}
+
+.contribute-steps__list li code {
+  font-size: 12px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  color: var(--color-text-primary);
+}
+
+/* ── Match Detail Contribute CTA ───── */
+
+.match-detail-contribute-cta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-accent-primary) 6%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 18%, transparent);
+}
+
+.match-detail-contribute-cta__icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.match-detail-contribute-cta__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.match-detail-contribute-cta__body p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.match-detail-contribute-cta__body strong {
+  color: var(--color-text-primary);
+}
+
+/* ── Drop Zone ──────────────────────── */
+
+.contribute-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  border: 2px dashed
+    color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent-primary) 4%, transparent);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.contribute-dropzone:hover,
+.contribute-dropzone:focus-visible {
+  border-color: var(--color-accent-primary);
+  background: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+  outline: none;
+}
+
+.contribute-dropzone--active {
+  border-color: var(--color-accent-primary);
+  background: color-mix(in srgb, var(--color-accent-primary) 12%, transparent);
+}
+
+.contribute-dropzone--scanning {
+  cursor: default;
+  border-style: solid;
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 25%,
+    transparent
+  );
+}
+
+.contribute-dropzone__icon {
+  color: var(--color-accent-primary);
+  opacity: 0.7;
+}
+
+.contribute-dropzone__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.contribute-dropzone__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ── Scanning state ─────────────────── */
+
+.contribute-dropzone__scanning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.contribute-dropzone__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: contributeSpinner 0.8s linear infinite;
+}
+
+@keyframes contributeSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.contribute-dropzone__status {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* ── Path guide ─────────────────────── */
+
+.contribute-path-guide {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.contribute-path-guide h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.contribute-path-guide p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.contribute-path-code {
+  display: block;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  color: var(--color-text-primary);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* ── Result notice ──────────────────── */
+
+.contribute-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contribute-result p {
+  margin: 0;
+}
+
+.contribute-result__icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.contribute-result--success {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 20%, transparent);
+}
+
+.contribute-result--error {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 20%, transparent);
+}

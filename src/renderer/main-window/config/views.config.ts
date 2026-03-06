@@ -4,11 +4,13 @@ import {
   LiveMatchView,
   MatchHistoryView,
   ProfileView,
+  ContributeView,
 } from '../views';
 import LiveMatchIcon from '../views/LiveMatch/components/LiveMatchIcon';
 import MatchHistoryIcon from '../views/MatchHistory/components/MatchHistoryIcon';
 import ProfileIcon from '../views/Profile/components/ProfileIcon';
 import RotationsIcon from '../views/Rotations/components/RotationsIcon';
+import ContributeIcon from '../views/Contribute/components/ContributeIcon';
 
 export const viewsConfig: ViewConfig[] = [
   {
@@ -24,15 +26,15 @@ export const viewsConfig: ViewConfig[] = [
     active: false,
   },
   {
-    name: 'Profile',
-    icon: ProfileIcon,
-    component: ProfileView,
+    name: 'Contribute',
+    icon: ContributeIcon,
+    component: ContributeView,
     active: false,
   },
   {
-    name: 'Build Planner',
-    icon: RotationsIcon,
-    component: Rotations,
+    name: 'Profile',
+    icon: ProfileIcon,
+    component: ProfileView,
     active: false,
   },
 ];

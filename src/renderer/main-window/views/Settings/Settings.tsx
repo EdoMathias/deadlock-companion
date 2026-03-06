@@ -5,19 +5,22 @@ import {
   GeneralSettings,
   AboutSettings,
   HotkeysSettings,
+  DataSettings,
   SettingsInfo,
 } from './components';
 
+type SettingsTab = 'general' | 'hotkeys' | 'data' | 'about';
+
 interface SettingsProps {
   onClose: () => void;
-  initialTab?: 'general' | 'hotkeys' | 'about';
+  initialTab?: SettingsTab;
 }
 
 const Settings: React.FC<SettingsProps> = ({
   onClose,
   initialTab = 'general',
 }) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'hotkeys' | 'about'>(initialTab);
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -25,6 +28,8 @@ const Settings: React.FC<SettingsProps> = ({
         return <GeneralSettings />;
       case 'hotkeys':
         return <HotkeysSettings />;
+      case 'data':
+        return <DataSettings />;
       case 'about':
         return <AboutSettings />;
       default:
@@ -48,9 +53,7 @@ const Settings: React.FC<SettingsProps> = ({
       </div>
       <div className="settings-container">
         <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="settings-main">
-          {renderContent()}
-        </div>
+        <div className="settings-main">{renderContent()}</div>
         <SettingsInfo tab={activeTab} />
       </div>
     </div>

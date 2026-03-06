@@ -13,6 +13,7 @@
   height: 100%;
   padding: 20px 24px;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--color-bg-primary);
 }
 
@@ -214,6 +215,122 @@
 
 .match-card {
   cursor: pointer;
+}
+
+.match-card__hero-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.match-card__source {
+  font-size: 0.7rem;
+  color: var(--color-warning, #c8a96a);
+  background: color-mix(
+    in srgb,
+    var(--color-warning, #c8a96a) 12%,
+    transparent
+  );
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.match-card__source:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-warning, #c8a96a) 22%,
+    transparent
+  );
+}
+
+.match-card__game-mode {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary, #b0b0b0);
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.match-history-filter {
+  padding: 6px 10px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.match-history-filter:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 50%,
+    transparent
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 5%,
+    transparent
+  );
+}
+
+.match-history-filter:focus {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 60%,
+    transparent
+  );
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 8%,
+    transparent
+  );
+}
+
+.match-history-filter option {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: 8px;
+}
+
+.match-history-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(var(--color-accent-primary-rgb, 100, 180, 255), 0.1);
+  border: 1px solid rgba(var(--color-accent-primary-rgb, 100, 180, 255), 0.25);
+  margin-bottom: 12px;
+}
+
+.match-history-banner__icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.match-history-banner__text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #b0b0b0);
 }
 
 /* ------------------------------
@@ -759,6 +876,12 @@
   border-radius: 3px;
   background-color: var(--color-success);
   transition: width 0.4s ease;
+}
+
+.profile-game-mode-chart {
+  position: relative;
+  width: 100%;
+  height: 180px;
 }
 
 /* ------------------------------
