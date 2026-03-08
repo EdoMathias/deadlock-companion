@@ -18,6 +18,13 @@ import {
   GameEventsService,
 } from '../services/game-events.service';
 import type { GameEventMatchEntry } from '../../shared/types/matchHistoryEvent';
+import type {
+  LiveRosterEntry,
+  LiveRosterUpdatePayload,
+  LiveMatchStartPayload,
+  GameModeInfo,
+  TeamScores,
+} from '../../shared/types/liveMatch';
 import { HEROES } from '../../shared/data/heroes';
 
 const logger = createLogger('BackgroundController');
@@ -43,6 +50,10 @@ export class BackgroundController {
     null;
   private _localPlayerRosterData: Record<string, unknown> | null = null;
   private _currentMatchId: string | null = null;
+  private _allRosterData: Map<string, LiveRosterEntry> = new Map();
+  private _matchStartTimestamp: number | null = null;
+  private _gameMode: GameModeInfo | null = null;
+  private _teamScores: TeamScores | null = null;
 
   private constructor() {
     // Initialize MessageChannel first (used by other services)
@@ -158,7 +169,12 @@ export class BackgroundController {
   ): void {
     // Track match_info updates (roster, match_id) for match_end handling
     if (info.feature === 'match_info') {
-      this.handleMatchInfoUpdate((info as any).info);
+      // Overwolf wraps info updates in a category key matching the feature name:
+      //   info.info = { match_info: { roster_0: "...", match_id: "..." } }
+      // Unwrap the category so handleMatchInfoUpdate sees { roster_0: "...", ... } directly.
+      const raw = (info as any).info;
+      const matchInfoData = raw?.match_info ?? raw;
+      this.handleMatchInfoUpdate(matchInfoData);
       return;
     }
 
@@ -167,12 +183,53 @@ export class BackgroundController {
       return;
     }
 
-    const gameInfo = info.info;
+    const rawGameInfo = (info as any).info;
+    const gameInfo = rawGameInfo?.game_info ?? rawGameInfo;
     if (!gameInfo) {
       logger.warn(
         'handleInfoUpdate: game_info key present but empty, skipping',
       );
       return;
+    }
+
+    // Track game_mode updates
+    if (gameInfo.game_mode != null) {
+      try {
+        const parsed =
+          typeof gameInfo.game_mode === 'string'
+            ? JSON.parse(gameInfo.game_mode)
+            : gameInfo.game_mode;
+        if (parsed && typeof parsed === 'object') {
+          this._gameMode = {
+            match_mode: String(parsed.match_mode ?? ''),
+            game_mode: String(parsed.game_mode ?? ''),
+          };
+          logger.log('game_info update: game_mode =', this._gameMode);
+          this.broadcastRosterUpdate();
+        }
+      } catch (err) {
+        logger.warn('Failed to parse game_mode:', err);
+      }
+    }
+
+    // Track team_score updates
+    if (gameInfo.team_score != null) {
+      try {
+        const parsed =
+          typeof gameInfo.team_score === 'string'
+            ? JSON.parse(gameInfo.team_score)
+            : gameInfo.team_score;
+        if (parsed && typeof parsed === 'object') {
+          this._teamScores = {
+            amber: Number(parsed.team2 ?? parsed.amber ?? 0),
+            sapphire: Number(parsed.team3 ?? parsed.sapphire ?? 0),
+          };
+          logger.log('game_info update: team_score =', this._teamScores);
+          this.broadcastRosterUpdate();
+        }
+      } catch (err) {
+        logger.warn('Failed to parse team_score:', err);
+      }
     }
 
     // The match_history key contains a JSON array of match entries
@@ -239,10 +296,15 @@ export class BackgroundController {
   /**
    * On match_start: call getInfo to snapshot current match_info,
    * find the local player's roster entry, and store match_id.
+   * Also broadcasts LIVE_MATCH_START to renderer windows.
    */
   private handleMatchStart(): void {
     this._localPlayerRosterData = null;
     this._currentMatchId = null;
+    this._allRosterData.clear();
+    this._matchStartTimestamp = Date.now();
+    this._gameMode = null;
+    this._teamScores = null;
 
     overwolf.games.events.getInfo((result) => {
       if (!result.success) {
@@ -253,16 +315,55 @@ export class BackgroundController {
       const matchInfo = (result.res as any).match_info;
       if (!matchInfo) {
         logger.warn('match_start: no match_info in getInfo result');
-        return;
+      } else {
+        if (matchInfo.match_id) {
+          this._currentMatchId = String(matchInfo.match_id);
+          logger.log('match_start: match_id =', this._currentMatchId);
+        }
+        this.extractAllRosterEntries(matchInfo);
       }
 
-      if (matchInfo.match_id) {
-        this._currentMatchId = String(matchInfo.match_id);
-        logger.log('match_start: match_id =', this._currentMatchId);
+      // Also snapshot game_info to restore game_mode that was set before match_start
+      const gameInfoSnapshot = (result.res as any).game_info;
+      if (gameInfoSnapshot) {
+        if (gameInfoSnapshot.game_mode != null) {
+          try {
+            const parsed =
+              typeof gameInfoSnapshot.game_mode === 'string'
+                ? JSON.parse(gameInfoSnapshot.game_mode)
+                : gameInfoSnapshot.game_mode;
+            if (parsed && typeof parsed === 'object') {
+              this._gameMode = {
+                match_mode: String(parsed.match_mode ?? ''),
+                game_mode: String(parsed.game_mode ?? ''),
+              };
+              logger.log(
+                'match_start: restored game_mode from getInfo =',
+                this._gameMode,
+              );
+            }
+          } catch (err) {
+            logger.warn(
+              'match_start: failed to parse game_mode from getInfo:',
+              err,
+            );
+          }
+        }
+        this.broadcastRosterUpdate();
       }
-
-      this.extractLocalPlayerRoster(matchInfo);
     });
+
+    // Broadcast match start so renderer windows can activate the live view
+    const startPayload: LiveMatchStartPayload = {
+      matchId: this._currentMatchId,
+      matchStartTimestamp: this._matchStartTimestamp,
+    };
+    this._messageChannel.broadcastMessage(
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      MessageType.LIVE_MATCH_START,
+      startPayload,
+    );
+    logger.log('match_start: broadcast LIVE_MATCH_START');
   }
 
   /**
@@ -270,10 +371,19 @@ export class BackgroundController {
    * to build a GameEventMatchEntry and broadcast it.
    * Roster data is empty at match_end, so we rely on the last
    * roster update received via match_info info updates.
+   * Also broadcasts LIVE_MATCH_END to renderer windows.
    */
   private handleMatchEnd(): void {
+    // Broadcast LIVE_MATCH_END so the scoreboard shows "Match Ended"
+    this._messageChannel.broadcastMessage(
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      MessageType.LIVE_MATCH_END,
+    );
+    logger.log('match_end: broadcast LIVE_MATCH_END');
+
     if (!this._localPlayerRosterData) {
       logger.warn('match_end: no local player roster data available');
+      // Keep all state for post-match review; only clear on next match_start
       return;
     }
 
@@ -298,40 +408,78 @@ export class BackgroundController {
       [matchEntry],
     );
 
-    // Reset state for next match
-    this._localPlayerRosterData = null;
-    this._currentMatchId = null;
+    // Keep state for post-match review; will be cleared on next match_start
   }
 
   /**
    * Iterates over match_info keys looking for roster entries,
-   * parses each one, and keeps the entry where is_local is true.
+   * parses each one, stores all entries, and keeps the local player entry.
+   * Broadcasts the full roster to renderer windows.
    */
-  private extractLocalPlayerRoster(matchInfo: Record<string, unknown>): void {
+  private extractAllRosterEntries(matchInfo: Record<string, unknown>): void {
     for (const key of Object.keys(matchInfo)) {
       if (!key.startsWith('roster_')) continue;
 
       try {
         const raw = matchInfo[key];
         const rosterEntry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!rosterEntry) continue;
 
-        if (
-          rosterEntry?.is_local === true ||
-          rosterEntry?.is_local === 'true'
-        ) {
+        const entry: LiveRosterEntry = {
+          player_name: String(rosterEntry.player_name ?? ''),
+          steam_id: Number(rosterEntry.steam_id ?? 0),
+          team_name: String(rosterEntry.team_name ?? ''),
+          team_id: Number(rosterEntry.team_id ?? 0),
+          is_local:
+            rosterEntry.is_local === true || rosterEntry.is_local === 'true',
+          hero_id: Number(rosterEntry.hero_id ?? 0),
+          level: Number(rosterEntry.level ?? 0),
+          kills: Number(rosterEntry.kills ?? 0),
+          deaths: Number(rosterEntry.deaths ?? 0),
+          assist: Number(rosterEntry.assist ?? 0),
+          hero_damage: Number(rosterEntry.hero_damage ?? 0),
+          object_damage: Number(rosterEntry.object_damage ?? 0),
+          hero_healing: Number(rosterEntry.hero_healing ?? 0),
+          health: Number(rosterEntry.health ?? 0),
+          souls: Number(rosterEntry.souls ?? 0),
+          hero_name: String(rosterEntry.hero_name ?? ''),
+        };
+
+        this._allRosterData.set(key, entry);
+
+        if (entry.is_local) {
           this._localPlayerRosterData = rosterEntry;
-          logger.log('Found local player roster:', key, rosterEntry);
-          break;
+          logger.log('Found local player roster:', key, entry);
         }
       } catch (err) {
         logger.warn(`Failed to parse roster entry ${key}:`, err);
       }
     }
+
+    this.broadcastRosterUpdate();
+  }
+
+  /** Broadcasts the current full roster to renderer windows. */
+  private broadcastRosterUpdate(): void {
+    const payload: LiveRosterUpdatePayload = {
+      roster: Array.from(this._allRosterData.values()),
+      matchId: this._currentMatchId,
+      matchStartTimestamp: this._matchStartTimestamp,
+      gameMode: this._gameMode,
+      teamScores: this._teamScores,
+    };
+    this._messageChannel.broadcastMessage(
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      MessageType.LIVE_ROSTER_UPDATE,
+      payload,
+    );
+    logger.log(`broadcastRosterUpdate: ${payload.roster.length} players`);
   }
 
   /**
    * Handles incremental match_info updates (roster changes, match_id).
-   * Keeps _localPlayerRosterData up-to-date between match_start and match_end.
+   * Keeps _localPlayerRosterData and _allRosterData up-to-date between
+   * match_start and match_end. Broadcasts roster updates to renderer windows.
    */
   private handleMatchInfoUpdate(infoData: Record<string, unknown>): void {
     if (!infoData) return;
@@ -341,18 +489,40 @@ export class BackgroundController {
       logger.log('match_info update: match_id =', this._currentMatchId);
     }
 
-    // Check for roster updates containing the local player
+    let rosterChanged = false;
+
     for (const key of Object.keys(infoData)) {
       if (!key.startsWith('roster_')) continue;
 
       try {
         const raw = infoData[key];
         const rosterEntry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!rosterEntry) continue;
 
-        if (
-          rosterEntry?.is_local === true ||
-          rosterEntry?.is_local === 'true'
-        ) {
+        const entry: LiveRosterEntry = {
+          player_name: String(rosterEntry.player_name ?? ''),
+          steam_id: Number(rosterEntry.steam_id ?? 0),
+          team_name: String(rosterEntry.team_name ?? ''),
+          team_id: Number(rosterEntry.team_id ?? 0),
+          is_local:
+            rosterEntry.is_local === true || rosterEntry.is_local === 'true',
+          hero_id: Number(rosterEntry.hero_id ?? 0),
+          level: Number(rosterEntry.level ?? 0),
+          kills: Number(rosterEntry.kills ?? 0),
+          deaths: Number(rosterEntry.deaths ?? 0),
+          assist: Number(rosterEntry.assist ?? 0),
+          hero_damage: Number(rosterEntry.hero_damage ?? 0),
+          object_damage: Number(rosterEntry.object_damage ?? 0),
+          hero_healing: Number(rosterEntry.hero_healing ?? 0),
+          health: Number(rosterEntry.health ?? 0),
+          souls: Number(rosterEntry.souls ?? 0),
+          hero_name: String(rosterEntry.hero_name ?? ''),
+        };
+
+        this._allRosterData.set(key, entry);
+        rosterChanged = true;
+
+        if (entry.is_local) {
           this._localPlayerRosterData = rosterEntry;
           logger.log(
             'match_info update: updated local player roster from',
@@ -362,6 +532,10 @@ export class BackgroundController {
       } catch (err) {
         logger.warn(`match_info update: failed to parse ${key}:`, err);
       }
+    }
+
+    if (rosterChanged) {
+      this.broadcastRosterUpdate();
     }
   }
 

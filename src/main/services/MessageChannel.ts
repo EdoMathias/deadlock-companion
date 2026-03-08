@@ -13,6 +13,9 @@ export enum MessageType {
   HOTKEY_UPDATED = 'hotkey-updated',
   MATCH_HISTORY_UPDATE = 'match-history-update',
   INGEST_PROMPT = 'ingest-prompt',
+  LIVE_MATCH_START = 'live-match-start',
+  LIVE_MATCH_END = 'live-match-end',
+  LIVE_ROSTER_UPDATE = 'live-roster-update',
   CUSTOM = 'custom',
 }
 
