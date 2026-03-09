@@ -65,5 +65,5 @@ export interface MatchSummaryPlayer {
 export interface MatchSummaryData {
   matchId: string;
   players: MatchSummaryPlayer[];
-  source: 'roster-snapshot' | 'api-derived';
+  source: 'roster-snapshot' | 'api-derived' | 'api-upgraded';
 }

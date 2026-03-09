@@ -82,6 +82,42 @@ function apiPlayersToSummary(
   };
 }
 
+/**
+ * Merge a roster snapshot with authoritative API stats.
+ * Keeps player_name and is_local from the roster; overwrites stats from API.
+ */
+function upgradeSummaryWithApi(
+  roster: MatchSummaryData,
+  apiPlayers: MatchPlayer[],
+  matchId: string,
+): MatchSummaryData {
+  const rosterByHero = new Map(roster.players.map((p) => [p.hero_id, p]));
+
+  return {
+    matchId,
+    source: 'api-upgraded',
+    players: apiPlayers.map((ap) => {
+      const rp = rosterByHero.get(ap.hero_id);
+      const lastStat = ap.stats?.[ap.stats.length - 1];
+      return {
+        steam_id: ap.account_id,
+        hero_id: ap.hero_id,
+        hero_name: getHero(ap.hero_id)?.name ?? `Hero ${ap.hero_id}`,
+        player_name: rp?.player_name,
+        team_id: ap.team === 0 ? 2 : 3,
+        kills: ap.kills,
+        deaths: ap.deaths,
+        assists: ap.assists,
+        souls: ap.last_hits,
+        level: ap.level,
+        hero_damage: lastStat?.player_damage ?? 0,
+        hero_healing: lastStat?.player_healing ?? 0,
+        is_local: rp?.is_local ?? false,
+      };
+    }),
+  };
+}
+
 // ────────────────── Summary Tab ──────────────────
 
 interface SummaryTeamTableProps {
@@ -172,6 +208,9 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ summary, steamProfiles }) => {
           Showing data from API. Roster snapshot was not available for this
           match.
         </p>
+      )}
+      {summary.source === 'api-upgraded' && (
+        <p className="summary-source-note">Stats verified against API data.</p>
       )}
       <div className="summary-teams">
         <SummaryTeamTable
@@ -522,10 +561,20 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
         setDetailedFetched(true);
         if (cached.match_info) onMatchVerified?.(matchId, cached.match_info);
 
-        // Backfill summary if it wasn't available before
-        if (!summaryData && cached.match_info?.players?.length) {
-          setSummaryData(
-            apiPlayersToSummary(cached.match_info.players, String(matchId)),
+        // Upgrade or backfill summary with authoritative API stats
+        if (cached.match_info?.players?.length) {
+          setSummaryData((prev) =>
+            prev?.source === 'roster-snapshot'
+              ? upgradeSummaryWithApi(
+                  prev,
+                  cached.match_info.players,
+                  String(matchId),
+                )
+              : (prev ??
+                apiPlayersToSummary(
+                  cached.match_info.players,
+                  String(matchId),
+                )),
           );
         }
 
@@ -554,10 +603,17 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
         setDetailedFetched(true);
         if (data.match_info) onMatchVerified?.(matchId, data.match_info);
 
-        // Backfill summary
-        if (!summaryData && data.match_info?.players?.length) {
-          setSummaryData(
-            apiPlayersToSummary(data.match_info.players, String(matchId)),
+        // Upgrade or backfill summary with authoritative API stats
+        if (data.match_info?.players?.length) {
+          setSummaryData((prev) =>
+            prev?.source === 'roster-snapshot'
+              ? upgradeSummaryWithApi(
+                  prev,
+                  data.match_info.players,
+                  String(matchId),
+                )
+              : (prev ??
+                apiPlayersToSummary(data.match_info.players, String(matchId))),
           );
         }
       } else {
@@ -571,7 +627,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
     } finally {
       setDetailedLoading(null);
     }
-  }, [matchId, detailedFetched, metadata, summaryData]);
+  }, [matchId, detailedFetched, metadata]);
 
   // Trigger detailed fetch when Detailed tab is first selected
   useEffect(() => {
