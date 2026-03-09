@@ -194,10 +194,10 @@ const MatchHistoryView: React.FC = () => {
       const is429 = err instanceof Error && err.message.includes('429');
       if (is429) {
         setError(
-          'Full Sync rate-limited. The API allows this once per hour — try again later.',
+          'Steam sync rate-limited. The API allows this once per hour — try again later.',
         );
       } else {
-        setError('Full Sync failed. Please try again later.');
+        setError('Steam sync failed. Please try again later.');
       }
       logger.error('Full Sync error:', err);
       // Don't mark the day as used on failure
@@ -364,11 +364,11 @@ const MatchHistoryView: React.FC = () => {
               disabled={isSyncing || isLoading || !forceFetchAvailable}
               title={
                 forceFetchAvailable
-                  ? 'Sync your full match history from Steam and contribute it to the community database. Rate-limited to once per day.'
+                  ? 'Pull your complete match history directly from Steam. Useful when matches are missing from the community database. Can be used once per day.'
                   : 'Already synced today. Available again tomorrow.'
               }
             >
-              ⟳ Full Sync
+              ⟳ Sync from Steam
             </button>
           </div>
           <button
@@ -454,8 +454,9 @@ const MatchHistoryView: React.FC = () => {
           <h3 className="empty-state-title">No Matches Found</h3>
           <p className="empty-state-description">
             This app relies on community-contributed data — matches appear once
-            someone submits them to the database. Use <strong>Full Sync</strong>{' '}
-            above to pull your recent matches from Steam, or visit the{' '}
+            someone submits them to the database. Use{' '}
+            <strong>Sync from Steam</strong> above to pull your recent matches
+            directly, or visit the{' '}
             <button
               className="btn--link"
               onClick={() =>
