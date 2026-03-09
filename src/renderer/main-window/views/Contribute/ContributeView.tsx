@@ -5,12 +5,14 @@ import {
 } from '../../../../shared/services/httpcacheScan';
 import { submitSaltsToApi } from '../../../../shared/services/matchMetadataFetcher';
 import { createLogger } from '../../../../shared/services/Logger';
+import { useWindowInfo } from '../../../hooks/useWindowInfo';
 
 const logger = createLogger('ContributeView');
 
 const DEFAULT_PATH = 'C:\\Program Files (x86)\\Steam\\appcache\\httpcache';
 
 const ContributeView: React.FC = () => {
+  const { isIngameWindow } = useWindowInfo();
   const [isScanning, setIsScanning] = useState(false);
   const [saltsFound, setSaltsFound] = useState(0);
   const [filesScanned, setFilesScanned] = useState(0);
@@ -178,6 +180,25 @@ const ContributeView: React.FC = () => {
     },
     [processScan],
   );
+
+  if (isIngameWindow) {
+    return (
+      <section className="view-container contribute-container">
+        <div className="view-header">
+          <h2 className="view-title">Contribute Match Data</h2>
+        </div>
+        <div className="empty-state">
+          <div className="empty-state-icon">🖥️</div>
+          <h3 className="empty-state-title">Desktop Only</h3>
+          <p className="empty-state-description">
+            File uploads are not supported in the in-game overlay. Please use
+            the <strong>Deadlock Companion desktop window</strong> to contribute
+            match data.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="view-container contribute-container">
