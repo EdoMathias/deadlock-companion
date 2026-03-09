@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageType } from '../../main/services/MessageChannel';
 import { matchCache } from '../services/matchCache';
 import type { GameEventMatchEntry } from '../../shared/types/matchHistoryEvent';
+import type { LiveRosterEntry } from '../../shared/types/liveMatch';
 import { createLogger } from '../../shared/services/Logger';
 
 const logger = createLogger('useGameEventMatches');
@@ -9,6 +10,9 @@ const logger = createLogger('useGameEventMatches');
 /**
  * Listens for match_history game events broadcast from the background controller
  * and persists them in IndexedDB. Returns the latest known entries.
+ *
+ * Also handles ROSTER_SNAPSHOT messages so the renderer stores the roster
+ * in its own IndexedDB (cross-window IDB writes are unreliable in Overwolf).
  */
 export function useGameEventMatches() {
   const [entries, setEntries] = useState<GameEventMatchEntry[]>([]);
@@ -29,31 +33,55 @@ export function useGameEventMatches() {
       });
   }, []);
 
-  const handleMessage = useCallback((message: any) => {
+  const handleMatchHistoryMessage = useCallback((message: any) => {
     const data: GameEventMatchEntry[] | undefined = message?.data;
     if (!Array.isArray(data) || data.length === 0) {
-      logger.warn('handleMessage: received empty or invalid payload', message);
+      logger.warn('handleMatchHistoryMessage: received empty or invalid payload', message);
       return;
     }
 
     const matchIds = data.map((e) => e.match_id);
     logger.log(
-      `handleMessage: received ${data.length} game-event entries, match IDs: [${matchIds.join(', ')}]`,
+      `handleMatchHistoryMessage: received ${data.length} game-event entries, match IDs: [${matchIds.join(', ')}]`,
     );
 
     matchCache
       .mergeGameEventMatches(data)
       .then(() => {
-        logger.log('handleMessage: merged entries into IndexedDB');
+        logger.log('handleMatchHistoryMessage: merged entries into IndexedDB');
         matchCache.getGameEventMatches().then((all) => {
           logger.log(
-            `handleMessage: total stored game-event matches: ${all.length}`,
+            `handleMatchHistoryMessage: total stored game-event matches: ${all.length}`,
           );
           setEntries(all);
         });
       })
       .catch((err) => {
-        logger.error('handleMessage: failed to merge game-event matches:', err);
+        logger.error('handleMatchHistoryMessage: failed to merge game-event matches:', err);
+      });
+  }, []);
+
+  const handleRosterSnapshot = useCallback((message: any) => {
+    const data = message?.data as
+      | { matchId: string; roster: LiveRosterEntry[] }
+      | undefined;
+    if (!data?.matchId || !Array.isArray(data.roster) || data.roster.length === 0) {
+      logger.warn('handleRosterSnapshot: received empty or invalid payload', message);
+      return;
+    }
+
+    logger.log(
+      `handleRosterSnapshot: persisting ${data.roster.length} players for match ${data.matchId}`,
+    );
+
+    matchCache
+      .setRosterSnapshot(data.matchId, data.roster)
+      .then(() => {
+        logger.log(`handleRosterSnapshot: saved roster for match ${data.matchId}`);
+        logger.log(`handleRosterSnapshot: roster saved: ${data.roster}`);
+      })
+      .catch((err) => {
+        logger.error('handleRosterSnapshot: failed to persist roster:', err);
       });
   }, []);
 
@@ -62,7 +90,7 @@ export function useGameEventMatches() {
     if (typeof overwolf === 'undefined') return;
 
     logger.log(
-      'Registering onMessageReceived listener for MATCH_HISTORY_UPDATE',
+      'Registering onMessageReceived listener for MATCH_HISTORY_UPDATE + ROSTER_SNAPSHOT',
     );
     overwolf.windows.onMessageReceived.addListener((message: any) => {
       try {
@@ -72,9 +100,11 @@ export function useGameEventMatches() {
             : message.content;
         if (payload?.type === MessageType.MATCH_HISTORY_UPDATE) {
           logger.log('Received MATCH_HISTORY_UPDATE message');
-          handleMessage(payload);
-        } else {
-          logger.warn('Received non-match-history message:', payload?.type);
+          handleMatchHistoryMessage(payload);
+        } else if (payload?.type === MessageType.ROSTER_SNAPSHOT) {
+          logger.log('Received ROSTER_SNAPSHOT message');
+          logger.log('roster snapshot payload:', payload);
+          handleRosterSnapshot(payload);
         }
       } catch (err) {
         logger.warn('Failed to parse incoming message:', err);
@@ -87,7 +117,7 @@ export function useGameEventMatches() {
       // Overwolf's addListener doesn't return a remove handle easily,
       // but this hook stays alive for the window's lifetime.
     };
-  }, [handleMessage]);
+  }, [handleMatchHistoryMessage, handleRosterSnapshot]);
 
   return { entries, isListening };
 }

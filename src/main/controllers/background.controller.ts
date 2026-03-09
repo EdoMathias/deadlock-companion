@@ -27,12 +27,6 @@ import type {
 } from '../../shared/types/liveMatch';
 import { HEROES } from '../../shared/data/heroes';
 import { submitSaltsToApi } from '../../shared/services/matchMetadataFetcher';
-import { createSimpleStore } from '../../shared/utils/indexedDBStorage';
-
-const rosterSnapshotStore = createSimpleStore<LiveRosterEntry[]>(
-  'dl-roster-snapshots',
-  'snapshots',
-);
 
 const logger = createLogger('BackgroundController');
 
@@ -497,18 +491,18 @@ export class BackgroundController {
     );
     logger.log('match_end: broadcast LIVE_MATCH_END');
 
-    // Persist full roster snapshot for the Summary tab — MUST complete
-    // before broadcasting MATCH_HISTORY_UPDATE so the renderer can read it.
+    // Send roster snapshot to renderer windows via the message channel so
+    // they can persist it in their own IndexedDB (cross-window IDB is unreliable).
     if (this._currentMatchId && this._allRosterData.size > 0) {
       const roster = Array.from(this._allRosterData.values());
-      try {
-        await rosterSnapshotStore.set(this._currentMatchId, roster);
-        logger.log(
-          `match_end: persisted roster snapshot (${roster.length} players) for match ${this._currentMatchId}`,
-        );
-      } catch (err) {
-        logger.warn('match_end: failed to persist roster snapshot:', err);
-      }
+      this._messageChannel.broadcastMessage(
+        [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+        MessageType.ROSTER_SNAPSHOT,
+        { matchId: this._currentMatchId, roster },
+      );
+      logger.log(
+        `match_end: broadcast ROSTER_SNAPSHOT (${roster.length} players) for match ${this._currentMatchId}`,
+      );
     }
 
     if (!this._localPlayerRosterData) {
@@ -574,6 +568,12 @@ export class BackgroundController {
           souls: Number(rosterEntry.souls ?? 0),
           hero_name: String(rosterEntry.hero_name ?? ''),
         };
+
+        // Don't let an empty/reset entry overwrite existing good data.
+        const existing = this._allRosterData.get(key);
+        if (entry.steam_id === 0 && existing && existing.steam_id !== 0) {
+          continue;
+        }
 
         this._allRosterData.set(key, entry);
 
@@ -709,6 +709,13 @@ export class BackgroundController {
           souls: Number(rosterEntry.souls ?? 0),
           hero_name: String(rosterEntry.hero_name ?? ''),
         };
+
+        // Don't let an empty/reset entry overwrite existing good data.
+        // GEP can send zeroed-out roster slots near match_end.
+        const existing = this._allRosterData.get(key);
+        if (entry.steam_id === 0 && existing && existing.steam_id !== 0) {
+          continue;
+        }
 
         this._allRosterData.set(key, entry);
         rosterChanged = true;
