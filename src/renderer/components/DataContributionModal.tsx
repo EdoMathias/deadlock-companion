@@ -37,31 +37,21 @@ export const DataContributionModal: React.FC<DataContributionModalProps> = ({
 
         <div className="data-contribution-body">
           <section className="data-contribution-section">
-            <h4>How match data works</h4>
+            <h4>How it works</h4>
             <p>
-              The Deadlock API relies on community-contributed data. Matches are
-              only available once someone has submitted them to the database. If
-              a match was played recently, it may take a while to appear.
+              The Deadlock API relies on community-contributed data. Matches
+              appear after someone submits them to the database. Use{' '}
+              <strong>Full Sync</strong> once per day to contribute your recent
+              matches from Steam.
             </p>
           </section>
 
           <section className="data-contribution-section">
-            <h4>Use "Full Sync" once a day</h4>
+            <h4>Help the community</h4>
             <p>
-              The <strong>Full Sync</strong> button fetches your complete match
-              history directly from Steam&apos;s servers and contributes it to
-              the community database. This is rate-limited, so you can use it{' '}
-              <strong>once per day</strong>. It&apos;s the best way to make sure
-              your recent matches show up.
-            </p>
-          </section>
-
-          <section className="data-contribution-section">
-            <h4>Help grow the database</h4>
-            <p>
-              You can also contribute match data by running the community
-              ingestion tool. This helps make matches available faster for
-              everyone:
+              Contribute matches by scanning your Steam <code>httpcache</code>{' '}
+              folder in the <strong>Contribute</strong> view. For advanced
+              users, check out the community ingestion tool:
             </p>
             <a
               className="data-contribution-link"
@@ -94,24 +84,6 @@ export const DataContributionModal: React.FC<DataContributionModalProps> = ({
                 <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
             </a>
-          </section>
-
-          <section className="data-contribution-section">
-            <h4>Scan your Steam cache</h4>
-            <p>
-              You can scan your Steam <code>httpcache</code> folder from the
-              <strong> Contribute</strong> view in the sidebar. It uploads match
-              salts to the community database with one click.
-            </p>
-          </section>
-
-          <section className="data-contribution-section data-contribution-section--dimmed">
-            <h4>Automatic contributions</h4>
-            <p>
-              Good news — this app already helps! When you view match details,
-              the app automatically submits match data (salts) to the API,
-              helping populate the database for everyone.
-            </p>
           </section>
         </div>
 

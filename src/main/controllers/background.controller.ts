@@ -26,6 +26,13 @@ import type {
   TeamScores,
 } from '../../shared/types/liveMatch';
 import { HEROES } from '../../shared/data/heroes';
+import { submitSaltsToApi } from '../../shared/services/matchMetadataFetcher';
+import { createSimpleStore } from '../../shared/utils/indexedDBStorage';
+
+const rosterSnapshotStore = createSimpleStore<LiveRosterEntry[]>(
+  'dl-roster-snapshots',
+  'snapshots',
+);
 
 const logger = createLogger('BackgroundController');
 
@@ -54,10 +61,17 @@ export class BackgroundController {
   private _matchStartTimestamp: number | null = null;
   private _gameMode: GameModeInfo | null = null;
   private _teamScores: TeamScores | null = null;
+  private _rosterUpdateCount: number = 0;
 
   private constructor() {
     // Initialize MessageChannel first (used by other services)
     this._messageChannel = new MessageChannel();
+
+    // Listen for requests for current live match state
+    this._messageChannel.onMessage(MessageType.REQUEST_LIVE_MATCH_STATE, () =>
+      this.handleLiveMatchStateRequest(),
+    );
+
     this._hotkeysService = new HotkeysService();
     this._appLaunchService = new AppLaunchService(
       (event: AppLaunchTriggeredEvent) => this.handleAppLaunch(event),
@@ -74,16 +88,19 @@ export class BackgroundController {
     this._windowsController = new WindowsController(this._messageChannel);
 
     this._gameEventsService = new GameEventsService({
-      // TODO: Move to separate logic later, just logging for now
       onGameEvent: (payload) => {
-        logger.warn(
-          `Event [${payload.events[0]?.name}]:`,
-          payload.events[0]?.data,
-        );
+        const eventName = payload.events[0]?.name;
+        // Only log important events to reduce noise
+        if (eventName === 'match_start' || eventName === 'match_end') {
+          logger.log(`Game event [${eventName}]:`, payload.events[0]?.data);
+        }
         this.handleGameEvent(payload);
       },
       onInfoUpdate: (info) => {
-        logger.warn(`Info [${info.feature}]:`, info.info);
+        // Reduced log verbosity - only log feature name, not full payload
+        if (info.feature === 'match_info' || info.feature === 'game_info') {
+          logger.log(`Info update [${info.feature}]`);
+        }
         this.handleInfoUpdate(info);
       },
     });
@@ -112,6 +129,8 @@ export class BackgroundController {
       await this._windowsController.onGameLaunch();
       this._isGameRunning = true;
       await this._gameEventsService.onGameLaunched(['game_info', 'match_info']);
+      // Check if a match is already in progress (app opened mid-match)
+      this.checkForActiveMatch();
     } else {
       logger.log('No game running, showing primary desktop window');
       await this._windowsController.showMainDesktopWindow('primary');
@@ -138,16 +157,35 @@ export class BackgroundController {
         await this._windowsController.onGameExit();
         this._isGameRunning = false;
 
-        // Prompt user to scan httpcache after game exit
+        // Prompt user to scan httpcache after game exit (throttled to once per day)
         try {
           const dismissed = localStorage.getItem('dl_ingest_prompt_dismissed');
-          if (dismissed !== 'true') {
-            logger.log('Sending ingest prompt to desktop window');
-            await this._messageChannel.sendMessage(
-              kWindowNames.mainDesktop,
-              MessageType.INGEST_PROMPT,
-            );
+          if (dismissed === 'true') {
+            logger.log('Ingest prompt permanently dismissed by user');
+            return;
           }
+
+          // Check if we've shown the prompt today
+          const lastShown = localStorage.getItem('dl_ingest_prompt_last_shown');
+          const today = new Date().toDateString();
+
+          if (lastShown === today) {
+            logger.log(
+              'Ingest prompt already shown today, skipping (last shown: ' +
+                lastShown +
+                ')',
+            );
+            return;
+          }
+
+          logger.log('Sending ingest prompt to desktop window');
+          await this._messageChannel.sendMessage(
+            kWindowNames.mainDesktop,
+            MessageType.INGEST_PROMPT,
+          );
+
+          // Mark today as shown
+          localStorage.setItem('dl_ingest_prompt_last_shown', today);
         } catch (err) {
           logger.warn('Failed to send ingest prompt:', err);
         }
@@ -305,6 +343,7 @@ export class BackgroundController {
     this._matchStartTimestamp = Date.now();
     this._gameMode = null;
     this._teamScores = null;
+    this._rosterUpdateCount = 0;
 
     overwolf.games.events.getInfo((result) => {
       if (!result.success) {
@@ -367,6 +406,83 @@ export class BackgroundController {
   }
 
   /**
+   * Checks if a match is already in progress when the app starts.
+   * Called during run() when the game is detected as already running.
+   * Snapshots current GEP state and bootstraps live match data if a match is active.
+   */
+  private checkForActiveMatch(): void {
+    // Small delay to let GEP finish initializing features
+    setTimeout(() => {
+      overwolf.games.events.getInfo((result) => {
+        if (!result.success) {
+          logger.log('checkForActiveMatch: getInfo failed, no active match');
+          return;
+        }
+
+        const matchInfo = (result.res as any).match_info;
+        if (!matchInfo) {
+          logger.log('checkForActiveMatch: no match_info, no active match');
+          return;
+        }
+
+        // Check if there's a match_id — indicates a match is in progress
+        if (!matchInfo.match_id) {
+          logger.log('checkForActiveMatch: no match_id, no active match');
+          return;
+        }
+
+        logger.log(
+          'checkForActiveMatch: found active match, bootstrapping state',
+        );
+
+        // Bootstrap match state
+        this._currentMatchId = String(matchInfo.match_id);
+        this._matchStartTimestamp = Date.now(); // Approximate — we don't know exact start
+        this._rosterUpdateCount = 0;
+
+        // Extract roster entries
+        this.extractAllRosterEntries(matchInfo);
+
+        // Try to restore game_mode from game_info
+        const gameInfoSnapshot = (result.res as any).game_info;
+        if (gameInfoSnapshot?.game_mode != null) {
+          try {
+            const parsed =
+              typeof gameInfoSnapshot.game_mode === 'string'
+                ? JSON.parse(gameInfoSnapshot.game_mode)
+                : gameInfoSnapshot.game_mode;
+            if (parsed && typeof parsed === 'object') {
+              this._gameMode = {
+                match_mode: String(parsed.match_mode ?? ''),
+                game_mode: String(parsed.game_mode ?? ''),
+              };
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+
+        // Broadcast LIVE_MATCH_START so renderers activate the live view
+        const startPayload: LiveMatchStartPayload = {
+          matchId: this._currentMatchId,
+          matchStartTimestamp: this._matchStartTimestamp,
+        };
+        this._messageChannel.broadcastMessage(
+          [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+          MessageType.LIVE_MATCH_START,
+          startPayload,
+        );
+
+        // Follow up with roster data
+        this.broadcastRosterUpdate();
+        logger.log(
+          `checkForActiveMatch: bootstrapped match ${this._currentMatchId} with ${this._allRosterData.size} roster entries`,
+        );
+      });
+    }, 1500);
+  }
+
+  /**
    * On match_end: use the last cached local player roster
    * to build a GameEventMatchEntry and broadcast it.
    * Roster data is empty at match_end, so we rely on the last
@@ -380,6 +496,21 @@ export class BackgroundController {
       MessageType.LIVE_MATCH_END,
     );
     logger.log('match_end: broadcast LIVE_MATCH_END');
+
+    // Persist full roster snapshot for the Summary tab
+    if (this._currentMatchId && this._allRosterData.size > 0) {
+      const roster = Array.from(this._allRosterData.values());
+      rosterSnapshotStore
+        .set(this._currentMatchId, roster)
+        .then(() =>
+          logger.log(
+            `match_end: persisted roster snapshot (${roster.length} players) for match ${this._currentMatchId}`,
+          ),
+        )
+        .catch((err) =>
+          logger.warn('match_end: failed to persist roster snapshot:', err),
+        );
+    }
 
     if (!this._localPlayerRosterData) {
       logger.warn('match_end: no local player roster data available');
@@ -477,6 +608,18 @@ export class BackgroundController {
   }
 
   /**
+   * Handles requests for current live match state.
+   * Sends the current roster data immediately, useful when view remounts.
+   */
+  private handleLiveMatchStateRequest(): void {
+    logger.log('Live match state requested, broadcasting current state');
+    // If we have active match data, broadcast it
+    if (this._allRosterData.size > 0 || this._currentMatchId) {
+      this.broadcastRosterUpdate();
+    }
+  }
+
+  /**
    * Handles incremental match_info updates (roster changes, match_id).
    * Keeps _localPlayerRosterData and _allRosterData up-to-date between
    * match_start and match_end. Broadcasts roster updates to renderer windows.
@@ -487,6 +630,55 @@ export class BackgroundController {
     if (infoData.match_id) {
       this._currentMatchId = String(infoData.match_id);
       logger.log('match_info update: match_id =', this._currentMatchId);
+    }
+
+    // Handle match_outcome event - extract and submit salt
+    if (infoData.match_outcome) {
+      try {
+        const raw = infoData.match_outcome;
+        const outcomeData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const matchId = outcomeData?.match_id;
+        const cid = outcomeData?.cid; // cluster_id
+        const mid = outcomeData?.mid; // metadata_salt
+
+        logger.log(
+          `match_outcome detected: match_id=${matchId}, cid=${cid}, mid=${mid}`,
+        );
+
+        if (mid != null) {
+          const salt = {
+            match_id: parseInt(String(matchId), 10),
+            cluster_id: parseInt(String(cid), 10),
+            metadata_salt: parseInt(String(mid), 10),
+          };
+
+          // Fire-and-forget submission
+          submitSaltsToApi([salt])
+            .then((success) => {
+              if (success) {
+                logger.log(
+                  `match_outcome: submitted salt for match ${matchId}`,
+                );
+              } else {
+                logger.warn(
+                  `match_outcome: failed to submit salt for match ${matchId}`,
+                );
+              }
+            })
+            .catch((err) => {
+              logger.error(
+                `match_outcome: error submitting salt for match ${matchId}:`,
+                err,
+              );
+            });
+        } else {
+          logger.warn(
+            'match_outcome: no mid field present, skipping salt submission',
+          );
+        }
+      } catch (err) {
+        logger.error('match_outcome: failed to parse event data:', err);
+      }
     }
 
     let rosterChanged = false;
@@ -524,10 +716,13 @@ export class BackgroundController {
 
         if (entry.is_local) {
           this._localPlayerRosterData = rosterEntry;
-          logger.log(
-            'match_info update: updated local player roster from',
-            key,
-          );
+          // Throttled logging: only log every 10th roster update
+          this._rosterUpdateCount++;
+          if (this._rosterUpdateCount % 10 === 1) {
+            logger.log(
+              `match_info update: local player roster (update #${this._rosterUpdateCount})`,
+            );
+          }
         }
       } catch (err) {
         logger.warn(`match_info update: failed to parse ${key}:`, err);

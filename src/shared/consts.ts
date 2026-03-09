@@ -35,3 +35,14 @@ export const GAME_MODE_LABELS: Record<number, string> = {
   4: 'Street Brawl',
   5: 'Explore NYC',
 };
+
+export const MATCH_MODE_LABELS: Record<number, string> = {
+  0: 'Invalid',
+  1: 'Unranked',
+  2: 'Private Lobby',
+  3: 'Co-op Bot',
+  4: 'Ranked',
+  5: 'Server Test',
+  6: 'Tutorial',
+  7: 'Hero Labs',
+};

@@ -63,131 +63,113 @@ const LiveMatchView: React.FC = () => {
 
   return (
     <section className="view-container live-match-container">
-      <div className="view-header">
-        <div className="view-header__left">
-          <h2 className="view-title">Live Match</h2>
-          {gameMode && (
-            <div className="scoreboard-game-mode">
-              {gameMode.game_mode && (
-                <span className="scoreboard-match-mode-badge">
-                  {gameMode.game_mode}
-                </span>
-              )}
-              {gameMode.match_mode && (
-                <span className="scoreboard-match-mode-badge scoreboard-match-mode-badge--secondary">
-                  {gameMode.match_mode}
-                </span>
-              )}
-            </div>
-          )}
+      {!hasMatchData && (
+        <div className="view-header">
+          <div className="view-header__left">
+            <h2 className="view-title">Live Match</h2>
+          </div>
+          <div className="status-badge status-badge--idle">
+            ○ No Active Match
+          </div>
         </div>
-        <div
-          className={`status-badge ${
-            isMatchActive
-              ? 'status-badge--active'
-              : isMatchEnded
-                ? 'status-badge--ended'
-                : 'status-badge--idle'
-          }`}
-        >
-          {isMatchActive
-            ? '● Live'
-            : isMatchEnded
-              ? '■ Match Ended'
-              : '○ No Active Match'}
-        </div>
-      </div>
+      )}
 
       {!hasMatchData ? (
         <div className="empty-state">
           <div className="empty-state-icon">🎮</div>
           <h3 className="empty-state-title">No Active Match</h3>
           <p className="empty-state-description">
-            Launch Deadlock to see your live match stats here.
+            Start a Deadlock match to see your stats live here.
           </p>
           {!steamId && (
             <p className="empty-state-hint">
-              Tip: Enter your Steam ID in Settings to unlock match history and
-              profile features.
+              Tip: Your Steam ID will be detected automatically when you launch
+              the game. Alternatively, you can manually enter it in{' '}
+              <strong>Settings → General</strong>.
             </p>
           )}
         </div>
       ) : (
         <div className="live-match-content">
-          {/* Match header bar */}
-          <div className="scoreboard-header">
-            <div className="scoreboard-header__team scoreboard-header__team--amber">
-              <span className="scoreboard-header__team-name">
-                {teamNames.amber}
-                {localPlayerTeamId === 2 && (
-                  <span className="scoreboard-your-team-badge">YOUR TEAM</span>
+          {/* Compact match header: status + mode + timer + scores + souls */}
+          <div className="lm-header">
+            <div className="lm-header__top">
+              <div className="lm-header__info">
+                <span
+                  className={`lm-header__status ${
+                    isMatchActive
+                      ? 'lm-header__status--live'
+                      : 'lm-header__status--ended'
+                  }`}
+                >
+                  {isMatchActive ? '● LIVE MATCH' : '■ ENDED'}
+                </span>
+                {gameMode?.game_mode && (
+                  <span className="lm-header__mode">{gameMode.game_mode}</span>
                 )}
-              </span>
-              <span className="scoreboard-header__team-kills">
-                {teamKills(amberPlayers)}
-              </span>
-              {teamScores != null && (
-                <span className="scoreboard-header__team-score">
-                  {teamScores.amber}
-                </span>
-              )}
-            </div>
-
-            <div className="scoreboard-header__center">
-              <span className="scoreboard-header__timer">
-                {formatTimer(elapsedSeconds)}
-              </span>
-              {matchId && (
-                <span className="scoreboard-header__match-id">#{matchId}</span>
-              )}
-            </div>
-
-            <div className="scoreboard-header__team scoreboard-header__team--sapphire">
-              {teamScores != null && (
-                <span className="scoreboard-header__team-score">
-                  {teamScores.sapphire}
-                </span>
-              )}
-              <span className="scoreboard-header__team-kills">
-                {teamKills(sapphirePlayers)}
-              </span>
-              <span className="scoreboard-header__team-name">
-                {teamNames.sapphire}
-                {localPlayerTeamId === 3 && (
-                  <span className="scoreboard-your-team-badge">YOUR TEAM</span>
+                {gameMode?.match_mode && (
+                  <span className="lm-header__mode lm-header__mode--secondary">
+                    {gameMode.match_mode}
+                  </span>
                 )}
-              </span>
-            </div>
-          </div>
-
-          {/* Souls comparison bar */}
-          {totalSouls > 0 && (
-            <div className="souls-bar-container">
-              <div className="souls-bar-labels">
-                <span className="souls-bar-value souls-bar-value--amber">
-                  {amberSouls.toLocaleString()}
-                </span>
-                <span className="souls-bar-title">
-                  Souls
-                  {leadTeam && soulsLead > 0 && (
-                    <span className="souls-bar-lead">
-                      {' '}
-                      ({leadTeam} +{soulsLead.toLocaleString()})
-                    </span>
+              </div>
+              <div className="lm-header__scores">
+                <span className="lm-header__team-label lm-header__team-label--amber">
+                  {teamNames.amber}
+                  {localPlayerTeamId === 2 && (
+                    <span className="scoreboard-your-team-badge">YOU</span>
                   )}
                 </span>
-                <span className="souls-bar-value souls-bar-value--sapphire">
-                  {sapphireSouls.toLocaleString()}
+                <span className="lm-header__kills lm-header__kills--amber">
+                  {teamKills(amberPlayers)}
+                </span>
+                <span className="lm-header__skull">💀</span>
+                <span className="lm-header__kills lm-header__kills--sapphire">
+                  {teamKills(sapphirePlayers)}
+                </span>
+                <span className="lm-header__team-label lm-header__team-label--sapphire">
+                  {teamNames.sapphire}
+                  {localPlayerTeamId === 3 && (
+                    <span className="scoreboard-your-team-badge">YOU</span>
+                  )}
                 </span>
               </div>
-              <div className="souls-bar-track">
-                <div
-                  className="souls-bar-fill souls-bar-fill--amber"
-                  style={{ width: `${amberPct}%` }}
-                />
-              </div>
             </div>
-          )}
+            <div className="lm-header__meta">
+              <span className="lm-header__timer">
+                Match Time: {formatTimer(elapsedSeconds)}
+              </span>
+              {teamScores != null && (
+                <span className="lm-header__obj-scores">
+                  Objectives: {teamScores.amber} – {teamScores.sapphire}
+                </span>
+              )}
+            </div>
+            {totalSouls > 0 && (
+              <div className="lm-header__souls">
+                <div className="lm-header__souls-labels">
+                  <span className="lm-header__souls-val lm-header__souls-val--amber">
+                    {amberSouls.toLocaleString()}
+                  </span>
+                  <span className="lm-header__souls-title">Total Souls</span>
+                  <span className="lm-header__souls-val lm-header__souls-val--sapphire">
+                    {sapphireSouls.toLocaleString()}
+                  </span>
+                </div>
+                <div className="souls-bar-track">
+                  <div
+                    className="souls-bar-fill souls-bar-fill--amber"
+                    style={{ width: `${amberPct}%` }}
+                  />
+                </div>
+                {leadTeam && soulsLead > 0 && (
+                  <div className="lm-header__souls-lead">
+                    {leadTeam} leads by {soulsLead.toLocaleString()} souls
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Scoreboard tables */}
           {roster.length > 0 ? (

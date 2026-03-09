@@ -34,14 +34,19 @@ const ContributeView: React.FC = () => {
       setFilesScanned(0);
       setTotalFiles(fileCount);
       setResult(null);
-      logger.log(`Starting httpcache scan of ${fileCount} files…`);
+      logger.log(
+        `[Ingestion] Starting httpcache scan: ${fileCount} files to process`,
+      );
 
       try {
         const salts = await doScan((count) => {
           setSaltsFound(count);
         });
 
-        logger.log(`Scan complete: found ${salts.length} unique match salts`);
+        const duplicatesSkipped = fileCount - salts.length;
+        logger.log(
+          `[Ingestion] Scan complete: ${salts.length} unique salts found, ${duplicatesSkipped} duplicates skipped`,
+        );
 
         if (salts.length === 0) {
           setResult({
@@ -53,14 +58,18 @@ const ContributeView: React.FC = () => {
           return;
         }
 
-        logger.log(`Submitting ${salts.length} salts to ingest API…`);
+        logger.log(`[Ingestion] Submitting ${salts.length} salts to API…`);
         const success = await submitSaltsToApi(salts);
         if (success) {
+          logger.log(
+            `[Ingestion] Successfully submitted ${salts.length} salts to API`,
+          );
           setResult({
             type: 'success',
-            message: `Successfully uploaded ${salts.length} match salts! These matches will become available on the API shortly.`,
+            message: `Successfully uploaded ${salts.length} match salts! Matches usually appear in 1-10 minutes. During high load, processing may take longer.`,
           });
         } else {
+          logger.error(`[Ingestion] Failed to submit salts to API`);
           setResult({
             type: 'error',
             message: 'Failed to upload match data. Please try again.',

@@ -226,8 +226,9 @@ const ProfileView: React.FC = () => {
           <div className="empty-state-icon">👤</div>
           <h3 className="empty-state-title">Steam ID Required</h3>
           <p className="empty-state-description">
-            Enter your Steam ID in <strong>Settings → General</strong> to view
-            your player profile.
+            Your Steam ID will be detected automatically when you launch the
+            game. Alternatively, you can manually enter it in{' '}
+            <strong>Settings → General</strong>.
           </p>
         </div>
       </section>
@@ -274,6 +275,9 @@ const ProfileView: React.FC = () => {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
+        legend: {
+          display: false,
+        },
         tooltip: {
           callbacks: {
             label: (ctx: { parsed: { y: number } }) =>

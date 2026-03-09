@@ -60,7 +60,29 @@ const MatchHistoryView: React.FC = () => {
   const [showDataModal, setShowDataModal] = useState(false);
   const [verifiedMatchIds, setVerifiedMatchIds] = useState<
     Map<number, { duration_s: number; is_win: boolean }>
-  >(() => new Map());
+  >(() => {
+    try {
+      const stored = sessionStorage.getItem('dl_verified_match_ids');
+      if (stored) {
+        const entries: [number, { duration_s: number; is_win: boolean }][] =
+          JSON.parse(stored);
+        return new Map(entries);
+      }
+    } catch {
+      /* ignore */
+    }
+    return new Map();
+  });
+
+  // Persist verified match IDs so badges survive view navigation
+  useEffect(() => {
+    if (verifiedMatchIds.size > 0) {
+      sessionStorage.setItem(
+        'dl_verified_match_ids',
+        JSON.stringify(Array.from(verifiedMatchIds.entries())),
+      );
+    }
+  }, [verifiedMatchIds]);
 
   const { entries: gameEventEntries } = useGameEventMatches();
 
@@ -259,6 +281,7 @@ const MatchHistoryView: React.FC = () => {
         matchId={selectedMatchId}
         accountId={accountId}
         onBack={() => setSelectedMatchId(null)}
+        listEntry={apiMatches.find((m) => m.match_id === selectedMatchId)}
         onMatchVerified={(id, info) => {
           const player = info.players.find((p) => p.account_id === accountId);
           setVerifiedMatchIds((prev) => {
@@ -281,11 +304,12 @@ const MatchHistoryView: React.FC = () => {
           <h2 className="view-title">Match History</h2>
         </div>
         <div className="empty-state">
-          <div className="empty-state-icon">���</div>
+          <div className="empty-state-icon">📊</div>
           <h3 className="empty-state-title">Steam ID Required</h3>
           <p className="empty-state-description">
-            Enter your Steam ID in <strong>Settings → General</strong> to view
-            your match history.
+            Your Steam ID will be detected automatically when you launch the
+            game. Alternatively, you can manually enter it in{' '}
+            <strong>Settings → General</strong>.
           </p>
         </div>
       </section>
@@ -438,22 +462,20 @@ const MatchHistoryView: React.FC = () => {
                       {formatDuration(match.duration_s)}
                     </span>
                   )}
-                  {match.source === 'game-event' && (
-                    <button
-                      className="match-card__source match-card__source--contribute"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.dispatchEvent(
-                          new CustomEvent('navigate-view', {
-                            detail: 'Contribute',
-                          }),
-                        );
-                      }}
-                      title="This match isn't on the API yet — contribute your Steam cache to help"
-                    >
-                      Not on API — Contribute ↗
-                    </button>
-                  )}
+                  <span
+                    className={`match-card__badge ${
+                      match.source === 'game-event'
+                        ? 'match-card__badge--pending'
+                        : 'match-card__badge--full'
+                    }`}
+                    title={
+                      match.source === 'game-event'
+                        ? 'Basic data from game events — full stats load when you open the match'
+                        : 'Full match data available from API'
+                    }
+                  >
+                    {match.source === 'game-event' ? 'Pending' : 'Full Data'}
+                  </span>
                 </div>
               </div>
             );

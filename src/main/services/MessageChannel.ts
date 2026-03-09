@@ -16,6 +16,7 @@ export enum MessageType {
   LIVE_MATCH_START = 'live-match-start',
   LIVE_MATCH_END = 'live-match-end',
   LIVE_ROSTER_UPDATE = 'live-roster-update',
+  REQUEST_LIVE_MATCH_STATE = 'request-live-match-state',
   CUSTOM = 'custom',
 }
 

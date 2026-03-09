@@ -1,6 +1,4 @@
-import React, { useRef, useState } from 'react';
-import { scanFileList } from '../../shared/services/httpcacheScan';
-import { submitSaltsToApi } from '../../shared/services/matchMetadataFetcher';
+import React, { useState } from 'react';
 import { createLogger } from '../../shared/services/Logger';
 
 const logger = createLogger('IngestCacheCard');
@@ -19,13 +17,6 @@ function getInitialExpanded(): boolean {
 
 export const IngestCacheCard: React.FC = () => {
   const [expanded, setExpanded] = useState(getInitialExpanded);
-  const [isScanning, setIsScanning] = useState(false);
-  const [saltsFound, setSaltsFound] = useState(0);
-  const [result, setResult] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleExpanded = () => {
     const next = !expanded;
@@ -61,49 +52,11 @@ export const IngestCacheCard: React.FC = () => {
     }
   }, []);
 
-  const handleScan = async (files: FileList) => {
-    setIsScanning(true);
-    setSaltsFound(0);
-    setResult(null);
-    logger.log(`Starting httpcache scan of ${files.length} files…`);
-
-    try {
-      const salts = await scanFileList(files, (count) => {
-        setSaltsFound(count);
-      });
-
-      logger.log(`Scan complete: found ${salts.length} unique match salts`);
-
-      if (salts.length === 0) {
-        setResult({
-          type: 'error',
-          message: 'No match data found in the selected folder.',
-        });
-        setIsScanning(false);
-        return;
-      }
-
-      const success = await submitSaltsToApi(salts);
-      if (success) {
-        setResult({
-          type: 'success',
-          message: `Uploaded ${salts.length} match salts! These matches will become available shortly.`,
-        });
-      } else {
-        setResult({
-          type: 'error',
-          message: 'Failed to upload match data. Please try again.',
-        });
-      }
-    } catch (err) {
-      logger.error('httpcache scan error:', err);
-      setResult({
-        type: 'error',
-        message: 'An error occurred while scanning.',
-      });
-    } finally {
-      setIsScanning(false);
-    }
+  const handleGoToContribute = () => {
+    logger.log('Navigating to Contribute view from IngestCacheCard');
+    window.dispatchEvent(
+      new CustomEvent('navigate-view', { detail: 'Contribute' }),
+    );
   };
 
   return (
@@ -128,46 +81,22 @@ export const IngestCacheCard: React.FC = () => {
       {expanded && (
         <div className="ingest-card__body">
           <p className="ingest-card__description">
-            Scan your Steam <code>httpcache</code> folder to upload match salts
-            and help populate the community database. Only match IDs and salts
-            are uploaded — no personal data.
+            Help grow the community match database by scanning your Steam{' '}
+            <code>httpcache</code> folder. This uploads match salts to make
+            matches available for everyone.
           </p>
-          <p className="ingest-card__hint">
-            Default path:{' '}
-            <code>C:\Program Files (x86)\Steam\appcache\httpcache</code>
+          <p className="ingest-card__description">
+            🔒 Only match IDs and salts are uploaded — no personal information.
           </p>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            // @ts-expect-error webkitdirectory is not in standard types
-            webkitdirectory=""
-            style={{ display: 'none' }}
-            onChange={async (e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                await handleScan(e.target.files);
-                e.target.value = '';
-              }
-            }}
-          />
 
           <div className="ingest-card__actions">
             <button
               className="btn btn--primary btn--sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isScanning}
+              onClick={handleGoToContribute}
             >
-              {isScanning ? `Scanning… (${saltsFound} found)` : 'Select Folder'}
+              Go to Contribute →
             </button>
           </div>
-
-          {result && (
-            <div
-              className={`ingest-card__result ${result.type === 'success' ? 'ingest-card__result--success' : 'ingest-card__result--error'}`}
-            >
-              {result.message}
-            </div>
-          )}
         </div>
       )}
     </div>

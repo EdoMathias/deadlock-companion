@@ -42,3 +42,28 @@ export interface MatchInfo {
 export interface MatchMetadataResponse {
   match_info: MatchInfo;
 }
+
+// ---- Summary tab types ----
+
+/** A player entry for the Summary tab (from roster snapshot or API-derived). */
+export interface MatchSummaryPlayer {
+  steam_id: number;
+  hero_id: number;
+  hero_name: string;
+  player_name?: string;
+  team_id: number; // 2 = Amber, 3 = Sapphire (GEP convention)
+  kills: number;
+  deaths: number;
+  assists: number;
+  souls: number;
+  level: number;
+  hero_damage: number;
+  hero_healing: number;
+  is_local: boolean;
+}
+
+export interface MatchSummaryData {
+  matchId: string;
+  players: MatchSummaryPlayer[];
+  source: 'roster-snapshot' | 'api-derived';
+}

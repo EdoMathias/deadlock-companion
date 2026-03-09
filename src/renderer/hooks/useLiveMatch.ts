@@ -167,6 +167,21 @@ export function useLiveMatch(): UseLiveMatchResult {
     overwolf.windows.onMessageReceived.addListener(handler);
     logger.log('Registered live match message listener');
 
+    // Request current state from background controller on mount
+    // This ensures we get the latest roster data if we're remounting mid-match
+    const payload = {
+      type: MessageType.REQUEST_LIVE_MATCH_STATE,
+      timestamp: Date.now(),
+    };
+    overwolf.windows.sendMessage(
+      'background',
+      MessageType.REQUEST_LIVE_MATCH_STATE,
+      payload,
+      () => {
+        logger.log('Requested current live match state');
+      },
+    );
+
     return () => {
       overwolf.windows.onMessageReceived.removeListener(handler);
       stopTimer();

@@ -56,6 +56,17 @@ const gameEventMatchStore = createSimpleStore<GameEventMatchEntry>(
   'matches',
 );
 
+/**
+ * Stores the last full roster snapshot at match_end.
+ * Keyed by matchId string. Persists across sessions so the Summary tab
+ * always has data for matches the user played.
+ */
+import type { LiveRosterEntry } from '../../shared/types/liveMatch';
+const rosterSnapshotStore = createSimpleStore<LiveRosterEntry[]>(
+  'dl-roster-snapshots',
+  'snapshots',
+);
+
 export const matchCache = {
   async getHistory(
     accountId: number,
@@ -120,6 +131,24 @@ export const matchCache = {
   ): Promise<void> {
     try {
       await steamProfileStore.set(String(matchId), profiles);
+    } catch {
+      // Best-effort
+    }
+  },
+
+  // ---- Roster snapshots (full 12-player state at match_end) ----
+
+  async getRosterSnapshot(matchId: number | string): Promise<LiveRosterEntry[] | null> {
+    try {
+      return (await rosterSnapshotStore.get(String(matchId))) ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async setRosterSnapshot(matchId: number | string, roster: LiveRosterEntry[]): Promise<void> {
+    try {
+      await rosterSnapshotStore.set(String(matchId), roster);
     } catch {
       // Best-effort
     }
