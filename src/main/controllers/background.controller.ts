@@ -489,7 +489,7 @@ export class BackgroundController {
    * roster update received via match_info info updates.
    * Also broadcasts LIVE_MATCH_END to renderer windows.
    */
-  private handleMatchEnd(): void {
+  private async handleMatchEnd(): Promise<void> {
     // Broadcast LIVE_MATCH_END so the scoreboard shows "Match Ended"
     this._messageChannel.broadcastMessage(
       [kWindowNames.mainDesktop, kWindowNames.mainIngame],
@@ -497,19 +497,18 @@ export class BackgroundController {
     );
     logger.log('match_end: broadcast LIVE_MATCH_END');
 
-    // Persist full roster snapshot for the Summary tab
+    // Persist full roster snapshot for the Summary tab — MUST complete
+    // before broadcasting MATCH_HISTORY_UPDATE so the renderer can read it.
     if (this._currentMatchId && this._allRosterData.size > 0) {
       const roster = Array.from(this._allRosterData.values());
-      rosterSnapshotStore
-        .set(this._currentMatchId, roster)
-        .then(() =>
-          logger.log(
-            `match_end: persisted roster snapshot (${roster.length} players) for match ${this._currentMatchId}`,
-          ),
-        )
-        .catch((err) =>
-          logger.warn('match_end: failed to persist roster snapshot:', err),
+      try {
+        await rosterSnapshotStore.set(this._currentMatchId, roster);
+        logger.log(
+          `match_end: persisted roster snapshot (${roster.length} players) for match ${this._currentMatchId}`,
         );
+      } catch (err) {
+        logger.warn('match_end: failed to persist roster snapshot:', err);
+      }
     }
 
     if (!this._localPlayerRosterData) {

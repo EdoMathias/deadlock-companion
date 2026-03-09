@@ -508,6 +508,19 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
             })),
           });
           setSummaryLoading(false);
+
+          // Also check for cached API metadata to verify the match badge
+          // (promotes game-event → full-data in the history list)
+          matchCache
+            .getMetadata<MatchMetadataResponse>(matchId)
+            .then((cached) => {
+              if (cached?.match_info) {
+                onMatchVerified?.(matchId, cached.match_info);
+                setMetadata(cached);
+                setDetailedFetched(true);
+              }
+            })
+            .catch(() => {});
           return;
         }
       } catch {
