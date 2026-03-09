@@ -40,9 +40,11 @@ export const DataContributionModal: React.FC<DataContributionModalProps> = ({
             <h4>How it works</h4>
             <p>
               The Deadlock API relies on community-contributed data. Matches
-              appear after someone submits them to the database. Use{' '}
-              <strong>Full Sync</strong> once per day to contribute your recent
-              matches from Steam.
+              appear after someone submits them to the database. To retain
+              value, we use Overwolf's Game Events to populate your match
+              history with basic information first, and after your contribution,
+              more data will be available! Use <strong>Full Sync</strong> once
+              per day to contribute your recent matches from Steam.
             </p>
           </section>
 

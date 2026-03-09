@@ -631,7 +631,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
         }
       } else {
         setDetailedError(
-          'Match is queued for processing. Please try again in 1-2 minutes.',
+          'This match is queued for processing by the community API. It usually takes 1-2 minutes — please try again shortly.',
         );
       }
     } catch (err) {

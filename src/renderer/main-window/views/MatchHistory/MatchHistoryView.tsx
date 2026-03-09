@@ -59,6 +59,15 @@ const MatchHistoryView: React.FC = () => {
   const [gameModeFilter, setGameModeFilter] = useState<number | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
   const [showDataModal, setShowDataModal] = useState(false);
+  const [communityBannerDismissed, setCommunityBannerDismissed] = useState(
+    () => {
+      try {
+        return localStorage.getItem('dl_community_banner_dismissed') === '1';
+      } catch {
+        return false;
+      }
+    },
+  );
   const [verifiedMatchIds, setVerifiedMatchIds] = useState<
     Map<number, { duration_s: number; is_win: boolean }>
   >(() => {
@@ -355,7 +364,7 @@ const MatchHistoryView: React.FC = () => {
               disabled={isSyncing || isLoading || !forceFetchAvailable}
               title={
                 forceFetchAvailable
-                  ? 'Fetch your full match history from Steam. This is rate-limited and can be used once per day.'
+                  ? 'Sync your full match history from Steam and contribute it to the community database. Rate-limited to once per day.'
                   : 'Already synced today. Available again tomorrow.'
               }
             >
@@ -378,15 +387,46 @@ const MatchHistoryView: React.FC = () => {
         scope="content"
       />
 
-      {/* Guidance banner: prompt user to open match history in-game */}
-      {gameEventEntries.length === 0 && (
-        <div className="match-history-banner">
-          <span className="match-history-banner__icon">💡</span>
+      {/* Community-powered banner (includes in-game tip when no game events yet) */}
+      {!communityBannerDismissed && (
+        <div className="match-history-banner match-history-banner--community">
+          <span className="match-history-banner__icon">📊</span>
           <p className="match-history-banner__text">
-            <strong>Tip:</strong> Open the <em>Match History</em> tab in-game to
-            automatically sync your recent matches here — even ones not yet on
-            the API.
+            Match data is <strong>community-powered</strong>. The more players
+            contribute, the more matches become available for everyone.
+            {gameEventEntries.length === 0 && (
+              <>
+                {' '}
+                Open the <em>Match History</em> tab in-game to capture basic
+                stats instantly — full details become available once match data
+                is contributed to the community database.
+              </>
+            )}{' '}
+            <button
+              className="btn--link"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Contribute' }),
+                )
+              }
+            >
+              Contribute your matches →
+            </button>
           </p>
+          <button
+            className="match-history-banner__dismiss"
+            onClick={() => {
+              setCommunityBannerDismissed(true);
+              try {
+                localStorage.setItem('dl_community_banner_dismissed', '1');
+              } catch {
+                /* ignore */
+              }
+            }}
+            title="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -413,7 +453,20 @@ const MatchHistoryView: React.FC = () => {
           <div className="empty-state-icon">���</div>
           <h3 className="empty-state-title">No Matches Found</h3>
           <p className="empty-state-description">
-            No match history found for this account yet.
+            This app relies on community-contributed data — matches appear once
+            someone submits them to the database. Use <strong>Full Sync</strong>{' '}
+            above to pull your recent matches from Steam, or visit the{' '}
+            <button
+              className="btn--link"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Contribute' }),
+                )
+              }
+            >
+              Contribute
+            </button>{' '}
+            tab to upload match data from your Steam cache.
           </p>
         </div>
       )}
@@ -471,8 +524,8 @@ const MatchHistoryView: React.FC = () => {
                     }`}
                     title={
                       match.source === 'game-event'
-                        ? 'Basic data from game events — full stats load when you open the match'
-                        : 'Full match data available from API'
+                        ? 'Basic data from game events — full stats appear once the match is submitted to the community database. Open this match or visit Contribute to help.'
+                        : 'Full match data available from the community API'
                     }
                   >
                     {match.source === 'game-event' ? 'Pending' : 'Full Data'}

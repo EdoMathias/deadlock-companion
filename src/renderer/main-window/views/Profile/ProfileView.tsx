@@ -370,6 +370,14 @@ const ProfileView: React.FC = () => {
         </div>
       )}
 
+      {/* ── Community source note ──────────────────────────── */}
+      {!isLoading && !error && stats && (
+        <p className="profile-source-note">
+          Stats sourced from community-contributed match data via{' '}
+          <em>deadlock-api.com</em>
+        </p>
+      )}
+
       {/* ── Main: hero card + stats panel ────────────────────── */}
       {!isLoading && !error && stats && (
         <div className="profile-main">
@@ -516,8 +524,20 @@ const ProfileView: React.FC = () => {
           <div className="empty-state-icon">👤</div>
           <h3 className="empty-state-title">No Data Found</h3>
           <p className="empty-state-description">
-            No profile data found for this Steam account. Make sure your
-            Deadlock games are set to public.
+            Profile stats are built from community-contributed match data. If
+            your matches haven't been submitted yet, you can help by visiting
+            the{' '}
+            <button
+              className="btn--link"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Contribute' }),
+                )
+              }
+            >
+              Contribute
+            </button>{' '}
+            tab. Also make sure your Deadlock match history is set to public.
           </p>
         </div>
       )}

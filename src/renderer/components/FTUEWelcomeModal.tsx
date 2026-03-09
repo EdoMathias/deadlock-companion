@@ -120,8 +120,21 @@ export const FTUEWelcomeModal: React.FC = () => {
               <h3>Match History & Profile</h3>
               <p>
                 Review past matches and player statistics powered by
-                deadlock-api.com. Enter your Steam ID in Settings to get
+                community-contributed data. Match availability improves as more
+                players contribute. Enter your Steam ID in Settings to get
                 started.
+              </p>
+            </div>
+          </div>
+
+          <div className="ftue-feature">
+            <div className="ftue-feature-icon">🤝</div>
+            <div className="ftue-feature-info">
+              <h3>Community-Powered Data</h3>
+              <p>
+                Match data is contributed by players like you. Help grow the
+                database by scanning your Steam cache in the Contribute tab —
+                the more players help, the better the experience for everyone.
               </p>
             </div>
           </div>

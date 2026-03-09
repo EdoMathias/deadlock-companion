@@ -107,6 +107,21 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     }
   }, [resetTrigger]);
 
+  // Prevent drag-and-drop in the in-game window to avoid Overwolf getting stuck
+  useEffect(() => {
+    if (!isIngameWindow) return;
+    const block = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener('dragover', block, true);
+    window.addEventListener('drop', block, true);
+    return () => {
+      window.removeEventListener('dragover', block, true);
+      window.removeEventListener('drop', block, true);
+    };
+  }, [isIngameWindow]);
+
   const loadHotkeys = React.useCallback(async () => {
     try {
       const hotkeysMap = await HotkeysAPI.fetchAll();

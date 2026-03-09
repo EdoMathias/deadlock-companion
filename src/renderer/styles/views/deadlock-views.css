@@ -360,6 +360,28 @@
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--color-text-secondary, #b0b0b0);
+  flex: 1;
+}
+
+.match-history-banner--community {
+  background: rgba(var(--color-accent-primary-rgb, 100, 180, 255), 0.06);
+  border-color: rgba(var(--color-accent-primary-rgb, 100, 180, 255), 0.15);
+}
+
+.match-history-banner__dismiss {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #b0b0b0);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.match-history-banner__dismiss:hover {
+  opacity: 1;
 }
 
 /* ------------------------------
@@ -1178,6 +1200,13 @@
   font-size: 11px;
   color: var(--color-text-muted);
   font-family: monospace;
+}
+
+.profile-source-note {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #777);
+  font-style: italic;
 }
 
 .profile-header__right {
