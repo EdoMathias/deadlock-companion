@@ -138,7 +138,9 @@ export const matchCache = {
 
   // ---- Roster snapshots (full 12-player state at match_end) ----
 
-  async getRosterSnapshot(matchId: number | string): Promise<LiveRosterEntry[] | null> {
+  async getRosterSnapshot(
+    matchId: number | string,
+  ): Promise<LiveRosterEntry[] | null> {
     try {
       return (await rosterSnapshotStore.get(String(matchId))) ?? null;
     } catch {
@@ -146,7 +148,10 @@ export const matchCache = {
     }
   },
 
-  async setRosterSnapshot(matchId: number | string, roster: LiveRosterEntry[]): Promise<void> {
+  async setRosterSnapshot(
+    matchId: number | string,
+    roster: LiveRosterEntry[],
+  ): Promise<void> {
     try {
       await rosterSnapshotStore.set(String(matchId), roster);
     } catch {
