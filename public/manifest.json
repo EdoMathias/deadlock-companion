@@ -32,11 +32,6 @@
         "title": "Toggle Desktop Main",
         "action-type": "custom",
         "default": "Ctrl+Shift+T"
-      },
-      "ToggleInGameRotation": {
-        "title": "Toggle In-Game Rotation",
-        "action-type": "custom",
-        "default": "Ctrl+R"
       }
     },
     "externally_connectable": {

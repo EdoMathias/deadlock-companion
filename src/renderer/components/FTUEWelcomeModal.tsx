@@ -11,7 +11,7 @@ const logger = createLogger('FTUEWelcomeModal');
 const DEFAULT_HOTKEYS = {
   toggleMainIngameWindow: 'Ctrl+T',
   toggleMainDesktopWindow: 'Ctrl+Shift+T',
-  toggleRotationIngameWindow: 'Ctrl+R',
+  // toggleRotationIngameWindow: 'Ctrl+R',
 };
 
 function displayHotkey(
@@ -34,7 +34,7 @@ export const FTUEWelcomeModal: React.FC = () => {
   const [hotkeys, setHotkeys] = useState<{
     toggleMainIngameWindow: string;
     toggleMainDesktopWindow: string;
-    toggleRotationIngameWindow: string;
+    // toggleRotationIngameWindow: string;
   }>(DEFAULT_HOTKEYS);
 
   const show = shouldShowStep('welcome');
@@ -47,7 +47,7 @@ export const FTUEWelcomeModal: React.FC = () => {
         const hotkeysMap = await HotkeysAPI.fetchAll();
         const inGame = hotkeysMap.get(kHotkeys.toggleMainIngameWindow);
         const desktop = hotkeysMap.get(kHotkeys.toggleMainDesktopWindow);
-        const rotation = hotkeysMap.get(kHotkeys.toggleRotationIngameWindow);
+        // const rotation = hotkeysMap.get(kHotkeys.toggleRotationIngameWindow);
 
         const toggleMainIngameWindow =
           displayHotkey(inGame?.binding, inGame?.IsUnassigned ?? true) ||
@@ -55,13 +55,13 @@ export const FTUEWelcomeModal: React.FC = () => {
         const toggleMainDesktopWindow =
           displayHotkey(desktop?.binding, desktop?.IsUnassigned ?? true) ||
           DEFAULT_HOTKEYS.toggleMainDesktopWindow;
-        const toggleRotationIngameWindow =
-          displayHotkey(rotation?.binding, rotation?.IsUnassigned ?? true) ||
-          DEFAULT_HOTKEYS.toggleRotationIngameWindow;
+        // const toggleRotationIngameWindow =
+        //   displayHotkey(rotation?.binding, rotation?.IsUnassigned ?? true) ||
+        //   DEFAULT_HOTKEYS.toggleRotationIngameWindow;
         setHotkeys({
           toggleMainIngameWindow,
           toggleMainDesktopWindow,
-          toggleRotationIngameWindow,
+          // toggleRotationIngameWindow,
         });
       } catch (error) {
         logger.error('Error loading hotkeys:', error);

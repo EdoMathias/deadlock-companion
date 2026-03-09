@@ -757,13 +757,13 @@ export class BackgroundController {
     });
 
     // Show/Hide In-Game Rotation Window
-    this._hotkeysService.on(kHotkeys.toggleRotationIngameWindow, async () => {
-      try {
-        await this._windowsController.toggleRotationIngameWindow();
-      } catch (error) {
-        logger.error('Error toggling in-game rotation window:', error);
-      }
-    });
+    // this._hotkeysService.on(kHotkeys.toggleRotationIngameWindow, async () => {
+    //   try {
+    //     await this._windowsController.toggleRotationIngameWindow();
+    //   } catch (error) {
+    //     logger.error('Error toggling in-game rotation window:', error);
+    //   }
+    // });
   }
 
   /**
