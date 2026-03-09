@@ -1993,3 +1993,64 @@
   border-radius: 4px 0 0 4px;
   transition: width 0.3s ease;
 }
+
+/* ------------------------------
+   GEP Status Bar & Disclaimer
+--------------------------------*/
+
+.gep-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm, 4px);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gep-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-text-secondary, #b0b0b0);
+}
+
+.gep-status--green {
+  color: #6ac89a;
+}
+
+.gep-status--yellow {
+  color: #c8a96a;
+}
+
+.gep-status--red {
+  color: #c86a6a;
+}
+
+.gep-status--unknown {
+  color: var(--color-text-secondary, #b0b0b0);
+}
+
+.gep-status--loading {
+  color: var(--color-text-secondary, #b0b0b0);
+  opacity: 0.6;
+}
+
+.gep-disclaimer {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary, #b0b0b0);
+  opacity: 0.7;
+}
+
+.gep-disclaimer a {
+  color: var(--color-warning, #c8a96a);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.gep-disclaimer a:hover {
+  color: #e0c080;
+}

@@ -79,6 +79,7 @@ const SideNav: React.FC<SideNavProps> = ({
             active={view.name === activeView}
             onClick={() => handleViewClick(view.name)}
             showNewBadge={hasUnseenFTUE(view.name)}
+            ftueTarget={view.name}
           />
         ))}
         <div className="side-nav-footer">

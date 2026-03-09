@@ -26,6 +26,7 @@ export type HotkeyData = {
 
 export const DEADLOCK_API_BASE_URL = 'https://api.deadlock-api.com';
 export const DEADLOCK_ASSETS_BASE_URL = 'https://assets.deadlock-api.com';
+export const kGepStatusUrl = `https://game-events-status.overwolf.com/${kDeadlockClassId}_prod.json`;
 
 export const GAME_MODE_LABELS: Record<number, string> = {
   0: 'Invalid',

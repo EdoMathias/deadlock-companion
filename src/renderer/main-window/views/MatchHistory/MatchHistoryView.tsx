@@ -48,7 +48,8 @@ interface MergedMatchEntry {
  */
 const MatchHistoryView: React.FC = () => {
   const { steamId } = useSteamId();
-  const { hasSeenDataContribution, markDataContributionSeen } = useFTUE();
+  const { hasSeenDataContribution, markDataContributionSeen, isFTUEComplete } =
+    useFTUE();
   const [apiMatches, setApiMatches] = useState<PlayerMatchHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -196,12 +197,12 @@ const MatchHistoryView: React.FC = () => {
     }
   }, [accountId, forceFetchStorageKey]);
 
-  // Show data contribution modal on first visit
+  // Show data contribution modal on first visit (after FTUE completes)
   useEffect(() => {
-    if (steamId && !hasSeenDataContribution) {
+    if (steamId && !hasSeenDataContribution && isFTUEComplete) {
       setShowDataModal(true);
     }
-  }, [steamId, hasSeenDataContribution]);
+  }, [steamId, hasSeenDataContribution, isFTUEComplete]);
 
   const handleCloseDataModal = useCallback(() => {
     setShowDataModal(false);

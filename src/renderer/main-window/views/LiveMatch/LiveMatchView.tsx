@@ -1,6 +1,11 @@
 import React from 'react';
 import { useSteamId } from '../../../hooks/useSteamId';
 import { useLiveMatch } from '../../../hooks/useLiveMatch';
+import {
+  useGepStatus,
+  gepStateLabel,
+  gepStateClass,
+} from '../../../hooks/useGepStatus';
 import type { EnrichedRosterEntry } from '../../../hooks/useLiveMatch';
 import type { GameModeInfo } from '../../../../shared/types/liveMatch';
 import ScoreboardTable from './ScoreboardTable';
@@ -23,6 +28,11 @@ function getTeamNames(gameMode: GameModeInfo | null): {
 
 const LiveMatchView: React.FC = () => {
   const { steamId } = useSteamId();
+  const {
+    state: gepState,
+    loading: gepLoading,
+    error: gepError,
+  } = useGepStatus();
   const {
     isMatchActive,
     isMatchEnded,
@@ -63,6 +73,31 @@ const LiveMatchView: React.FC = () => {
 
   return (
     <section className="view-container live-match-container">
+      {/* GEP Status + Data Disclaimer — always visible */}
+      <div className="gep-status-bar">
+        <span
+          className={`gep-status ${gepLoading ? 'gep-status--loading' : gepStateClass(gepState, gepError)}`}
+        >
+          {gepLoading ? '○' : '●'} Game Events:{' '}
+          {gepLoading ? 'Checking…' : gepStateLabel(gepState, gepError)}
+        </span>
+        <span className="gep-disclaimer">
+          ⚠️ Data may occasionally be inaccurate. If you're seeing consistent
+          issues{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              overwolf.utils.openUrlInDefaultBrowser(
+                'https://discord.gg/rUNRBxV9bz',
+              );
+            }}
+          >
+            Report an issue
+          </a>
+        </span>
+      </div>
+
       {!hasMatchData && (
         <div className="view-header">
           <div className="view-header__left">

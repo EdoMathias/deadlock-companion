@@ -11,6 +11,7 @@ import { Settings } from './views/Settings';
 
 // Contexts
 import { FTUEProvider, useFTUE } from '../contexts/FTUEContext';
+import { FTUETooltip } from '../components/FTUETooltip';
 
 // Custom hooks
 import { useWindowInfo } from '../hooks/useWindowInfo';
@@ -53,7 +54,7 @@ const ACTIVE_VIEW_STORAGE_KEY = 'deadlock_companion_active_view';
  */
 const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
   const { isIngameWindow } = useWindowInfo();
-  const { isFTUEComplete } = useFTUE();
+  const { isFTUEComplete, skipTour } = useFTUE();
   const appVersion = useAppVersion();
   const {
     releaseNote,
@@ -225,11 +226,6 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
 
   return (
     <div className="app-layout">
-      <IngestPromptModal
-        isOpen={showIngestPrompt}
-        onClose={() => setShowIngestPrompt(false)}
-        onGoToScanner={handleIngestGoToScanner}
-      />
       <div className="app-header-wrapper">
         <AppHeader
           title={
@@ -255,6 +251,12 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
         />
 
         <main className="main-content">
+          <IngestPromptModal
+            isOpen={showIngestPrompt}
+            onClose={() => setShowIngestPrompt(false)}
+            onGoToScanner={handleIngestGoToScanner}
+            scope="content"
+          />
           {navExpanded && (
             <button
               type="button"
@@ -265,6 +267,62 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
           )}
           <div className="main-content-wrapper">
             <FTUEWelcomeModal />
+            <FTUETooltip
+              step="live_match_header"
+              title="Live Match"
+              message="Track your match in real-time — kills, deaths, souls, and more update live as you play."
+              position="right"
+              targetSelector='[data-ftue-target="Live Match"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Live Match' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="match_history_header"
+              title="Match History"
+              message="Browse your past matches with detailed stats. Open this tab in-game to load your latest games."
+              position="right"
+              targetSelector='[data-ftue-target="Match History"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Match History' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="contribute_header"
+              title="Contribute"
+              message="Help improve the app by contributing your match data. Your data helps us build better stats for everyone."
+              position="right"
+              targetSelector='[data-ftue-target="Contribute"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Contribute' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="profile_header"
+              title="Profile"
+              message="Check your overall stats and player profile at a glance."
+              position="right"
+              targetSelector='[data-ftue-target="Profile"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Profile' }),
+                )
+              }
+            />
             <ReleaseNotesModal
               isOpen={isReleaseNotesOpen}
               note={releaseNote}

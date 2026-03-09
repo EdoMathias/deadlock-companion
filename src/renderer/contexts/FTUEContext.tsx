@@ -11,6 +11,7 @@ export type FTUEStep =
   | 'welcome'
   | 'live_match_header'
   | 'match_history_header'
+  | 'contribute_header'
   | 'profile_header'
   | 'match_history_data_contribution';
 
@@ -21,6 +22,7 @@ const MAIN_STEPS: FTUEStep[] = [
   'welcome',
   'live_match_header',
   'match_history_header',
+  'contribute_header',
   'profile_header',
 ];
 
@@ -33,6 +35,8 @@ interface FTUEContextType {
   markStepComplete: (step: FTUEStep) => void;
   resetFTUE: () => void;
   shouldShowStep: (step: FTUEStep) => boolean;
+  /** Marks all remaining MAIN_STEPS as complete at once. */
+  skipTour: () => void;
   /** No-op kept for API compatibility */
   startRotationsFTUE: () => void;
   /** No-op kept for API compatibility */
@@ -168,6 +172,21 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     // No-op: Interactive Map FTUE disabled for Deadlock Companion
   };
 
+  const skipTour = useCallback(() => {
+    setCompletedSteps(() => {
+      const newSet = new Set<FTUEStep>(MAIN_STEPS);
+      try {
+        localStorage.setItem(
+          STEPS_STORAGE_KEY,
+          JSON.stringify(Array.from(newSet)),
+        );
+      } catch {
+        // Ignore errors
+      }
+      return newSet;
+    });
+  }, []);
+
   // ── Step sequencing ───────────────────────────────────────
   const shouldShowStep = useCallback(
     (step: FTUEStep): boolean => {
@@ -211,6 +230,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
         markStepComplete,
         resetFTUE,
         shouldShowStep,
+        skipTour,
         startRotationsFTUE,
         markInteractiveMapSeen,
         hasUnseenFTUE,

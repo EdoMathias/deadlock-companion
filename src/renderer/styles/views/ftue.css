@@ -225,7 +225,9 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .ftue-tooltip-close:hover {
@@ -243,6 +245,25 @@
 .ftue-tooltip-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.ftue-tooltip-skip-all {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #b0b0b0);
+  font-size: 12px;
+  font-family: var(--font-ark);
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.ftue-tooltip-skip-all:hover {
+  opacity: 1;
 }
 
 .ftue-tooltip-button {
@@ -255,7 +276,9 @@
   font-weight: 600;
   font-family: var(--font-ark);
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

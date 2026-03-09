@@ -11,6 +11,8 @@ interface FTUETooltipProps {
   targetSelector?: string;
   onDismiss?: () => void;
   showSkip?: boolean;
+  skipAllLabel?: string;
+  onSkipAll?: () => void;
 }
 
 export const FTUETooltip: React.FC<FTUETooltipProps> = ({
@@ -20,18 +22,23 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
   position = 'bottom',
   targetSelector,
   onDismiss,
-  showSkip = true
+  showSkip = true,
+  skipAllLabel,
+  onSkipAll,
 }) => {
   const { shouldShowStep, markStepComplete } = useFTUE();
   const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({});
-  const [effectivePosition, setEffectivePosition] = useState<typeof position>(position);
+  const [effectivePosition, setEffectivePosition] =
+    useState<typeof position>(position);
   const [spotlightStyle, setSpotlightStyle] = useState<{
     top: React.CSSProperties;
     bottom: React.CSSProperties;
     left: React.CSSProperties;
     right: React.CSSProperties;
   } | null>(null);
-  const [isVisible, setIsVisible] = useState<boolean>(() => shouldShowStep(step));
+  const [isVisible, setIsVisible] = useState<boolean>(() =>
+    shouldShowStep(step),
+  );
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const show = shouldShowStep(step) && isVisible;
@@ -42,14 +49,14 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
     setEffectivePosition(position);
 
     const spacing = 12;
-    const padding = 8;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const padding = 12;
 
     const updatePosition = () => {
       const target = document.querySelector(targetSelector);
       if (!target || !tooltipRef.current) return;
 
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
       const targetRect = target.getBoundingClientRect();
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
@@ -62,13 +69,29 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
       const tooltipH = tooltipRect.height + spacing;
       const tooltipW = tooltipRect.width + spacing;
 
-      if (position === 'top' && spaceAbove < tooltipH && spaceBelow >= tooltipH) {
+      if (
+        position === 'top' &&
+        spaceAbove < tooltipH &&
+        spaceBelow >= tooltipH
+      ) {
         effectivePosition = 'bottom';
-      } else if (position === 'bottom' && spaceBelow < tooltipH && spaceAbove >= tooltipH) {
+      } else if (
+        position === 'bottom' &&
+        spaceBelow < tooltipH &&
+        spaceAbove >= tooltipH
+      ) {
         effectivePosition = 'top';
-      } else if (position === 'left' && spaceLeft < tooltipW && spaceRight >= tooltipW) {
+      } else if (
+        position === 'left' &&
+        spaceLeft < tooltipW &&
+        spaceRight >= tooltipW
+      ) {
         effectivePosition = 'right';
-      } else if (position === 'right' && spaceRight < tooltipW && spaceLeft >= tooltipW) {
+      } else if (
+        position === 'right' &&
+        spaceRight < tooltipW &&
+        spaceLeft >= tooltipW
+      ) {
         effectivePosition = 'left';
       }
 
@@ -78,18 +101,18 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
       switch (effectivePosition) {
         case 'top':
           top = targetRect.top - tooltipRect.height - spacing;
-          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
           break;
         case 'bottom':
           top = targetRect.bottom + spacing;
-          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
           break;
         case 'left':
-          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2;
           left = targetRect.left - tooltipRect.width - spacing;
           break;
         case 'right':
-          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2;
           left = targetRect.right + spacing;
           break;
       }
@@ -115,23 +138,23 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
           position: 'fixed',
           top: 0,
           left: 0,
-          right: 0,
+          width: `${viewportWidth}px`,
           height: `${Math.max(0, cutoutTop)}px`,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           zIndex: 9998,
           pointerEvents: 'auto',
-          cursor: 'pointer'
+          cursor: 'pointer',
         },
         bottom: {
           position: 'fixed',
-          bottom: 0,
+          top: `${cutoutBottom}px`,
           left: 0,
-          right: 0,
+          width: `${viewportWidth}px`,
           height: `${Math.max(0, viewportHeight - cutoutBottom)}px`,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           zIndex: 9998,
           pointerEvents: 'auto',
-          cursor: 'pointer'
+          cursor: 'pointer',
         },
         left: {
           position: 'fixed',
@@ -142,19 +165,19 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           zIndex: 9998,
           pointerEvents: 'auto',
-          cursor: 'pointer'
+          cursor: 'pointer',
         },
         right: {
           position: 'fixed',
           top: `${cutoutTop}px`,
-          right: 0,
+          left: `${cutoutRight}px`,
           width: `${Math.max(0, viewportWidth - cutoutRight)}px`,
           height: `${cutoutBottom - cutoutTop}px`,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           zIndex: 9998,
           pointerEvents: 'auto',
-          cursor: 'pointer'
-        }
+          cursor: 'pointer',
+        },
       });
     };
 
@@ -238,6 +261,17 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
         </div>
         <p className="ftue-tooltip-message">{message}</p>
         <div className="ftue-tooltip-footer">
+          {skipAllLabel && onSkipAll && (
+            <button
+              className="ftue-tooltip-skip-all"
+              onClick={() => {
+                onSkipAll();
+                onDismiss?.();
+              }}
+            >
+              {skipAllLabel}
+            </button>
+          )}
           <button className="ftue-tooltip-button" onClick={handleGotIt}>
             Got it
           </button>
@@ -249,4 +283,3 @@ export const FTUETooltip: React.FC<FTUETooltipProps> = ({
   // Portal to document.body so tooltip is never clipped by parent overflow/transform
   return createPortal(tooltipContent, document.body);
 };
-
