@@ -202,7 +202,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
   const handleSubmissionFormClick = () => {
     console.log('Submission form clicked');
     overwolf.utils.openUrlInDefaultBrowser(
-      'https://forms.gle/sNW48XMehCALrYAq9',
+      'https://discord.gg/rUNRBxV9bz',
     );
   };
 
