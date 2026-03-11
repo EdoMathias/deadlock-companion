@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { createLogger } from '../../shared/services/Logger';
 import { isValidSteamId64 } from '../../shared/utils/steamUtils';
 
@@ -26,6 +26,18 @@ export const useSteamId = (): UseSteamIdReturn => {
       return null;
     }
   });
+
+  // Stay in sync when another window (e.g. the background) updates localStorage
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key !== STEAM_ID_STORAGE_KEY) return;
+      const newValue = e.newValue?.trim() ?? null;
+      if (newValue && !isValidSteamId64(newValue)) return;
+      _setSteamId(newValue);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const setSteamId = useCallback((id: string) => {
     const trimmed = id.trim();

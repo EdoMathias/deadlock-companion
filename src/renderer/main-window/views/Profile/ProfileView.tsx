@@ -216,25 +216,6 @@ const ProfileView: React.FC = () => {
     fetchProfile();
   }, [fetchProfile]);
 
-  if (!steamId) {
-    return (
-      <section className="view-container profile-container">
-        <div className="view-header">
-          <h2 className="view-title">Profile</h2>
-        </div>
-        <div className="empty-state">
-          <div className="empty-state-icon">👤</div>
-          <h3 className="empty-state-title">Steam ID Required</h3>
-          <p className="empty-state-description">
-            Your Steam ID will be detected automatically when you launch the
-            game. Alternatively, you can manually enter it in{' '}
-            <strong>Settings → General</strong>.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
   const signatureHero: HeroInfo | undefined =
     stats?.signatureHeroId != null ? getHero(stats.signatureHeroId) : undefined;
 
@@ -308,6 +289,25 @@ const ProfileView: React.FC = () => {
   );
 
   const winRatePct = stats ? Math.min(100, Math.max(0, stats.winRate)) : 0;
+
+  if (!steamId) {
+    return (
+      <section className="view-container profile-container">
+        <div className="view-header">
+          <h2 className="view-title">Profile</h2>
+        </div>
+        <div className="empty-state">
+          <div className="empty-state-icon">👤</div>
+          <h3 className="empty-state-title">Steam ID Required</h3>
+          <p className="empty-state-description">
+            Your Steam ID will be detected automatically when you launch the
+            game. Alternatively, you can manually enter it in{' '}
+            <strong>Settings → General</strong>.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="view-container profile-container">
