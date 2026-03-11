@@ -57,6 +57,7 @@ const SideNav: React.FC<SideNavProps> = ({
   }, [showDiscordBadge]);
 
   const handleViewClick = (view: string) => {
+    window.dispatchEvent(new CustomEvent('navigate-view', { detail: view }));
     setActiveView(view);
     setNavExpanded(false);
   };

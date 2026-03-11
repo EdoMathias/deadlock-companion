@@ -187,6 +187,29 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     };
   }, [isIngameWindow]);
 
+  // Auto-navigate to Live Match view when a match starts
+  useEffect(() => {
+    const onMessage = (message: overwolf.windows.MessageReceivedEvent) => {
+      try {
+        const payload =
+          typeof message?.content === 'string'
+            ? JSON.parse(message.content)
+            : message?.content;
+        if (payload?.type === MessageType.LIVE_MATCH_START) {
+          setShowSettings(false);
+          setActiveView('Live Match');
+          setNavExpanded(false);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    };
+    overwolf.windows.onMessageReceived.addListener(onMessage);
+    return () => {
+      overwolf.windows.onMessageReceived.removeListener(onMessage);
+    };
+  }, []);
+
   const handleIngestGoToScanner = React.useCallback(() => {
     setShowIngestPrompt(false);
     setShowSettings(false);
