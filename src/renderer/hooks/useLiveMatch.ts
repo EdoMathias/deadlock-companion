@@ -125,10 +125,19 @@ export function useLiveMatch(): UseLiveMatchResult {
 
             // If we missed the match_start message, bootstrap from the roster update
             if (!matchStartTimeRef.current && data.matchStartTimestamp) {
-              setIsMatchActive(true);
-              setIsMatchEnded(false);
               setMatchId(data.matchId ?? null);
-              startTimer(data.matchStartTimestamp);
+              if (data.isMatchEnded) {
+                setIsMatchActive(false);
+                setIsMatchEnded(true);
+                const finalElapsed = Math.floor(
+                  (Date.now() - data.matchStartTimestamp) / 1000,
+                );
+                setElapsedSeconds(finalElapsed);
+              } else {
+                setIsMatchActive(true);
+                setIsMatchEnded(false);
+                startTimer(data.matchStartTimestamp);
+              }
             }
             break;
           }

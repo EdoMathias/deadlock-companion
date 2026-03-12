@@ -35,6 +35,7 @@ export interface LiveRosterUpdatePayload {
   roster: LiveRosterEntry[];
   matchId: string | null;
   matchStartTimestamp: number | null;
+  isMatchEnded: boolean;
   gameMode: GameModeInfo | null;
   teamScores: TeamScores | null;
 }

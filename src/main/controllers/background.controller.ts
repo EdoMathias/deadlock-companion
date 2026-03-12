@@ -7,7 +7,7 @@ import {
   MessageType,
 } from '../services/MessageChannel';
 import { Edge } from '@overwolf/odk-ts/window/enums/edge';
-import { kDeadlockClassId, kHotkeys, kWindowNames } from '../../shared/consts';
+import { kDeadlockClassId, kHotkeys, kWindowNames, LIVE_GAME_MODE_LABELS } from '../../shared/consts';
 import { createLogger } from '../../shared/services/Logger';
 import { WindowsController } from './windows.controller';
 import { TrayIconService } from '../services/tray-icon.service';
@@ -53,6 +53,7 @@ export class BackgroundController {
   private _currentMatchId: string | null = null;
   private _allRosterData: Map<string, LiveRosterEntry> = new Map();
   private _matchStartTimestamp: number | null = null;
+  private _isMatchEnded: boolean = false;
   private _gameMode: GameModeInfo | null = null;
   private _teamScores: TeamScores | null = null;
   private _rosterUpdateCount: number = 0;
@@ -232,9 +233,10 @@ export class BackgroundController {
             ? JSON.parse(gameInfo.game_mode)
             : gameInfo.game_mode;
         if (parsed && typeof parsed === 'object') {
+          const rawMode = String(parsed.game_mode ?? '');
           this._gameMode = {
             match_mode: String(parsed.match_mode ?? ''),
-            game_mode: String(parsed.game_mode ?? ''),
+            game_mode: LIVE_GAME_MODE_LABELS[rawMode] ?? rawMode,
           };
           logger.log('game_info update: game_mode =', this._gameMode);
           this.broadcastRosterUpdate();
@@ -335,6 +337,7 @@ export class BackgroundController {
     this._currentMatchId = null;
     this._allRosterData.clear();
     this._matchStartTimestamp = Date.now();
+    this._isMatchEnded = false;
     this._gameMode = null;
     this._teamScores = null;
     this._rosterUpdateCount = 0;
@@ -366,9 +369,10 @@ export class BackgroundController {
                 ? JSON.parse(gameInfoSnapshot.game_mode)
                 : gameInfoSnapshot.game_mode;
             if (parsed && typeof parsed === 'object') {
+              const rawMode = String(parsed.game_mode ?? '');
               this._gameMode = {
                 match_mode: String(parsed.match_mode ?? ''),
-                game_mode: String(parsed.game_mode ?? ''),
+                game_mode: LIVE_GAME_MODE_LABELS[rawMode] ?? rawMode,
               };
               logger.log(
                 'match_start: restored game_mode from getInfo =',
@@ -446,9 +450,10 @@ export class BackgroundController {
                 ? JSON.parse(gameInfoSnapshot.game_mode)
                 : gameInfoSnapshot.game_mode;
             if (parsed && typeof parsed === 'object') {
+              const rawMode = String(parsed.game_mode ?? '');
               this._gameMode = {
                 match_mode: String(parsed.match_mode ?? ''),
-                game_mode: String(parsed.game_mode ?? ''),
+                game_mode: LIVE_GAME_MODE_LABELS[rawMode] ?? rawMode,
               };
             }
           } catch {
@@ -484,6 +489,8 @@ export class BackgroundController {
    * Also broadcasts LIVE_MATCH_END to renderer windows.
    */
   private async handleMatchEnd(): Promise<void> {
+    this._isMatchEnded = true;
+
     // Broadcast LIVE_MATCH_END so the scoreboard shows "Match Ended"
     this._messageChannel.broadcastMessage(
       [kWindowNames.mainDesktop, kWindowNames.mainIngame],
@@ -595,6 +602,7 @@ export class BackgroundController {
       roster: Array.from(this._allRosterData.values()),
       matchId: this._currentMatchId,
       matchStartTimestamp: this._matchStartTimestamp,
+      isMatchEnded: this._isMatchEnded,
       gameMode: this._gameMode,
       teamScores: this._teamScores,
     };
