@@ -524,6 +524,15 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
                 onMatchVerified?.(matchId, cached.match_info);
                 setMetadata(cached);
                 setDetailedFetched(true);
+
+                // Upgrade or backfill summary with authoritative API stats
+                if (cached.match_info?.players?.length) {
+                  setSummaryData((prev) =>
+                    prev?.source === 'roster-snapshot'
+                      ? upgradeSummaryWithApi(prev, cached.match_info.players, String(matchId))
+                      : prev
+                  );
+                }
               }
             })
             .catch(() => {});
