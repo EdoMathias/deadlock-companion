@@ -2083,3 +2083,144 @@
 .gep-disclaimer a:hover {
   color: #e0c080;
 }
+
+/* ── Hero Select (custom dropdown with icons) ──────────────── */
+
+.hero-select {
+  position: relative;
+}
+
+.hero-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.hero-select__trigger:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 50%,
+    transparent
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 5%,
+    transparent
+  );
+}
+
+.hero-select__trigger:focus-visible {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 60%,
+    transparent
+  );
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.hero-select__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.hero-select__label {
+  flex: 1;
+  text-align: left;
+}
+
+.hero-select__chevron {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.hero-select__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  min-width: 200px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.hero-select__search {
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  outline: none;
+}
+
+.hero-select__search::placeholder {
+  color: var(--color-text-muted);
+}
+
+.hero-select__options {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.hero-select__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.1s ease;
+}
+
+.hero-select__option:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 15%,
+    transparent
+  );
+}
+
+.hero-select__option--selected {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 25%,
+    transparent
+  );
+}
+
+.hero-select__option-label {
+  white-space: nowrap;
+}

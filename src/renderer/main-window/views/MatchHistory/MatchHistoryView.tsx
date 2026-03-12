@@ -5,6 +5,7 @@ import { useSteamId } from '../../../hooks/useSteamId';
 import { steamIdToAccountId } from '../../../../shared/utils/steamUtils';
 import { matchCache } from '../../../services/matchCache';
 import { getHero } from '../../../../shared/data/heroes';
+import HeroSelect from '../../../components/HeroSelect';
 import { useGameEventMatches } from '../../../hooks/useGameEventMatches';
 import MatchDetailView from './MatchDetailView';
 import { createLogger } from '../../../../shared/services/Logger';
@@ -57,6 +58,7 @@ const MatchHistoryView: React.FC = () => {
   const [isCached, setIsCached] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [gameModeFilter, setGameModeFilter] = useState<number | null>(null);
+  const [characterFilter, setCharacterFilter] = useState<number | string | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
   const [showDataModal, setShowDataModal] = useState(false);
   const [communityBannerDismissed, setCommunityBannerDismissed] = useState(
@@ -285,6 +287,11 @@ const MatchHistoryView: React.FC = () => {
     return mergedMatches.filter((m) => m.game_mode === gameModeFilter);
   }, [mergedMatches, gameModeFilter]);
 
+  const filteredMatchesByCharacter = useMemo(() => {
+    if (characterFilter === null) return filteredMatches;
+    return filteredMatches.filter((m) => m.hero_id === Number(characterFilter));
+  }, [filteredMatches, characterFilter]);
+
   if (selectedMatchId !== null && accountId !== null) {
     return (
       <MatchDetailView
@@ -349,6 +356,10 @@ const MatchHistoryView: React.FC = () => {
                 </option>
               ))}
           </select>
+          <HeroSelect
+            value={characterFilter}
+            onChange={setCharacterFilter}
+          />
           <RefreshButton
             onRefresh={() => fetchMatches(true)}
             isLoading={isLoading || isSyncing}
@@ -448,9 +459,9 @@ const MatchHistoryView: React.FC = () => {
         </div>
       )}
 
-      {!isLoading && !error && filteredMatches.length === 0 && (
+      {!isLoading && !error && filteredMatchesByCharacter.length === 0 && (
         <div className="empty-state">
-          <div className="empty-state-icon">���</div>
+          <div className="empty-state-icon">🔎</div>
           <h3 className="empty-state-title">No Matches Found</h3>
           <p className="empty-state-description">
             This app relies on community-contributed data — matches appear once
@@ -472,9 +483,9 @@ const MatchHistoryView: React.FC = () => {
         </div>
       )}
 
-      {!isLoading && filteredMatches.length > 0 && (
+      {!isLoading && filteredMatchesByCharacter.length > 0 && (
         <div className="match-list">
-          {filteredMatches.map((match) => {
+          {filteredMatchesByCharacter.map((match) => {
             const hero = getHero(match.hero_id);
             const heroName =
               hero?.name ?? match.hero_name ?? `Hero ${match.hero_id}`;
