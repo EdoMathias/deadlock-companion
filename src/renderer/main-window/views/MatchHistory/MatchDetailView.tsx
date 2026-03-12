@@ -193,9 +193,11 @@ const SummaryTeamTable: React.FC<SummaryTeamTableProps> = ({
 interface SummaryTabProps {
   summary: MatchSummaryData;
   steamProfiles?: Map<number, SteamProfile>;
+  teamAmberName: string;
+  teamSapphireName: string;
 }
 
-const SummaryTab: React.FC<SummaryTabProps> = ({ summary, steamProfiles }) => {
+const SummaryTab: React.FC<SummaryTabProps> = ({ summary, steamProfiles, teamAmberName, teamSapphireName }) => {
   // team_id 2 = Amber, 3 = Sapphire (GEP convention)
   const amber = summary.players.filter((p) => p.team_id === 2);
   const sapphire = summary.players.filter((p) => p.team_id === 3);
@@ -215,12 +217,12 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ summary, steamProfiles }) => {
       <div className="summary-teams">
         <SummaryTeamTable
           players={amber}
-          teamLabel="Team Amber"
+          teamLabel={`Team ${teamAmberName}`}
           steamProfiles={steamProfiles}
         />
         <SummaryTeamTable
           players={sapphire}
-          teamLabel="Team Sapphire"
+          teamLabel={`Team ${teamSapphireName}`}
           steamProfiles={steamProfiles}
         />
       </div>
@@ -459,6 +461,10 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
   onMatchVerified,
   listEntry,
 }) => {
+  const isStreetBrawl = listEntry?.game_mode === 4;
+  const teamAmberName = isStreetBrawl ? 'Hidden King' : 'Amber';
+  const teamSapphireName = isStreetBrawl ? 'ArchMother' : 'Sapphire';
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('summary');
 
   // ── Summary state ──
@@ -631,7 +637,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
         }
       } else {
         setDetailedError(
-          'This match is queued for processing by the community API. It usually takes 1-2 minutes — please try again shortly.',
+          'Detailed data is not avaible yet. Please try again shortly. If the problem persists, please contribute to the database to speed up the process.',
         );
       }
     } catch (err) {
@@ -753,11 +759,11 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
         <div className="match-detail-brawl-scores">
           <span className="match-detail-brawl-scores__label">Street Brawl</span>
           <span className="match-detail-brawl-scores__score">
-            <span className="match-detail-brawl-scores__team">Amber</span>
+            <span className="match-detail-brawl-scores__team">{teamAmberName}</span>
             {listEntry.brawl_score_team0}
             <span className="match-detail-brawl-scores__divider">–</span>
             {listEntry.brawl_score_team1 ?? 0}
-            <span className="match-detail-brawl-scores__team">Sapphire</span>
+            <span className="match-detail-brawl-scores__team">{teamSapphireName}</span>
           </span>
           {listEntry.brawl_avg_round_time_s != null && (
             <span className="match-detail-brawl-scores__avg">
@@ -808,7 +814,12 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
             </div>
           )}
           {summaryData && (
-            <SummaryTab summary={summaryData} steamProfiles={steamProfiles} />
+            <SummaryTab
+              summary={summaryData}
+              steamProfiles={steamProfiles}
+              teamAmberName={teamAmberName}
+              teamSapphireName={teamSapphireName}
+            />
           )}
         </>
       )}
@@ -870,7 +881,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
                 players={team0}
                 selfAccountId={accountId}
                 steamProfiles={steamProfiles}
-                teamLabel="Team Amber"
+                teamLabel={`Team ${teamAmberName}`}
                 isWinner={info.winning_team === 0}
                 durationS={info.duration_s}
               />
@@ -878,14 +889,21 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
                 players={team1}
                 selfAccountId={accountId}
                 steamProfiles={steamProfiles}
-                teamLabel="Team Sapphire"
+                teamLabel={`Team ${teamSapphireName}`}
                 isWinner={info.winning_team === 1}
                 durationS={info.duration_s}
               />
             </div>
           )}
 
-          {info && <TeamComparison team0={team0} team1={team1} />}
+          {info && (
+            <TeamComparison
+              team0={team0}
+              team1={team1}
+              teamAmberName={teamAmberName}
+              teamSapphireName={teamSapphireName}
+            />
+          )}
 
           {info && (
             <MatchTimelineChart

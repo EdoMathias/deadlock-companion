@@ -49,9 +49,11 @@ const ComparisonBar: React.FC<ComparisonBarProps> = ({ metric }) => {
 interface TeamComparisonProps {
   team0: MatchPlayer[];
   team1: MatchPlayer[];
+  teamAmberName?: string;
+  teamSapphireName?: string;
 }
 
-const TeamComparison: React.FC<TeamComparisonProps> = ({ team0, team1 }) => {
+const TeamComparison: React.FC<TeamComparisonProps> = ({ team0, team1, teamAmberName = 'Amber', teamSapphireName = 'Sapphire' }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const metrics = useMemo<ComparisonMetric[]>(() => {
@@ -123,10 +125,10 @@ const TeamComparison: React.FC<TeamComparisonProps> = ({ team0, team1 }) => {
         <div className="team-comparison__content">
           <div className="team-comparison__header">
             <span className="team-comparison__team-name team-comparison__team-name--left">
-              Amber
+              {teamAmberName}
             </span>
             <span className="team-comparison__team-name team-comparison__team-name--right">
-              Sapphire
+              {teamSapphireName}
             </span>
           </div>
           {metrics.map((m) => (

@@ -37,6 +37,10 @@ export const GAME_MODE_LABELS: Record<number, string> = {
   5: 'Explore NYC',
 };
 
+export const LIVE_GAME_MODE_LABELS: Record<string, string> = {
+  StreetBrawl: 'Street Brawl',
+};
+
 export const MATCH_MODE_LABELS: Record<number, string> = {
   0: 'Invalid',
   1: 'Unranked',
