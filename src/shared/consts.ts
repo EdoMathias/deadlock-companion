@@ -8,6 +8,7 @@ export const kWindowNames = {
   mainIngame: 'main_ingame',
   rotationIngame: 'rotation_ingame',
   companionAppReady: 'companion_app_ready',
+  alertOverlay: 'alert_overlay',
 };
 
 export const kHotkeys = {

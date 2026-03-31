@@ -27,6 +27,12 @@ export const CACHE_TTL = {
   STEAM_PROFILE: 24 * 60 * 60 * 1000,
   /** Account/hero stats — 30 min. */
   ACCOUNT_STATS: 30 * 60 * 1000,
+  /** Item metadata from Assets API — rarely changes, cache for 24 h. */
+  ITEM_METADATA: 24 * 60 * 60 * 1000,
+  /** Item analytics / win rates / combos — matches API 1 h cache. */
+  ITEM_ANALYTICS: 60 * 60 * 1000,
+  /** Patch list — cache for 24 h. */
+  PATCHES: 24 * 60 * 60 * 1000,
 } as const;
 
 function buildKey(namespace: string, id: string | number): string {

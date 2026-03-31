@@ -66,6 +66,16 @@ const windowsConfigs: Record<string, OSRWindowOptions | DesktopWindowOptions> =
       transparent: true,
       autoDpi: true,
     },
+    alert_overlay: {
+      id: 'alert_overlay',
+      url: 'alert_overlay.html',
+      width: 400,
+      height: 500,
+      type: OSRType.InGameOnly,
+      resizable: false,
+      transparent: true,
+      autoDpi: true,
+    },
   };
 
 export class WindowsService {
@@ -73,6 +83,7 @@ export class WindowsService {
   private _mainIngameWindow: OSRWindow | undefined;
   // private _rotationIngameWindow: OSRWindow | undefined;
   private _companionAppReadyWindow: OSRWindow | undefined;
+  private _alertOverlayWindow: OSRWindow | undefined;
 
   private _monitorsService: MonitorsService;
 
@@ -258,6 +269,37 @@ export class WindowsService {
 
   public async closeCompanionAppReadyWindow(): Promise<void> {
     await this.closeWindow(this._companionAppReadyWindow);
+  }
+
+  //--------------------------------------------------------------------------
+  // Alert Overlay Window
+  public async createAlertOverlayWindow(): Promise<void> {
+    if (
+      this._alertOverlayWindow &&
+      (await this._alertOverlayWindow.isOpen())
+    ) {
+      return;
+    }
+    this._alertOverlayWindow = new OSRWindow(windowsConfigs['alert_overlay']);
+    logger.log('Alert overlay window created');
+  }
+
+  public async showAlertOverlayWindow(
+    centerOnMonitor?: 'primary' | 'secondary',
+    dockTo?: Edge,
+  ): Promise<void> {
+    if (
+      !this._alertOverlayWindow ||
+      !(await this._alertOverlayWindow.isOpen())
+    ) {
+      await this.createAlertOverlayWindow();
+    }
+
+    await this.showWindow(this._alertOverlayWindow, centerOnMonitor, dockTo);
+  }
+
+  public async closeAlertOverlayWindow(): Promise<void> {
+    await this.closeWindow(this._alertOverlayWindow);
   }
 
   //--------------------------------------------------------------------------

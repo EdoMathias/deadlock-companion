@@ -13,6 +13,8 @@ module.exports = (env) => ({
     // rotation_ingame: './src/renderer/rotation-window/Rotation.tsx',
     companion_app_ready:
       './src/renderer/companion-ready-window/CompanionAppReady.tsx',
+    alert_overlay:
+      './src/renderer/alert-overlay-window/AlertOverlay.tsx',
   },
   devtool: 'inline-source-map',
   module: {
@@ -92,6 +94,12 @@ module.exports = (env) => ({
         './src/renderer/companion-ready-window/companion_app_ready.html',
       filename: path.resolve(__dirname, './dist/companion_app_ready.html'),
       chunks: ['companion_app_ready'],
+    }),
+    new HtmlWebpackPlugin({
+      template:
+        './src/renderer/alert-overlay-window/alert_overlay.html',
+      filename: path.resolve(__dirname, './dist/alert_overlay.html'),
+      chunks: ['alert_overlay'],
     }),
     new HtmlWebpackPlugin({
       template: './src/renderer/uninstall-window/uninstall.html',

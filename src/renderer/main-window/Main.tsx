@@ -54,7 +54,7 @@ const ACTIVE_VIEW_STORAGE_KEY = 'deadlock_companion_active_view';
  */
 const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
   const { isIngameWindow } = useWindowInfo();
-  const { isFTUEComplete, skipTour } = useFTUE();
+  const { isFTUEComplete, skipTour, markItemAlertsFeatureSeen } = useFTUE();
   const appVersion = useAppVersion();
   const {
     releaseNote,
@@ -97,6 +97,13 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
       // Ignore errors
     }
   }, [activeView]);
+
+  // Dismiss "NEW" badges when the user visits an item-alerts feature view
+  useEffect(() => {
+    if (activeView === 'Item Stats' || activeView === 'Overlay Editor') {
+      markItemAlertsFeatureSeen();
+    }
+  }, [activeView, markItemAlertsFeatureSeen]);
 
   // React to FTUE reset (triggered by the parent via resetTrigger)
   useEffect(() => {
@@ -330,6 +337,36 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
               onDismiss={() =>
                 window.dispatchEvent(
                   new CustomEvent('navigate-view', { detail: 'Match History' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="item_stats_header"
+              title="Item Stats"
+              message="Browse win rates and pick rates for every item. Toggle notifications to get alerted in-game when enemies buy tracked items."
+              position="right"
+              targetSelector='[data-ftue-target="Item Stats"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Item Stats' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="overlay_editor_header"
+              title="Overlay Editor"
+              message="Customize where and how in-game alerts appear. Pick a screen position, layout mode, and auto-dismiss timing."
+              position="right"
+              targetSelector='[data-ftue-target="Overlay Editor"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', {
+                    detail: 'Overlay Editor',
+                  }),
                 )
               }
             />

@@ -5,12 +5,16 @@ import {
   MatchHistoryView,
   ProfileView,
   ContributeView,
+  ItemStatsView,
+  OverlayEditorView,
 } from '../views';
 import LiveMatchIcon from '../views/LiveMatch/components/LiveMatchIcon';
 import MatchHistoryIcon from '../views/MatchHistory/components/MatchHistoryIcon';
 import ProfileIcon from '../views/Profile/components/ProfileIcon';
 import RotationsIcon from '../views/Rotations/components/RotationsIcon';
 import ContributeIcon from '../views/Contribute/components/ContributeIcon';
+import ItemStatsIcon from '../views/ItemStats/components/ItemStatsIcon';
+import OverlayEditorIcon from '../views/OverlayEditor/components/OverlayEditorIcon';
 
 export const viewsConfig: ViewConfig[] = [
   {
@@ -23,6 +27,18 @@ export const viewsConfig: ViewConfig[] = [
     name: 'Match History',
     icon: MatchHistoryIcon,
     component: MatchHistoryView,
+    active: false,
+  },
+  {
+    name: 'Item Stats',
+    icon: ItemStatsIcon,
+    component: ItemStatsView,
+    active: false,
+  },
+  {
+    name: 'Overlay Editor',
+    icon: OverlayEditorIcon,
+    component: OverlayEditorView,
     active: false,
   },
   {
