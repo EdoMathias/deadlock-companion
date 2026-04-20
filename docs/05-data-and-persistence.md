@@ -50,7 +50,10 @@ Current TTLs (in `CACHE_TTL`):
 | `ACCOUNT_STATS` | 30 min | Per-account stats from deadlock-api |
 | `ITEM_METADATA` | 24 h | Items API — schema rarely changes |
 | `ITEM_ANALYTICS` | 1 h | Win rates / combos — matches API caching |
+| `HERO_ANALYTICS` | 1 h | Hero win/pick/ban rates — matches API caching |
 | `PATCHES` | 24 h | Patch list |
+
+Known `apiCache` namespaces in use: `steam_profile`, `account_stats`, `item_metadata`, `heroes_metadata`, `item_stats`, `hero_stats`, `hero_ban_stats`, `patches`.
 
 To add a new cached endpoint: add a TTL constant, namespace the key, wrap your fetcher with `get` → `set`.
 

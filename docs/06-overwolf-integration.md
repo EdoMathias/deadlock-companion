@@ -271,6 +271,7 @@ const { data } = await api.getMatchMetadata({ matchId });
 |---|---|---|
 | [`assetsApiService.ts`](../src/shared/services/deadlock-api/assetsApiService.ts) | `https://assets.deadlock-api.com` items, heroes | `apiCache` `ITEM_METADATA` |
 | [`itemsApiService.ts`](../src/shared/services/deadlock-api/itemsApiService.ts) | `AnalyticsApi`, `PatchesApi` | `apiCache` `ITEM_ANALYTICS` / `PATCHES` |
+| [`heroesApiService.ts`](../src/shared/services/deadlock-api/heroesApiService.ts) | `AnalyticsApi.heroStats` + direct `axios` GET `/v1/analytics/hero-ban-stats` (not yet in the vendored client) | `apiCache` `HERO_ANALYTICS` under namespaces `hero_stats` / `hero_ban_stats` |
 | [`matchMetadataFetcher.ts`](../src/shared/services/matchMetadataFetcher.ts) | `MatchesApi`, `InternalApi` | `matchCache` (IndexedDB) |
 | [`steamWebApi.ts`](../src/shared/services/steamWebApi.ts) | Steam Web API fallback | `apiCache` `STEAM_PROFILE` |
 

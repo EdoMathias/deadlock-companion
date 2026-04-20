@@ -2265,6 +2265,15 @@
   );
 }
 
+.rank-slider__trigger--disabled,
+.rank-slider__trigger--disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.55;
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  background-color: var(--color-bg-secondary);
+}
+
 .rank-slider__trigger-icon {
   width: 20px;
   height: 20px;

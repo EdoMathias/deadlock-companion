@@ -3,6 +3,7 @@ import {
   PatchesApi,
   type AnalyticsApiItemStatsRequest,
   type ItemStats,
+  type Patch,
 } from 'deadlock_api_client';
 import { createDeadlockApiConfig } from './deadlockApiClient';
 import { apiCache, CACHE_TTL } from '../../utils/apiCache';
@@ -42,8 +43,8 @@ export async function fetchItemStats(
   return data;
 }
 
-export async function fetchPatches(): Promise<any[]> {
-  const cached = apiCache.get<any[]>('patches', 'list');
+export async function fetchPatches(): Promise<Patch[]> {
+  const cached = apiCache.get<Patch[]>('patches', 'list');
   if (cached) return cached;
 
   const api = new PatchesApi(createDeadlockApiConfig());
@@ -54,6 +55,11 @@ export async function fetchPatches(): Promise<any[]> {
   return data;
 }
 
+/**
+ * Returns the curated list of "big" / milestone patch days as raw date
+ * strings (typically ISO `YYYY-MM-DDTHH:mm:ssZ`). Used to flag major
+ * patches inside the patch dropdown.
+ */
 export async function fetchBigPatchDays(): Promise<string[]> {
   const cached = apiCache.get<string[]>('patches', 'big_days');
   if (cached) return cached;

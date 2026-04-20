@@ -13,14 +13,25 @@ interface RankRangeSliderProps {
   minBadge?: number;
   maxBadge?: number;
   onChange: (min: number | undefined, max: number | undefined) => void;
+  /**
+   * When true the slider trigger is non-interactive (dropdown can't open)
+   * and rendered in a muted style. Useful for contexts where the current
+   * game mode / endpoint does not accept rank filtering.
+   */
+  disabled?: boolean;
 }
 
 const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
   minBadge,
   maxBadge,
   onChange,
+  disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (disabled && open) setOpen(false);
+  }, [disabled, open]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [lowPos, setLowPos] = useState(() => badgeToSliderPos(minBadge ?? 0));
   const [highPos, setHighPos] = useState(() =>
@@ -112,8 +123,14 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
     <div className="rank-slider" ref={containerRef}>
       <button
         type="button"
-        className="rank-slider__trigger"
-        onClick={() => setOpen((p) => !p)}
+        className={`rank-slider__trigger${
+          disabled ? ' rank-slider__trigger--disabled' : ''
+        }`}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((p) => !p);
+        }}
+        disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
       >

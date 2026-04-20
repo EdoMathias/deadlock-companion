@@ -22,6 +22,8 @@
 @import './components/widgets.css';
 @import './components/refresh-button.css';
 @import './components/ingest.css';
+@import './components/date-range-selector.css';
+@import './components/info-icon.css';
 
 /* 5. View-Specific Styles */
 @import './views/overview.css';
@@ -36,6 +38,7 @@
 @import './views/deadlock-views.css';
 @import './views/companion-ready.css';
 @import './views/contribute.css';
+@import './views/hero-stats.css';
 
 /* 
  * CSS Modules Migration Guide:

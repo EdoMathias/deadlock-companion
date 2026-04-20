@@ -78,7 +78,7 @@ src/
       views/                    # one folder per tab
         index.ts                # barrel
         LiveMatch/  MatchHistory/  Profile/  Rotations/
-        Contribute/  ItemStats/  OverlayEditor/  Settings/
+        Contribute/  HeroStats/  ItemStats/  OverlayEditor/  Settings/
       components/
         SideNav/                # collapsible vertical nav
         AdContainer/            # OwAd wrapper (gated by FTUE complete)

@@ -1,0 +1,60 @@
+/* =================================
+   Info Icon
+   Small inline SVG icon with an instant, portal-rendered tooltip. Used
+   anywhere we need a compact hover-explanation next to a label or column
+   header. The tooltip itself lives at `document.body` level so it cannot
+   be clipped by ancestor `overflow`.
+   ================================= */
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  cursor: help;
+  user-select: none;
+  line-height: 0;
+  transition: color 0.15s ease;
+  outline: none;
+}
+
+.info-icon:hover,
+.info-icon:focus-visible {
+  color: var(--color-accent-primary);
+}
+
+.info-icon svg {
+  display: block;
+}
+
+/* Instant tooltip rendered via React portal. `top`/`left` come from the
+   anchor's bounding rect; `transform` centers/flips it relative to those
+   coordinates depending on the chosen placement. */
+.info-icon-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 280px;
+  width: max-content;
+  padding: 6px 10px;
+  background-color: var(--color-bg-card);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.info-icon-tooltip--below {
+  transform: translate(-50%, 0);
+}
+
+.info-icon-tooltip--above {
+  transform: translate(-50%, -100%);
+}

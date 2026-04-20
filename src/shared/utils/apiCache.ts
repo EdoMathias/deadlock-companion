@@ -31,6 +31,8 @@ export const CACHE_TTL = {
   ITEM_METADATA: 24 * 60 * 60 * 1000,
   /** Item analytics / win rates / combos — matches API 1 h cache. */
   ITEM_ANALYTICS: 60 * 60 * 1000,
+  /** Hero analytics / win-pick-ban rates — matches API 1 h cache. */
+  HERO_ANALYTICS: 60 * 60 * 1000,
   /** Patch list — cache for 24 h. */
   PATCHES: 24 * 60 * 60 * 1000,
 } as const;
