@@ -34,13 +34,14 @@ Settings is **not** a config view — it's an overlay rendered inside `main-cont
 ```ts
 import { ViewConfig } from '../types/views.types';
 import { LiveMatchView, MatchHistoryView, ProfileView, ContributeView,
-         ItemStatsView, OverlayEditorView } from '../views';
+         HeroStatsView, ItemStatsView, OverlayEditorView } from '../views';
 import LiveMatchIcon from '../views/LiveMatch/components/LiveMatchIcon';
 // ...
 
 export const viewsConfig: ViewConfig[] = [
   { name: 'Live Match',     icon: LiveMatchIcon,     component: LiveMatchView,     active: true },
   { name: 'Match History',  icon: MatchHistoryIcon,  component: MatchHistoryView,  active: false },
+  { name: 'Hero Stats',     icon: HeroStatsIcon,     component: HeroStatsView,     active: false },
   { name: 'Item Stats',     icon: ItemStatsIcon,     component: ItemStatsView,     active: false },
   { name: 'Overlay Editor', icon: OverlayEditorIcon, component: OverlayEditorView, active: false },
   { name: 'Contribute',     icon: ContributeIcon,    component: ContributeView,    active: false },
@@ -92,6 +93,10 @@ views/
     MatchHistoryView.tsx
     MatchDetailView.tsx
     components/
+  HeroStats/
+    HeroStatsView.tsx
+    components/
+    hooks/
   ItemStats/
     ItemStatsView.tsx
     components/

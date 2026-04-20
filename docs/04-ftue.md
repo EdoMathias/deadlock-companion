@@ -65,6 +65,7 @@ export type FTUEStep =
   | 'welcome'
   | 'live_match_header'
   | 'match_history_header'
+  | 'hero_stats_header'
   | 'item_stats_header'
   | 'overlay_editor_header'
   | 'contribute_header'
@@ -79,6 +80,7 @@ const MAIN_STEPS: FTUEStep[] = [
   'welcome',
   'live_match_header',
   'match_history_header',
+  'hero_stats_header',
   'item_stats_header',
   'overlay_editor_header',
   'contribute_header',
@@ -113,10 +115,11 @@ These keys are **part of the contract** with users — never rename them, and ne
 | `deadlock_companion_ftue_steps` | JSON `FTUEStep[]` | Set of completed step ids (used to compute `shouldShowStep`) |
 | `deadlock_companion_data_contribution_seen` | `'true' \| absent` | User has dismissed `DataContributionModal` |
 | `deadlock_companion_item_alerts_feature_seen` | `'true' \| absent` | User has visited `Item Stats` or `Overlay Editor` post-FTUE — clears the "NEW" badge |
+| `deadlock_companion_hero_stats_feature_seen` | `'true' \| absent` | User has visited `Hero Stats` post-FTUE — clears the "NEW" badge |
 | `deadlock_companion_rotations_ftue_completed` | `'true' \| absent` | Legacy — cleared by `resetFTUE()`, otherwise unused |
 | `deadlock_companion_interactive_map_ftue_completed` | `'true' \| absent` | Legacy — cleared by `resetFTUE()`, otherwise unused |
 
-`resetFTUE()` removes all six. Add any new FTUE-related keys to the cleanup list.
+`resetFTUE()` removes all seven. Add any new FTUE-related keys to the cleanup list.
 
 ---
 
@@ -171,13 +174,14 @@ The mechanism:
 const showBadge = isFTUEComplete && hasUnseenFTUE(view.name);
 ```
 
-`hasUnseenFTUE(viewName)` returns `true` iff the user has finished the tour, has not seen the matching feature flag, and the `viewName` is in `ITEM_ALERTS_VIEWS`.
+`hasUnseenFTUE(viewName)` returns `true` iff the user has finished the tour and at least one feature flag says the matching view is still "new". Each feature has its own views list and own flag:
 
 ```ts
 const ITEM_ALERTS_VIEWS = ['Item Stats', 'Overlay Editor'];
+const HERO_STATS_VIEWS = ['Hero Stats'];
 ```
 
-When the user opens either view, `Main.tsx` calls `markItemAlertsFeatureSeen()`, which writes `deadlock_companion_item_alerts_feature_seen` and clears the badge.
+When the user opens either item-alerts view, `Main.tsx` calls `markItemAlertsFeatureSeen()`, which writes `deadlock_companion_item_alerts_feature_seen` and clears that badge. Opening `Hero Stats` calls `markHeroStatsFeatureSeen()`, which writes `deadlock_companion_hero_stats_feature_seen` and clears the Hero Stats badge.
 
 To introduce a new "NEW" feature for existing users:
 

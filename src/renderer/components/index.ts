@@ -10,3 +10,5 @@ export * from './RefreshButton';
 export * from './DataContributionModal';
 export * from './IngestCacheCard';
 export * from './IngestPromptModal';
+export { default as DateRangeSelector } from './DateRangeSelector';
+export { default as InfoIcon } from './InfoIcon';

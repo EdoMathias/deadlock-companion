@@ -54,7 +54,12 @@ const ACTIVE_VIEW_STORAGE_KEY = 'deadlock_companion_active_view';
  */
 const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
   const { isIngameWindow } = useWindowInfo();
-  const { isFTUEComplete, skipTour, markItemAlertsFeatureSeen } = useFTUE();
+  const {
+    isFTUEComplete,
+    skipTour,
+    markItemAlertsFeatureSeen,
+    markHeroStatsFeatureSeen,
+  } = useFTUE();
   const appVersion = useAppVersion();
   const {
     releaseNote,
@@ -104,6 +109,13 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
       markItemAlertsFeatureSeen();
     }
   }, [activeView, markItemAlertsFeatureSeen]);
+
+  // Dismiss the "NEW" badge for Hero Stats once the user opens the tab
+  useEffect(() => {
+    if (activeView === 'Hero Stats') {
+      markHeroStatsFeatureSeen();
+    }
+  }, [activeView, markHeroStatsFeatureSeen]);
 
   // React to FTUE reset (triggered by the parent via resetTrigger)
   useEffect(() => {
@@ -337,6 +349,20 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
               onDismiss={() =>
                 window.dispatchEvent(
                   new CustomEvent('navigate-view', { detail: 'Match History' }),
+                )
+              }
+            />
+            <FTUETooltip
+              step="hero_stats_header"
+              title="Hero Stats"
+              message="Compare every hero's win rate, pick rate, ban rate and match count. Filter by patch, rank, or game mode to find what's strong right now."
+              position="right"
+              targetSelector='[data-ftue-target="Hero Stats"]'
+              skipAllLabel="Skip tour"
+              onSkipAll={skipTour}
+              onDismiss={() =>
+                window.dispatchEvent(
+                  new CustomEvent('navigate-view', { detail: 'Hero Stats' }),
                 )
               }
             />

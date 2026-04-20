@@ -11,6 +11,7 @@ export type FTUEStep =
   | 'welcome'
   | 'live_match_header'
   | 'match_history_header'
+  | 'hero_stats_header'
   | 'item_stats_header'
   | 'overlay_editor_header'
   | 'contribute_header'
@@ -24,6 +25,7 @@ const MAIN_STEPS: FTUEStep[] = [
   'welcome',
   'live_match_header',
   'match_history_header',
+  'hero_stats_header',
   'item_stats_header',
   'overlay_editor_header',
   'contribute_header',
@@ -38,6 +40,12 @@ const ITEM_ALERTS_FEATURE_SEEN_KEY =
 
 /** Views that belong to the item-alerts feature (for "NEW" badge logic). */
 const ITEM_ALERTS_VIEWS = ['Item Stats', 'Overlay Editor'];
+
+const HERO_STATS_FEATURE_SEEN_KEY =
+  'deadlock_companion_hero_stats_feature_seen';
+
+/** Views that belong to the hero-stats feature (for "NEW" badge logic). */
+const HERO_STATS_VIEWS = ['Hero Stats'];
 
 interface FTUEContextType {
   isFTUEComplete: boolean;
@@ -61,6 +69,8 @@ interface FTUEContextType {
   markDataContributionSeen: () => void;
   /** Dismiss the "NEW" badges for the item-alerts feature views. */
   markItemAlertsFeatureSeen: () => void;
+  /** Dismiss the "NEW" badges for the hero-stats feature views. */
+  markHeroStatsFeatureSeen: () => void;
 }
 
 interface FTUEProviderProps {
@@ -129,6 +139,25 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     }
   }, []);
 
+  // ── Hero-stats feature "NEW" badge ──────────────────────
+  const [hasSeenHeroStatsFeature, setHasSeenHeroStatsFeature] =
+    useState<boolean>(() => {
+      try {
+        return localStorage.getItem(HERO_STATS_FEATURE_SEEN_KEY) === 'true';
+      } catch {
+        return false;
+      }
+    });
+
+  const markHeroStatsFeatureSeen = useCallback(() => {
+    setHasSeenHeroStatsFeature(true);
+    try {
+      localStorage.setItem(HERO_STATS_FEATURE_SEEN_KEY, 'true');
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
   // ── Rotations FTUE ────────────────────────────────────────
   const [isRotationsFTUEComplete] = useState<boolean>(true);
 
@@ -174,6 +203,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     setIsFTUEComplete(false);
     setCompletedSteps(new Set());
     setHasSeenItemAlertsFeature(false);
+    setHasSeenHeroStatsFeature(false);
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(STEPS_STORAGE_KEY);
@@ -181,6 +211,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       localStorage.removeItem(INTERACTIVE_MAP_FTUE_STORAGE_KEY);
       localStorage.removeItem(DATA_CONTRIBUTION_STORAGE_KEY);
       localStorage.removeItem(ITEM_ALERTS_FEATURE_SEEN_KEY);
+      localStorage.removeItem(HERO_STATS_FEATURE_SEEN_KEY);
     } catch {
       // Ignore errors
     }
@@ -244,16 +275,22 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
    */
   const hasUnseenFTUE = useCallback(
     (viewName: string): boolean => {
+      if (!isFTUEComplete) return false;
       if (
-        isFTUEComplete &&
         !hasSeenItemAlertsFeature &&
         ITEM_ALERTS_VIEWS.includes(viewName)
       ) {
         return true;
       }
+      if (
+        !hasSeenHeroStatsFeature &&
+        HERO_STATS_VIEWS.includes(viewName)
+      ) {
+        return true;
+      }
       return false;
     },
-    [isFTUEComplete, hasSeenItemAlertsFeature],
+    [isFTUEComplete, hasSeenItemAlertsFeature, hasSeenHeroStatsFeature],
   );
 
   // ── Auto-complete when all steps in a group are done ──────
@@ -281,6 +318,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
         hasSeenDataContribution,
         markDataContributionSeen,
         markItemAlertsFeatureSeen,
+        markHeroStatsFeatureSeen,
       }}
     >
       {children}

@@ -74,7 +74,7 @@ There is exactly one CSS entry point per renderer: [`src/renderer/styles/index.c
 1. variables.css         — design tokens
 2. base.css              — resets, body, scrollbars, utilities
 3. layout.css            — app-layout, app-body, side-nav, main-content, ad-sidebar
-4. components/*.css      — buttons, modals, inputs, tabs, cards, header, widgets, refresh-button, ingest
+4. components/*.css      — buttons, modals, inputs, tabs, cards, header, widgets, refresh-button, ingest, date-range-selector, info-icon
 5. views/*.css           — overview, topmaps, settings, ftue, ingame, dashboard, library,
                             widgets, rotations, deadlock-views, companion-ready, contribute
 ```
@@ -123,6 +123,8 @@ import { AppHeader, Modal, RefreshButton, RankRangeSlider, FTUETooltip } from '.
 | `Modal` | Generic confirm/cancel dialog with overlay. | `isOpen`, `title`, `message`, `onConfirm`, `onCancel`, `variant?: 'danger' \| 'default'` |
 | `RankRangeSlider` | Dual-handle slider for rank filtering, sourced from `shared/data/ranks`. | `minBadge?`, `maxBadge?`, `onChange(min, max)` (`undefined` = "all ranks") |
 | `HeroSelect` | Searchable single-select for `HEROES`. | `value: number \| string \| null`, `onChange(string \| null)` |
+| `DateRangeSelector` | Dropdown that lets the user pick a recent patch (from the forum changelog feed) or a custom date range; writes through to `min_unix_timestamp` / `max_unix_timestamp`. Backed by `usePatchDays`, which combines `fetchPatches` with `fetchBigPatchDays` to flag milestone updates with a "Major" badge. | `minUnixTimestamp?`, `maxUnixTimestamp?`, `onChange(min, max)` (`undefined` / `undefined` = "all time") |
+| `InfoIcon` | Small inline Lucide "info" SVG icon with a native tooltip (`title`). Use next to a label or column header to explain an option or metric. Inherits color via `currentColor`. | `title?`, `ariaLabel?`, `className?`, `size?` (default `14`), `onClick?` |
 | `RefreshButton` | Refresh action with loading state, "X ago" timestamp, cached badge. | `onRefresh`, `isLoading`, `isCached`, `lastRefreshTime`, `tooltipText?` |
 | `IngestCacheCard` | Collapsible promo card linking to the Contribute view. | (no props — uses `localStorage` + `navigate-view`) |
 | `IngestPromptModal` | Modal asking the user to enable httpcache ingest. | `isOpen`, `onClose`, `onGoToScanner`, `scope?: 'global' \| 'content'` |
