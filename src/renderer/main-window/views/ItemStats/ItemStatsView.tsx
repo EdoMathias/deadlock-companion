@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { ItemStatsFilters, ItemStatsRow, ItemAnalyticsComputed } from '../../../../shared/types/items';
-import { useItemMetadata } from './hooks/useItemMetadata';
+import { useItemMetadata } from '../../../hooks/useItemMetadata';
 import { useItemAnalytics } from './hooks/useItemStats';
 import { useNotificationPrefs } from './hooks/useNotificationPrefs';
 import { useGepItemsSupport } from './hooks/useGepItemsSupport';

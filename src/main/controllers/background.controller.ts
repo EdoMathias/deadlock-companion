@@ -57,6 +57,7 @@ export class BackgroundController {
   private _localPlayerRosterData: Record<string, unknown> | null = null;
   private _currentMatchId: string | null = null;
   private _allRosterData: Map<string, LiveRosterEntry> = new Map();
+  private _itemsByRosterIdx: Map<number, number[]> = new Map();
   private _matchStartTimestamp: number | null = null;
   private _isMatchEnded: boolean = false;
   private _gameMode: GameModeInfo | null = null;
@@ -347,6 +348,7 @@ export class BackgroundController {
     this._localPlayerRosterData = null;
     this._currentMatchId = null;
     this._allRosterData.clear();
+    this._itemsByRosterIdx.clear();
     this._matchStartTimestamp = Date.now();
     this._isMatchEnded = false;
     this._gameMode = null;
@@ -641,8 +643,17 @@ export class BackgroundController {
 
   /** Broadcasts the current full roster to renderer windows. */
   private broadcastRosterUpdate(): void {
+    const enrichedRoster = Array.from(this._allRosterData.entries()).map(
+      ([key, entry]) => {
+        const idx = parseInt(key.replace('roster_', ''), 10);
+        const items = !isNaN(idx)
+          ? this._itemsByRosterIdx.get(idx)
+          : undefined;
+        return { ...entry, items: items ?? [] };
+      },
+    );
     const payload: LiveRosterUpdatePayload = {
-      roster: Array.from(this._allRosterData.values()),
+      roster: enrichedRoster,
       matchId: this._currentMatchId,
       matchStartTimestamp: this._matchStartTimestamp,
       isMatchEnded: this._isMatchEnded,
@@ -821,6 +832,7 @@ export class BackgroundController {
     }
 
     // Parse items_N info updates and feed them to the purchase tracker
+    let itemsChanged = false;
     for (const key of Object.keys(infoData)) {
       if (!key.startsWith('items_')) continue;
 
@@ -833,13 +845,24 @@ export class BackgroundController {
         const idx = parseInt(key.replace('items_', ''), 10);
         if (!isNaN(idx)) {
           this._itemPurchaseTracker.onItemsUpdate(idx, parsed);
+
+          const nextIds = parsed.items.map((i) => i.id);
+          const prevIds = this._itemsByRosterIdx.get(idx);
+          if (
+            !prevIds ||
+            prevIds.length !== nextIds.length ||
+            prevIds.some((id, i) => id !== nextIds[i])
+          ) {
+            this._itemsByRosterIdx.set(idx, nextIds);
+            itemsChanged = true;
+          }
         }
       } catch (err) {
         logger.warn(`match_info update: failed to parse ${key}:`, err);
       }
     }
 
-    if (rosterChanged) {
+    if (rosterChanged || itemsChanged) {
       this.broadcastRosterUpdate();
     }
   }
