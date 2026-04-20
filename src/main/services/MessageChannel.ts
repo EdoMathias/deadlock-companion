@@ -18,6 +18,7 @@ export enum MessageType {
   LIVE_ROSTER_UPDATE = 'live-roster-update',
   REQUEST_LIVE_MATCH_STATE = 'request-live-match-state',
   ROSTER_SNAPSHOT = 'roster-snapshot',
+  ITEM_PURCHASE_ALERT = 'item-purchase-alert',
   CUSTOM = 'custom',
 }
 

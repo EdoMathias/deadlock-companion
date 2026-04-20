@@ -4,7 +4,7 @@
   "meta": {
     "name": "Deadlock Companion",
     "author": "KofimBadam",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "minimum-overwolf-version": "0.160.0",
     "description": "An Overwolf companion app for Deadlock",
     "dock_button_title": "DeadlockCompanion",
@@ -84,6 +84,18 @@
         "min_size": {
           "width": 1600,
           "height": 800
+        }
+      },
+      "alert_overlay": {
+        "file": "alert_overlay.html",
+        "in_game_only": true,
+        "resizable": false,
+        "transparent": true,
+        "override_on_update": true,
+        "clickthrough": false,
+        "size": {
+          "width": 400,
+          "height": 500
         }
       }
     },

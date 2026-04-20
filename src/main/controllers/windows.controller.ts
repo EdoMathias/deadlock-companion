@@ -52,6 +52,9 @@ export class WindowsController {
     // Close the companion app ready window if still visible
     await this._windowsService.closeCompanionAppReadyWindow();
 
+    // Close the alert overlay window
+    await this._windowsService.closeAlertOverlayWindow();
+
     // Move the main desktop window to the center of the main monitor
     await this._windowsService.showMainDesktopWindow('primary');
   }
@@ -113,6 +116,14 @@ export class WindowsController {
     await this._windowsService.closeCompanionAppReadyWindow();
   }
 
+  public async showAlertOverlayWindow(dockTo?: Edge): Promise<void> {
+    await this._windowsService.showAlertOverlayWindow('primary', dockTo);
+  }
+
+  public async closeAlertOverlayWindow(): Promise<void> {
+    await this._windowsService.closeAlertOverlayWindow();
+  }
+
   public async closeAllWindows(): Promise<void> {
     try {
       await this._windowsService.closeMainDesktopWindow();
@@ -133,6 +144,11 @@ export class WindowsController {
       await this._windowsService.closeCompanionAppReadyWindow();
     } catch (error) {
       logger.error('Error closing companion app ready window:', error);
+    }
+    try {
+      await this._windowsService.closeAlertOverlayWindow();
+    } catch (error) {
+      logger.error('Error closing alert overlay window:', error);
     }
   }
 

@@ -27,6 +27,10 @@ import type {
 } from '../../shared/types/liveMatch';
 import { HEROES } from '../../shared/data/heroes';
 import { submitSaltsToApi } from '../../shared/services/matchMetadataFetcher';
+import { ItemPurchaseTracker } from '../services/item-purchase-tracker.service';
+import type { GepItemsUpdate, ItemPurchaseAlert } from '../../shared/types/itemAlerts';
+import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
+import { fetchAllItems } from '../../shared/services/deadlock-api/assetsApiService';
 
 const logger = createLogger('BackgroundController');
 
@@ -45,6 +49,7 @@ export class BackgroundController {
   private _appLaunchService: AppLaunchService;
   private _trayIconService: TrayIconService;
   private _gameEventsService: GameEventsService;
+  private _itemPurchaseTracker: ItemPurchaseTracker;
 
   private _isGameRunning: boolean = false;
   private _companionReadyDismissTimer: ReturnType<typeof setTimeout> | null =
@@ -99,6 +104,12 @@ export class BackgroundController {
         this.handleInfoUpdate(info);
       },
     });
+
+    this._itemPurchaseTracker = new ItemPurchaseTracker();
+    this._itemPurchaseTracker.setAlertCallback((alert) =>
+      this.handleItemPurchaseAlert(alert),
+    );
+    this.loadItemMetadataForTracker();
 
     // Set up service callbacks
     this.setupHotkeyHandlers();
@@ -341,6 +352,8 @@ export class BackgroundController {
     this._gameMode = null;
     this._teamScores = null;
     this._rosterUpdateCount = 0;
+    this._itemPurchaseTracker.reset();
+    this.loadItemMetadataForTracker();
 
     overwolf.games.events.getInfo((result) => {
       if (!result.success) {
@@ -401,6 +414,16 @@ export class BackgroundController {
       startPayload,
     );
     logger.log('match_start: broadcast LIVE_MATCH_START');
+
+    // Show the alert overlay window at the user's configured dock position
+    const alertConfig = getWidgetConfig('item_purchase_alert');
+    if (alertConfig?.enabled !== false) {
+      this._windowsController
+        .showAlertOverlayWindow(alertConfig?.dock_edge)
+        .catch((err) => {
+          logger.warn('Failed to show alert overlay on match_start:', err);
+        });
+    }
   }
 
   /**
@@ -477,6 +500,16 @@ export class BackgroundController {
         logger.log(
           `checkForActiveMatch: bootstrapped match ${this._currentMatchId} with ${this._allRosterData.size} roster entries`,
         );
+
+        // Show alert overlay for mid-match app open
+        const alertCfg = getWidgetConfig('item_purchase_alert');
+        if (alertCfg?.enabled !== false) {
+          this._windowsController
+            .showAlertOverlayWindow(alertCfg?.dock_edge)
+            .catch((err) => {
+              logger.warn('Failed to show alert overlay on active match:', err);
+            });
+        }
       });
     }, 1500);
   }
@@ -497,6 +530,11 @@ export class BackgroundController {
       MessageType.LIVE_MATCH_END,
     );
     logger.log('match_end: broadcast LIVE_MATCH_END');
+
+    // Close the alert overlay window
+    this._windowsController.closeAlertOverlayWindow().catch((err) => {
+      logger.warn('Failed to close alert overlay on match_end:', err);
+    });
 
     // Send roster snapshot to renderer windows via the message channel so
     // they can persist it in their own IndexedDB (cross-window IDB is unreliable).
@@ -584,6 +622,11 @@ export class BackgroundController {
 
         this._allRosterData.set(key, entry);
 
+        const rosterIdx = parseInt(key.replace('roster_', ''), 10);
+        if (!isNaN(rosterIdx)) {
+          this._itemPurchaseTracker.onRosterUpdate(rosterIdx, entry);
+        }
+
         if (entry.is_local) {
           this._localPlayerRosterData = rosterEntry;
           logger.log('Found local player roster:', key, entry);
@@ -624,6 +667,35 @@ export class BackgroundController {
     if (this._allRosterData.size > 0 || this._currentMatchId) {
       this.broadcastRosterUpdate();
     }
+  }
+
+  /**
+   * Loads item metadata from the Assets API and passes it to the tracker
+   * so alert payloads include image/description/is_active_item.
+   */
+  private loadItemMetadataForTracker(): void {
+    fetchAllItems()
+      .then((items) => {
+        this._itemPurchaseTracker.setItemMetadata(items);
+      })
+      .catch((err) => {
+        logger.warn('Failed to load item metadata for purchase tracker:', err);
+      });
+  }
+
+  /**
+   * Handles an item purchase alert from the ItemPurchaseTracker.
+   * Forwards it to the alert overlay window via MessageChannel.
+   */
+  private handleItemPurchaseAlert(alert: ItemPurchaseAlert): void {
+    logger.log(
+      `Item purchase alert: ${alert.hero_name} bought ${alert.item.name}`,
+    );
+    this._messageChannel.sendMessage(
+      kWindowNames.alertOverlay,
+      MessageType.ITEM_PURCHASE_ALERT,
+      alert,
+    );
   }
 
   /**
@@ -728,6 +800,11 @@ export class BackgroundController {
         this._allRosterData.set(key, entry);
         rosterChanged = true;
 
+        const rosterIdx = parseInt(key.replace('roster_', ''), 10);
+        if (!isNaN(rosterIdx)) {
+          this._itemPurchaseTracker.onRosterUpdate(rosterIdx, entry);
+        }
+
         if (entry.is_local) {
           this._localPlayerRosterData = rosterEntry;
           // Throttled logging: only log every 10th roster update
@@ -737,6 +814,25 @@ export class BackgroundController {
               `match_info update: local player roster (update #${this._rosterUpdateCount})`,
             );
           }
+        }
+      } catch (err) {
+        logger.warn(`match_info update: failed to parse ${key}:`, err);
+      }
+    }
+
+    // Parse items_N info updates and feed them to the purchase tracker
+    for (const key of Object.keys(infoData)) {
+      if (!key.startsWith('items_')) continue;
+
+      try {
+        const raw = infoData[key];
+        const parsed: GepItemsUpdate =
+          typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!parsed || !Array.isArray(parsed.items)) continue;
+
+        const idx = parseInt(key.replace('items_', ''), 10);
+        if (!isNaN(idx)) {
+          this._itemPurchaseTracker.onItemsUpdate(idx, parsed);
         }
       } catch (err) {
         logger.warn(`match_info update: failed to parse ${key}:`, err);

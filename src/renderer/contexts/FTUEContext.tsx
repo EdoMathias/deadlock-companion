@@ -11,6 +11,8 @@ export type FTUEStep =
   | 'welcome'
   | 'live_match_header'
   | 'match_history_header'
+  | 'item_stats_header'
+  | 'overlay_editor_header'
   | 'contribute_header'
   | 'profile_header'
   | 'match_history_data_contribution';
@@ -22,12 +24,20 @@ const MAIN_STEPS: FTUEStep[] = [
   'welcome',
   'live_match_header',
   'match_history_header',
+  'item_stats_header',
+  'overlay_editor_header',
   'contribute_header',
   'profile_header',
 ];
 
 const DATA_CONTRIBUTION_STORAGE_KEY =
   'deadlock_companion_data_contribution_seen';
+
+const ITEM_ALERTS_FEATURE_SEEN_KEY =
+  'deadlock_companion_item_alerts_feature_seen';
+
+/** Views that belong to the item-alerts feature (for "NEW" badge logic). */
+const ITEM_ALERTS_VIEWS = ['Item Stats', 'Overlay Editor'];
 
 interface FTUEContextType {
   isFTUEComplete: boolean;
@@ -49,6 +59,8 @@ interface FTUEContextType {
   hasSeenDataContribution: boolean;
   /** Mark the data contribution modal as dismissed. */
   markDataContributionSeen: () => void;
+  /** Dismiss the "NEW" badges for the item-alerts feature views. */
+  markItemAlertsFeatureSeen: () => void;
 }
 
 interface FTUEProviderProps {
@@ -98,6 +110,25 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     }
   }, []);
 
+  // ── Item-alerts feature "NEW" badge ─────────────────────
+  const [hasSeenItemAlertsFeature, setHasSeenItemAlertsFeature] =
+    useState<boolean>(() => {
+      try {
+        return localStorage.getItem(ITEM_ALERTS_FEATURE_SEEN_KEY) === 'true';
+      } catch {
+        return false;
+      }
+    });
+
+  const markItemAlertsFeatureSeen = useCallback(() => {
+    setHasSeenItemAlertsFeature(true);
+    try {
+      localStorage.setItem(ITEM_ALERTS_FEATURE_SEEN_KEY, 'true');
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
   // ── Rotations FTUE ────────────────────────────────────────
   const [isRotationsFTUEComplete] = useState<boolean>(true);
 
@@ -142,12 +173,14 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
   const resetFTUE = () => {
     setIsFTUEComplete(false);
     setCompletedSteps(new Set());
+    setHasSeenItemAlertsFeature(false);
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(STEPS_STORAGE_KEY);
       localStorage.removeItem(ROTATIONS_FTUE_STORAGE_KEY);
       localStorage.removeItem(INTERACTIVE_MAP_FTUE_STORAGE_KEY);
       localStorage.removeItem(DATA_CONTRIBUTION_STORAGE_KEY);
+      localStorage.removeItem(ITEM_ALERTS_FEATURE_SEEN_KEY);
     } catch {
       // Ignore errors
     }
@@ -206,11 +239,22 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
 
   /**
    * Generic check: does this view have an unseen FTUE?
-   * Add a case for each new feature that has its own FTUE flow.
+   * For existing users who already completed the tour, show "NEW" badges
+   * on views that belong to a newly-released feature.
    */
-  const hasUnseenFTUE = useCallback((_viewName: string): boolean => {
-    return false;
-  }, []);
+  const hasUnseenFTUE = useCallback(
+    (viewName: string): boolean => {
+      if (
+        isFTUEComplete &&
+        !hasSeenItemAlertsFeature &&
+        ITEM_ALERTS_VIEWS.includes(viewName)
+      ) {
+        return true;
+      }
+      return false;
+    },
+    [isFTUEComplete, hasSeenItemAlertsFeature],
+  );
 
   // ── Auto-complete when all steps in a group are done ──────
   useEffect(() => {
@@ -236,6 +280,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
         hasUnseenFTUE,
         hasSeenDataContribution,
         markDataContributionSeen,
+        markItemAlertsFeatureSeen,
       }}
     >
       {children}

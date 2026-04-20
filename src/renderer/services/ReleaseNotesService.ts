@@ -18,7 +18,7 @@ export const RELEASE_NOTES_STORAGE_KEY =
   'deadlock_companion_release_notes_viewed';
 
 const RELEASE_NOTES_BASE_URL = 'https://console-api.overwolf.com/v1/apps';
-const RELEASE_NOTES_APP_ID = 'kiglhbmjdbkpnjoeoghfdbjkdmehnjidkiblddgf';
+const RELEASE_NOTES_APP_ID = 'ajmnodkkadanooppeoeiipkhfonepdmjjlgomdfa';
 const MAX_RELEASE_NOTES_PAGES = 4;
 
 interface ViewedReleaseNotePayload {
