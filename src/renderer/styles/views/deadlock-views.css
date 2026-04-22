@@ -1894,6 +1894,100 @@
   white-space: nowrap;
 }
 
+/* =================================
+   Enemy items cell
+   Replaces the DMG/Obj/Heal/Lvl columns for the enemy team (Overwolf stopped
+   reporting those fields for enemy players). Renders a horizontal row of
+   item icons with a portal-based instant tooltip for each.
+   ================================= */
+
+.scoreboard-cell--items {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  vertical-align: middle;
+  overflow: visible;
+}
+
+.scoreboard-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
+.scoreboard-items__empty {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.scoreboard-items__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  background-color: var(--color-bg-surface, rgba(0, 0, 0, 0.25));
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: default;
+  outline: none;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.scoreboard-items__icon:hover,
+.scoreboard-items__icon:focus-visible {
+  transform: scale(1.15);
+  border-color: var(--color-accent-primary);
+  z-index: 1;
+}
+
+.scoreboard-items__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.scoreboard-items__icon-fallback {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-card);
+}
+
+.scoreboard-items__tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 240px;
+  width: max-content;
+  padding: 5px 9px;
+  background-color: var(--color-bg-card);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.scoreboard-items__tooltip--below {
+  transform: translate(-50%, 0);
+}
+
+.scoreboard-items__tooltip--above {
+  transform: translate(-50%, -100%);
+}
+
 .scoreboard-waiting {
   display: flex;
   justify-content: center;

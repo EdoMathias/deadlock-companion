@@ -1,10 +1,14 @@
 import React from 'react';
 import { getHero } from '../../../../shared/data/heroes';
 import type { EnrichedRosterEntry } from '../../../hooks/useLiveMatch';
+import type { ItemMetadata } from '../../../../shared/types/items';
+import PlayerItemsCell from './components/PlayerItemsCell';
 
 interface ScoreboardRowProps {
   player: EnrichedRosterEntry;
   elapsedSeconds: number;
+  isEnemyTeam: boolean;
+  itemMetadata: Map<number, ItemMetadata>;
 }
 
 function formatNumber(n: number): string {
@@ -15,6 +19,8 @@ function formatNumber(n: number): string {
 const ScoreboardRow: React.FC<ScoreboardRowProps> = ({
   player,
   elapsedSeconds,
+  isEnemyTeam,
+  itemMetadata,
 }) => {
   const hero = getHero(player.hero_id);
   const elapsedMinutes = elapsedSeconds / 60;
@@ -53,16 +59,29 @@ const ScoreboardRow: React.FC<ScoreboardRowProps> = ({
         {player.lastHits}
       </td>
       <td className="scoreboard-cell scoreboard-cell--num">{lhPerMin}</td>
-      <td className="scoreboard-cell scoreboard-cell--num">
-        {formatNumber(player.hero_damage)}
-      </td>
-      <td className="scoreboard-cell scoreboard-cell--num">
-        {formatNumber(player.object_damage)}
-      </td>
-      <td className="scoreboard-cell scoreboard-cell--num">
-        {formatNumber(player.hero_healing)}
-      </td>
-      <td className="scoreboard-cell scoreboard-cell--num">{player.level}</td>
+      {isEnemyTeam ? (
+        <td className="scoreboard-cell scoreboard-cell--items" colSpan={4}>
+          <PlayerItemsCell
+            itemIds={player.items ?? []}
+            metadata={itemMetadata}
+          />
+        </td>
+      ) : (
+        <>
+          <td className="scoreboard-cell scoreboard-cell--num">
+            {formatNumber(player.hero_damage)}
+          </td>
+          <td className="scoreboard-cell scoreboard-cell--num">
+            {formatNumber(player.object_damage)}
+          </td>
+          <td className="scoreboard-cell scoreboard-cell--num">
+            {formatNumber(player.hero_healing)}
+          </td>
+          <td className="scoreboard-cell scoreboard-cell--num">
+            {player.level}
+          </td>
+        </>
+      )}
     </tr>
   );
 };

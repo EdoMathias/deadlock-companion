@@ -16,6 +16,8 @@ export interface LiveRosterEntry {
   health: number;
   souls: number;
   hero_name: string;
+  /** Current item IDs owned by this player, sourced from items_N GEP events. */
+  items?: number[];
 }
 
 /** Game mode information from game_info events. */

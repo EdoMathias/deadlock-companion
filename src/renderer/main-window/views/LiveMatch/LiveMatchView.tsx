@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSteamId } from '../../../hooks/useSteamId';
 import { useLiveMatch } from '../../../hooks/useLiveMatch';
 import {
@@ -6,8 +6,10 @@ import {
   gepStateLabel,
   gepStateClass,
 } from '../../../hooks/useGepStatus';
+import { useItemMetadata } from '../../../hooks/useItemMetadata';
 import type { EnrichedRosterEntry } from '../../../hooks/useLiveMatch';
 import type { GameModeInfo } from '../../../../shared/types/liveMatch';
+import type { ItemMetadata } from '../../../../shared/types/items';
 import ScoreboardTable from './ScoreboardTable';
 
 function formatTimer(seconds: number): string {
@@ -42,6 +44,13 @@ const LiveMatchView: React.FC = () => {
     gameMode,
     teamScores,
   } = useLiveMatch();
+
+  const { items: itemMetadataList } = useItemMetadata();
+  const itemMetadata = useMemo(() => {
+    const map = new Map<number, ItemMetadata>();
+    for (const item of itemMetadataList) map.set(item.id, item);
+    return map;
+  }, [itemMetadataList]);
 
   const hasMatchData = isMatchActive || isMatchEnded;
 
@@ -214,12 +223,20 @@ const LiveMatchView: React.FC = () => {
                 elapsedSeconds={elapsedSeconds}
                 teamLabel={`Team ${teamNames.amber}`}
                 teamClassName="scoreboard-team--amber"
+                isEnemyTeam={
+                  localPlayerTeamId != null && localPlayerTeamId !== 2
+                }
+                itemMetadata={itemMetadata}
               />
               <ScoreboardTable
                 players={sapphirePlayers}
                 elapsedSeconds={elapsedSeconds}
                 teamLabel={`Team ${teamNames.sapphire}`}
                 teamClassName="scoreboard-team--sapphire"
+                isEnemyTeam={
+                  localPlayerTeamId != null && localPlayerTeamId !== 3
+                }
+                itemMetadata={itemMetadata}
               />
             </div>
           ) : (

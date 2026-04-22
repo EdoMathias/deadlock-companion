@@ -1,5 +1,6 @@
 import React from 'react';
 import type { EnrichedRosterEntry } from '../../../hooks/useLiveMatch';
+import type { ItemMetadata } from '../../../../shared/types/items';
 import ScoreboardRow from './ScoreboardRow';
 
 interface ScoreboardTableProps {
@@ -7,6 +8,8 @@ interface ScoreboardTableProps {
   elapsedSeconds: number;
   teamLabel: string;
   teamClassName: string;
+  isEnemyTeam: boolean;
+  itemMetadata: Map<number, ItemMetadata>;
 }
 
 const ScoreboardTable: React.FC<ScoreboardTableProps> = ({
@@ -14,8 +17,9 @@ const ScoreboardTable: React.FC<ScoreboardTableProps> = ({
   elapsedSeconds,
   teamLabel,
   teamClassName,
+  isEnemyTeam,
+  itemMetadata,
 }) => {
-  // Sort by souls descending (highest net worth first)
   const sorted = [...players].sort((a, b) => b.souls - a.souls);
 
   return (
@@ -30,10 +34,18 @@ const ScoreboardTable: React.FC<ScoreboardTableProps> = ({
             <th className="scoreboard-th scoreboard-th--num">Souls</th>
             <th className="scoreboard-th scoreboard-th--num">LH</th>
             <th className="scoreboard-th scoreboard-th--num">LH/m</th>
-            <th className="scoreboard-th scoreboard-th--num">DMG</th>
-            <th className="scoreboard-th scoreboard-th--num">Obj</th>
-            <th className="scoreboard-th scoreboard-th--num">Heal</th>
-            <th className="scoreboard-th scoreboard-th--num">Lvl</th>
+            {isEnemyTeam ? (
+              <th className="scoreboard-th scoreboard-th--items" colSpan={4}>
+                Items
+              </th>
+            ) : (
+              <>
+                <th className="scoreboard-th scoreboard-th--num">DMG</th>
+                <th className="scoreboard-th scoreboard-th--num">Obj</th>
+                <th className="scoreboard-th scoreboard-th--num">Heal</th>
+                <th className="scoreboard-th scoreboard-th--num">Lvl</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -42,6 +54,8 @@ const ScoreboardTable: React.FC<ScoreboardTableProps> = ({
               key={player.steam_id}
               player={player}
               elapsedSeconds={elapsedSeconds}
+              isEnemyTeam={isEnemyTeam}
+              itemMetadata={itemMetadata}
             />
           ))}
         </tbody>
