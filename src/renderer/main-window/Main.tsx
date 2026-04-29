@@ -59,6 +59,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     skipTour,
     markItemAlertsFeatureSeen,
     markHeroStatsFeatureSeen,
+    markCounterItemsFeatureSeen,
   } = useFTUE();
   const appVersion = useAppVersion();
   const {
@@ -116,6 +117,13 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
       markHeroStatsFeatureSeen();
     }
   }, [activeView, markHeroStatsFeatureSeen]);
+
+  // Dismiss the "NEW" badge for Counter Items once the user opens the Overlay Editor
+  useEffect(() => {
+    if (activeView === 'Overlay Editor') {
+      markCounterItemsFeatureSeen();
+    }
+  }, [activeView, markCounterItemsFeatureSeen]);
 
   // React to FTUE reset (triggered by the parent via resetTrigger)
   useEffect(() => {

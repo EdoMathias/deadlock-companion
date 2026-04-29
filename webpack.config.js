@@ -15,6 +15,8 @@ module.exports = (env) => ({
       './src/renderer/companion-ready-window/CompanionAppReady.tsx',
     alert_overlay:
       './src/renderer/alert-overlay-window/AlertOverlay.tsx',
+    counter_items:
+      './src/renderer/counter-items-window/CounterItems.tsx',
   },
   devtool: 'inline-source-map',
   module: {
@@ -100,6 +102,12 @@ module.exports = (env) => ({
         './src/renderer/alert-overlay-window/alert_overlay.html',
       filename: path.resolve(__dirname, './dist/alert_overlay.html'),
       chunks: ['alert_overlay'],
+    }),
+    new HtmlWebpackPlugin({
+      template:
+        './src/renderer/counter-items-window/counter_items.html',
+      filename: path.resolve(__dirname, './dist/counter_items.html'),
+      chunks: ['counter_items'],
     }),
     new HtmlWebpackPlugin({
       template: './src/renderer/uninstall-window/uninstall.html',

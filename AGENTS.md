@@ -17,6 +17,7 @@ Deadlock Companion is an **Overwolf** companion app for Valve's *Deadlock* (Over
 | `main_ingame` | Same React app, rendered as an in-game overlay. | Deadlock is running |
 | `companion_app_ready` | Small pop-up confirming the companion launched in-game. | First seconds after match start |
 | `alert_overlay` | In-game item-purchase alert toast stack. | During an active match |
+| `counter_items` | In-game counter-item advisor based on enemy team composition. | During an active match (toggle via Alt+Shift+F) |
 | `uninstall` | Tiny page that opens the feedback form on uninstall. | Triggered by Overwolf |
 
 All renderer windows share a single React component tree, design system, and `@overwolf/odk-ts` integration.
@@ -199,7 +200,7 @@ You **must** update docs when you:
 - Add, rename, remove, or reorder a tab → [`docs/03-views-and-navigation.md`](docs/03-views-and-navigation.md) (and the SideNav-order references in [`AGENTS.md`](AGENTS.md) §3 if the tab list changes).
 - Add or rename a `localStorage` key, IndexedDB DB/store, or `apiCache` namespace → [`docs/05-data-and-persistence.md`](docs/05-data-and-persistence.md) §6 (canonical key registry).
 - Add a value to `MessageType` → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §4 (the enum reference table).
-- Add or change an Overwolf window → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §1 and the window list in [`AGENTS.md`](AGENTS.md) §1.
+- Add or change an Overwolf window → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §1 and the window list in [`AGENTS.md`](AGENTS.md) §1. If the window is an overlay widget managed by `overlayLayoutStore`, also add a dedicated preview branch in [`WidgetPreview.tsx`](src/renderer/main-window/views/OverlayEditor/components/WidgetPreview.tsx) so the Overlay Editor screen shows an accurate mock of the new widget.
 - Add or change a hotkey → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §2.
 - Add a FTUE step, storage key, or "NEW" feature flag → [`docs/04-ftue.md`](docs/04-ftue.md) §3, §4, §7.
 - Add a shared component to [`src/renderer/components/index.ts`](src/renderer/components/index.ts) → [`docs/02-ui-and-design-system.md`](docs/02-ui-and-design-system.md) §3 (component inventory).

@@ -9,12 +9,14 @@ export const kWindowNames = {
   rotationIngame: 'rotation_ingame',
   companionAppReady: 'companion_app_ready',
   alertOverlay: 'alert_overlay',
+  counterItems: 'counter_items',
 };
 
 export const kHotkeys = {
   toggleMainIngameWindow: 'ToggleInGameMain',
   toggleMainDesktopWindow: 'ToggleDesktopMain',
   toggleRotationIngameWindow: 'ToggleInGameRotation',
+  toggleCounterItemsWindow: 'ToggleCounterItems',
 };
 
 export type HotkeyData = {

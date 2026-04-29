@@ -22,8 +22,8 @@ Key sections:
 "permissions": ["Extensions", "Hotkeys", "GameInfo", "DesktopStreaming", "Tray"],
 "data": {
   "start_window": "background",
-  "hotkeys": { "ToggleInGameMain": ..., "ToggleDesktopMain": ... },
-  "windows": { "background": ..., "main_desktop": ..., "main_ingame": ..., "alert_overlay": ... },
+  "hotkeys": { "ToggleInGameMain": ..., "ToggleDesktopMain": ..., "ToggleCounterItems": ... },
+  "windows": { "background": ..., "main_desktop": ..., "main_ingame": ..., "alert_overlay": ..., "counter_items": ... },
   "game_targeting": { "type": "dedicated", "game_ids": [24482] },
   "game_events": [24482],
   "launch_events": [{ "event": "GameLaunch", "event_data": { "game_ids": [24482] }, "start_minimized": true }]
@@ -56,11 +56,12 @@ The full chain (manifest → enum → service → controller → UI):
 ```json
 "hotkeys": {
   "ToggleInGameMain":  { "title": "Toggle In-Game Main",  "action-type": "custom", "default": "Ctrl+T" },
-  "ToggleDesktopMain": { "title": "Toggle Desktop Main",  "action-type": "custom", "default": "Ctrl+Shift+T" }
+  "ToggleDesktopMain": { "title": "Toggle Desktop Main",  "action-type": "custom", "default": "Ctrl+Shift+T" },
+  "ToggleCounterItems": { "title": "Toggle Counter Items", "action-type": "custom", "default": "Alt+Shift+F" }
 }
 ```
 
-The keys here (`ToggleInGameMain`, `ToggleDesktopMain`) are the canonical hotkey ids — they appear in every layer below.
+The keys here (`ToggleInGameMain`, `ToggleDesktopMain`, `ToggleCounterItems`) are the canonical hotkey ids — they appear in every layer below.
 
 ### Step 2: mirror in `kHotkeys`
 
@@ -70,6 +71,7 @@ The keys here (`ToggleInGameMain`, `ToggleDesktopMain`) are the canonical hotkey
 export const kHotkeys = {
   toggleMainIngameWindow: 'ToggleInGameMain',
   toggleMainDesktopWindow: 'ToggleDesktopMain',
+  toggleCounterItemsWindow: 'ToggleCounterItems',
 };
 ```
 
@@ -167,6 +169,7 @@ export enum MessageType {
   REQUEST_LIVE_MATCH_STATE  = 'request-live-match-state',
   ROSTER_SNAPSHOT           = 'roster-snapshot',
   ITEM_PURCHASE_ALERT       = 'item-purchase-alert',
+  WIDGET_DOCK_CHANGED       = 'widget-dock-changed',
   CUSTOM                    = 'custom',
 }
 ```
@@ -270,7 +273,7 @@ const { data } = await api.getMatchMetadata({ matchId });
 | Wrapper | Endpoint family | Cache |
 |---|---|---|
 | [`assetsApiService.ts`](../src/shared/services/deadlock-api/assetsApiService.ts) | `https://assets.deadlock-api.com` items, heroes | `apiCache` `ITEM_METADATA` |
-| [`itemsApiService.ts`](../src/shared/services/deadlock-api/itemsApiService.ts) | `AnalyticsApi`, `PatchesApi` | `apiCache` `ITEM_ANALYTICS` / `PATCHES` |
+| [`itemsApiService.ts`](../src/shared/services/deadlock-api/itemsApiService.ts) | `AnalyticsApi`, `PatchesApi`, + direct `axios` for `fetchCounterItemStats` (adds `enemy_hero_ids` not in vendored client) | `apiCache` `ITEM_ANALYTICS` / `PATCHES` / `counter_item_stats` |
 | [`heroesApiService.ts`](../src/shared/services/deadlock-api/heroesApiService.ts) | `AnalyticsApi.heroStats` + direct `axios` GET `/v1/analytics/hero-ban-stats` (not yet in the vendored client) | `apiCache` `HERO_ANALYTICS` under namespaces `hero_stats` / `hero_ban_stats` |
 | [`matchMetadataFetcher.ts`](../src/shared/services/matchMetadataFetcher.ts) | `MatchesApi`, `InternalApi` | `matchCache` (IndexedDB) |
 | [`steamWebApi.ts`](../src/shared/services/steamWebApi.ts) | Steam Web API fallback | `apiCache` `STEAM_PROFILE` |
@@ -319,7 +322,7 @@ Key files:
 
 - [`item-purchase-tracker.service.ts`](../src/main/services/item-purchase-tracker.service.ts) — diff logic + filter
 - [`notificationPreferences.ts`](../src/shared/stores/notificationPreferences.ts) — `tracked_item_ids` + presets
-- [`overlayLayoutStore.ts`](../src/shared/stores/overlayLayoutStore.ts) — `getWidgetConfig('item_purchase_alert')` for `enabled`, `dock_edge`, `layout_mode`, `dismiss_timeout_s`
+- [`overlayLayoutStore.ts`](../src/shared/stores/overlayLayoutStore.ts) — `getWidgetConfig('item_purchase_alert')` for `enabled` (default `true`), `dock_edge` (default `Edge.Right`), `layout_mode` (default `'compact'`), `dismiss_timeout_s` (default `5`s); `getWidgetConfig('counter_items')` for `enabled` (default `true`), `dock_edge` (default `Edge.Left`), and `refresh_interval_s` (how often to re-filter items by match time, default `120`s). The counter_items window listens for `storage` events on `dl_overlay_layout` so refresh-interval slider changes from main_desktop / main_ingame apply mid-match without needing a window restart.
 - [`AlertOverlay.tsx`](../src/renderer/alert-overlay-window/AlertOverlay.tsx) — window root
 - [`useAlertMessages.ts`](../src/renderer/alert-overlay-window/hooks/useAlertMessages.ts) — listens for `MessageType.ITEM_PURCHASE_ALERT`, queues, auto-dismisses
 - [`AlertQueue.tsx`](../src/renderer/alert-overlay-window/components/AlertQueue.tsx) / `AlertCard.tsx` — presentation

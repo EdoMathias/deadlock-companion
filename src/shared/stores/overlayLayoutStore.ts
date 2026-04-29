@@ -93,6 +93,17 @@ export function setWidgetDismissTimeout(
   save(layout);
 }
 
+export function setWidgetRefreshInterval(
+  widgetId: string,
+  seconds: number,
+): void {
+  const layout = load();
+  if (layout.widgets[widgetId]) {
+    layout.widgets[widgetId].refresh_interval_s = Math.max(60, Math.min(600, seconds));
+  }
+  save(layout);
+}
+
 export function resetWidgetConfig(widgetId: string): void {
   const layout = load();
   const defaultWidget = DEFAULT_OVERLAY_LAYOUT.widgets[widgetId];

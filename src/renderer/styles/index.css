@@ -39,6 +39,7 @@
 @import './views/companion-ready.css';
 @import './views/contribute.css';
 @import './views/hero-stats.css';
+@import './views/counter-items.css';
 
 /* 
  * CSS Modules Migration Guide:

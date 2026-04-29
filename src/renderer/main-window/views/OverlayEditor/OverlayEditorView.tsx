@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Edge } from '@overwolf/odk-ts/window/enums/edge';
+import { MessageType } from '../../../../main/services/MessageChannel';
 import type { OverlayLayoutConfig, OverlayLayoutMode } from '../../../../shared/types/overlayLayout';
 import {
   getOverlayLayout,
@@ -7,22 +8,29 @@ import {
   setWidgetEnabled,
   setWidgetLayoutMode,
   setWidgetDismissTimeout,
+  setWidgetRefreshInterval,
   resetWidgetConfig,
 } from '../../../../shared/stores/overlayLayoutStore';
 import DockingSelector from './components/DockingSelector';
 import WidgetPreview from './components/WidgetPreview';
 import '../../../styles/views/overlay-editor.css';
 
-const WIDGET_IDS = ['item_purchase_alert'] as const;
+const WIDGET_IDS = ['item_purchase_alert', 'counter_items'] as const;
 
 const WIDGET_LABELS: Record<string, string> = {
   item_purchase_alert: 'Enemy Item Purchase Alert',
+  counter_items: 'Counter Items Advisor',
 };
 
 const WIDGET_DESCRIPTIONS: Record<string, string> = {
   item_purchase_alert:
     'Shows an in-game notification when an enemy buys items you track in the Item Stats view.',
+  counter_items:
+    'Recommends items to buy based on the enemy team composition during a live match.',
 };
+
+const ALERT_ONLY_WIDGETS = new Set(['item_purchase_alert']);
+const REFRESH_INTERVAL_WIDGETS = new Set(['counter_items']);
 
 const OverlayEditorView: React.FC = () => {
   const [layout, setLayout] = useState<OverlayLayoutConfig>(getOverlayLayout);
@@ -35,6 +43,19 @@ const OverlayEditorView: React.FC = () => {
     (widgetId: string, edge: Edge) => {
       setWidgetDockEdge(widgetId, edge);
       refresh();
+      if (typeof overwolf !== 'undefined') {
+        const payload = {
+          type: MessageType.WIDGET_DOCK_CHANGED,
+          data: { widget_id: widgetId, dock_edge: edge },
+          timestamp: Date.now(),
+        };
+        overwolf.windows.sendMessage(
+          'background',
+          MessageType.WIDGET_DOCK_CHANGED,
+          payload,
+          () => {},
+        );
+      }
     },
     [refresh],
   );
@@ -58,6 +79,14 @@ const OverlayEditorView: React.FC = () => {
   const handleDismissTimeoutChange = useCallback(
     (widgetId: string, seconds: number) => {
       setWidgetDismissTimeout(widgetId, seconds);
+      refresh();
+    },
+    [refresh],
+  );
+
+  const handleRefreshIntervalChange = useCallback(
+    (widgetId: string, seconds: number) => {
+      setWidgetRefreshInterval(widgetId, seconds);
       refresh();
     },
     [refresh],
@@ -127,40 +156,63 @@ const OverlayEditorView: React.FC = () => {
                     />
                   </div>
 
-                  <div className="overlay-widget-control-group">
-                    <label className="overlay-widget-label">Layout</label>
-                    <select
-                      className="overlay-widget-select"
-                      value={widget.layout_mode}
-                      onChange={(e) =>
-                        handleLayoutModeChange(
-                          widgetId,
-                          e.target.value as OverlayLayoutMode,
-                        )
-                      }
-                    >
-                      <option value="compact">Compact</option>
-                      <option value="expanded">Expanded (Active)</option>
-                      <option value="expanded_all">Expanded (All)</option>
-                    </select> 
-                  </div>
+                  {ALERT_ONLY_WIDGETS.has(widgetId) && (
+                    <>
+                      <div className="overlay-widget-control-group">
+                        <label className="overlay-widget-label">Layout</label>
+                        <select
+                          className="overlay-widget-select"
+                          value={widget.layout_mode}
+                          onChange={(e) =>
+                            handleLayoutModeChange(
+                              widgetId,
+                              e.target.value as OverlayLayoutMode,
+                            )
+                          }
+                        >
+                          <option value="compact">Compact</option>
+                          <option value="expanded">Expanded (Active)</option>
+                          <option value="expanded_all">Expanded (All)</option>
+                        </select> 
+                      </div>
 
-                  <div className="overlay-widget-control-group">
-                    <label className="overlay-widget-label">
-                      Dismiss: {widget.dismiss_timeout_s ?? 5}s
-                    </label>
-                    <input
-                      type="range"
-                      className="overlay-widget-range"
-                      min={5}
-                      max={30}
-                      step={1}
-                      value={widget.dismiss_timeout_s ?? 5}
-                      onChange={(e) =>
-                        handleDismissTimeoutChange(widgetId, Number(e.target.value))
-                      }
-                    />
-                  </div>
+                      <div className="overlay-widget-control-group">
+                        <label className="overlay-widget-label">
+                          Dismiss: {widget.dismiss_timeout_s ?? 5}s
+                        </label>
+                        <input
+                          type="range"
+                          className="overlay-widget-range"
+                          min={5}
+                          max={30}
+                          step={1}
+                          value={widget.dismiss_timeout_s ?? 5}
+                          onChange={(e) =>
+                            handleDismissTimeoutChange(widgetId, Number(e.target.value))
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {REFRESH_INTERVAL_WIDGETS.has(widgetId) && (
+                    <div className="overlay-widget-control-group">
+                      <label className="overlay-widget-label">
+                        Refresh: {Math.floor((widget.refresh_interval_s ?? 120) / 60)}m {(widget.refresh_interval_s ?? 120) % 60 > 0 ? `${(widget.refresh_interval_s ?? 120) % 60}s` : ''}
+                      </label>
+                      <input
+                        type="range"
+                        className="overlay-widget-range"
+                        min={60}
+                        max={600}
+                        step={60}
+                        value={widget.refresh_interval_s ?? 120}
+                        onChange={(e) =>
+                          handleRefreshIntervalChange(widgetId, Number(e.target.value))
+                        }
+                      />
+                    </div>
+                  )}
 
                   <button
                     className="overlay-widget-reset-btn"

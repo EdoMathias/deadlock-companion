@@ -73,6 +73,12 @@ export class BackgroundController {
       this.handleLiveMatchStateRequest(),
     );
 
+    // Re-dock overlay windows when the user changes their position in the Overlay Editor
+    this._messageChannel.onMessage(
+      MessageType.WIDGET_DOCK_CHANGED,
+      (payload) => this.handleWidgetDockChanged(payload),
+    );
+
     this._hotkeysService = new HotkeysService();
     this._appLaunchService = new AppLaunchService(
       (event: AppLaunchTriggeredEvent) => this.handleAppLaunch(event),
@@ -411,7 +417,7 @@ export class BackgroundController {
       matchStartTimestamp: this._matchStartTimestamp,
     };
     this._messageChannel.broadcastMessage(
-      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame, kWindowNames.counterItems],
       MessageType.LIVE_MATCH_START,
       startPayload,
     );
@@ -424,6 +430,15 @@ export class BackgroundController {
         .showAlertOverlayWindow(alertConfig?.dock_edge)
         .catch((err) => {
           logger.warn('Failed to show alert overlay on match_start:', err);
+        });
+    }
+
+    const counterConfig = getWidgetConfig('counter_items');
+    if (counterConfig?.enabled !== false) {
+      this._windowsController
+        .showCounterItemsWindow(counterConfig?.dock_edge)
+        .catch((err) => {
+          logger.warn('Failed to show counter items on match_start:', err);
         });
     }
   }
@@ -492,7 +507,7 @@ export class BackgroundController {
           matchStartTimestamp: this._matchStartTimestamp,
         };
         this._messageChannel.broadcastMessage(
-          [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+          [kWindowNames.mainDesktop, kWindowNames.mainIngame, kWindowNames.counterItems],
           MessageType.LIVE_MATCH_START,
           startPayload,
         );
@@ -512,6 +527,15 @@ export class BackgroundController {
               logger.warn('Failed to show alert overlay on active match:', err);
             });
         }
+
+        const counterCfg = getWidgetConfig('counter_items');
+        if (counterCfg?.enabled !== false) {
+          this._windowsController
+            .showCounterItemsWindow(counterCfg?.dock_edge)
+            .catch((err) => {
+              logger.warn('Failed to show counter items on active match:', err);
+            });
+        }
       });
     }, 1500);
   }
@@ -528,7 +552,7 @@ export class BackgroundController {
 
     // Broadcast LIVE_MATCH_END so the scoreboard shows "Match Ended"
     this._messageChannel.broadcastMessage(
-      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame, kWindowNames.counterItems],
       MessageType.LIVE_MATCH_END,
     );
     logger.log('match_end: broadcast LIVE_MATCH_END');
@@ -536,6 +560,11 @@ export class BackgroundController {
     // Close the alert overlay window
     this._windowsController.closeAlertOverlayWindow().catch((err) => {
       logger.warn('Failed to close alert overlay on match_end:', err);
+    });
+
+    // Close the counter items window
+    this._windowsController.closeCounterItemsWindow().catch((err) => {
+      logger.warn('Failed to close counter items on match_end:', err);
     });
 
     // Send roster snapshot to renderer windows via the message channel so
@@ -661,7 +690,7 @@ export class BackgroundController {
       teamScores: this._teamScores,
     };
     this._messageChannel.broadcastMessage(
-      [kWindowNames.mainDesktop, kWindowNames.mainIngame],
+      [kWindowNames.mainDesktop, kWindowNames.mainIngame, kWindowNames.counterItems],
       MessageType.LIVE_ROSTER_UPDATE,
       payload,
     );
@@ -677,6 +706,26 @@ export class BackgroundController {
     // If we have active match data, broadcast it
     if (this._allRosterData.size > 0 || this._currentMatchId) {
       this.broadcastRosterUpdate();
+    }
+  }
+
+  private handleWidgetDockChanged(payload: MessagePayload): void {
+    const { widget_id, dock_edge } = payload.data ?? {};
+    if (!widget_id || dock_edge == null) return;
+    logger.log(`Widget dock changed: ${widget_id} → edge ${dock_edge}`);
+
+    if (widget_id === 'counter_items') {
+      this._windowsController
+        .showCounterItemsWindow(dock_edge)
+        .catch((err) =>
+          logger.warn('Failed to re-dock counter items window:', err),
+        );
+    } else if (widget_id === 'item_purchase_alert') {
+      this._windowsController
+        .showAlertOverlayWindow(dock_edge)
+        .catch((err) =>
+          logger.warn('Failed to re-dock alert overlay window:', err),
+        );
     }
   }
 
@@ -886,6 +935,15 @@ export class BackgroundController {
         await this._windowsController.toggleMainIngameWindow();
       } catch (error) {
         logger.error('Error toggling in-game main window:', error);
+      }
+    });
+
+    // Show/Hide Counter Items Window
+    this._hotkeysService.on(kHotkeys.toggleCounterItemsWindow, async () => {
+      try {
+        await this._windowsController.toggleCounterItemsWindow();
+      } catch (error) {
+        logger.error('Error toggling counter items window:', error);
       }
     });
 

@@ -166,6 +166,8 @@ If you add a key, add it here. If a key is missing here, treat its existence as 
 | `deadlock_companion_ftue_steps` | `FTUEContext` | Completed FTUE step set |
 | `deadlock_companion_data_contribution_seen` | `FTUEContext` | DataContributionModal dismissed |
 | `deadlock_companion_item_alerts_feature_seen` | `FTUEContext` | "NEW" badge cleared for Item Stats / Overlay Editor |
+| `deadlock_companion_hero_stats_feature_seen` | `FTUEContext` | "NEW" badge cleared for Hero Stats |
+| `deadlock_companion_counter_items_feature_seen` | `FTUEContext` | "NEW" badge cleared for Counter Items (clears on Overlay Editor visit) |
 | `deadlock_companion_rotations_ftue_completed` | `FTUEContext` | Legacy — only cleared by reset |
 | `deadlock_companion_interactive_map_ftue_completed` | `FTUEContext` | Legacy — only cleared by reset |
 | `deadlock_companion_discord_badge_clicked` | `SideNav` | Discord "new" pip dismissed |
@@ -176,6 +178,7 @@ If you add a key, add it here. If a key is missing here, treat its existence as 
 | `dl_ingest_prompt_dismissed` | `IngestPromptModal` | "Don't ask again" |
 | `dl_ingest_prompt_*` (other) | `BackgroundController` | Daily / permanent throttle for ingest prompt |
 | `deadlock_cache_<namespace>_<id>` | `apiCache` | TTL'd network responses |
+| `deadlock_cache_counter_item_stats_<heroId>_vs_<enemyIds>` | `apiCache` via `fetchCounterItemStats` | Counter-item recommendations vs enemy team (1 h TTL) |
 
 ### IndexedDB
 
