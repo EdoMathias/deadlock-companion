@@ -6,6 +6,14 @@ Read [`AGENTS.md`](../AGENTS.md) first for project-wide conventions.
 
 ---
 
+## 0. Where release notes live
+
+Authored release notes are committed under [`release-notes/`](release-notes/), one Markdown file per shipped version named `release-<version>.md` (e.g. `release-1.3.3.md`). The `<version>` must match the version in [`package.json`](../package.json) and [`public/manifest.json`](../public/manifest.json).
+
+When shipping a new version, either add a new `release-<version>.md` or rename/extend the latest one to the new version, then bump both manifests to match. The published changelog the player sees in-app is fetched from the Overwolf console at runtime (see [`ReleaseNotesService.ts`](../src/renderer/services/ReleaseNotesService.ts)) — these repo files are the authored source that gets pasted into the console on release.
+
+---
+
 ## 1. Voice and tone
 
 - **Second person, present tense.** Address the player directly: "you can", "your matches", "stay one step ahead". Never "users" or "the user".

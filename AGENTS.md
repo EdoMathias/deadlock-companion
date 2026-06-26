@@ -207,6 +207,7 @@ You **must** update docs when you:
 - Add a design token to [`variables.css`](src/renderer/styles/variables.css), or a new file under `styles/components/` or `styles/views/` → [`docs/02-ui-and-design-system.md`](docs/02-ui-and-design-system.md) §1, §2.
 - Add a new context, hook category, or convention → [`docs/07-conventions.md`](docs/07-conventions.md).
 - Add a new dependency (only with explicit user approval) → [`AGENTS.md`](AGENTS.md) §2.
+- Ship a new app version → bump the version in both [`package.json`](package.json) and [`public/manifest.json`](public/manifest.json), and add a matching authored release note at `docs/release-notes/release-<version>.md` following [`docs/09-release-notes.md`](docs/09-release-notes.md).
 
 If you're unsure whether something needs a doc update, the answer is yes — at minimum, mention it in the relevant doc's "Things to avoid" or registry sections. Per-change checklists with the exact lines to edit live in [`docs/08-adding-a-feature.md`](docs/08-adding-a-feature.md) §5.
 
@@ -226,6 +227,7 @@ Pick the doc that matches what you're about to do:
 | [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) | You're touching the manifest, hotkeys, GEP, messages, the deadlock-api client, or the alert overlay pipeline. |
 | [`docs/07-conventions.md`](docs/07-conventions.md) | You're unsure about TS, imports, error handling, or state management style. |
 | [`docs/08-adding-a-feature.md`](docs/08-adding-a-feature.md) | End-to-end checklists for the four most common changes. |
+| [`docs/09-release-notes.md`](docs/09-release-notes.md) | You're writing a release note. Authored notes live in [`docs/release-notes/`](docs/release-notes/), one `release-<version>.md` per shipped version. |
 
 ---
 
