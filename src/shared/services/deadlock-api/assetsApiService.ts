@@ -87,7 +87,7 @@ export async function fetchAllItems(
   if (cached) return cached;
 
   const response = await axios.get<AssetsItemRaw[]>(
-    `${DEADLOCK_ASSETS_BASE_URL}/v2/items`,
+    `${DEADLOCK_ASSETS_BASE_URL}/items`,
     { params: { language } },
   );
 
@@ -104,7 +104,7 @@ export async function fetchItemById(
   language: string = 'english',
 ): Promise<ItemMetadata | null> {
   const response = await axios.get<AssetsItemRaw>(
-    `${DEADLOCK_ASSETS_BASE_URL}/v2/items/${idOrClassName}`,
+    `${DEADLOCK_ASSETS_BASE_URL}/items/${idOrClassName}`,
     { params: { language } },
   );
 
@@ -121,7 +121,7 @@ export async function fetchAllHeroes(
   if (cached) return cached;
 
   const response = await axios.get<AssetsHeroRaw[]>(
-    `${DEADLOCK_ASSETS_BASE_URL}/v2/heroes`,
+    `${DEADLOCK_ASSETS_BASE_URL}/heroes`,
     { params: { language, only_active: true } },
   );
 
