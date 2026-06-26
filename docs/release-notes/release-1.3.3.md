@@ -15,4 +15,10 @@ Walk into every fight with a plan. **Counter Items** is a new in-game overlay th
 
 ---
 
+## Bug Fixes
+
+- Fixed an issue where item images and details could stop loading after a change to the data service the app relies on.
+
+---
+
 *Thanks for using Deadlock Companion. Your feedback continues to shape every update - see you in the next match.*
