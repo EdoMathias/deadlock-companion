@@ -47,6 +47,12 @@ const HERO_STATS_FEATURE_SEEN_KEY =
 /** Views that belong to the hero-stats feature (for "NEW" badge logic). */
 const HERO_STATS_VIEWS = ['Hero Stats'];
 
+const COUNTER_ITEMS_FEATURE_SEEN_KEY =
+  'deadlock_companion_counter_items_feature_seen';
+
+/** Views that belong to the counter-items feature (for "NEW" badge logic). */
+const COUNTER_ITEMS_VIEWS = ['Overlay Editor'];
+
 interface FTUEContextType {
   isFTUEComplete: boolean;
   completedSteps: Set<FTUEStep>;
@@ -71,6 +77,8 @@ interface FTUEContextType {
   markItemAlertsFeatureSeen: () => void;
   /** Dismiss the "NEW" badges for the hero-stats feature views. */
   markHeroStatsFeatureSeen: () => void;
+  /** Dismiss the "NEW" badge for the counter-items feature views. */
+  markCounterItemsFeatureSeen: () => void;
 }
 
 interface FTUEProviderProps {
@@ -158,6 +166,25 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     }
   }, []);
 
+  // ── Counter-items feature "NEW" badge ───────────────────
+  const [hasSeenCounterItemsFeature, setHasSeenCounterItemsFeature] =
+    useState<boolean>(() => {
+      try {
+        return localStorage.getItem(COUNTER_ITEMS_FEATURE_SEEN_KEY) === 'true';
+      } catch {
+        return false;
+      }
+    });
+
+  const markCounterItemsFeatureSeen = useCallback(() => {
+    setHasSeenCounterItemsFeature(true);
+    try {
+      localStorage.setItem(COUNTER_ITEMS_FEATURE_SEEN_KEY, 'true');
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
   // ── Rotations FTUE ────────────────────────────────────────
   const [isRotationsFTUEComplete] = useState<boolean>(true);
 
@@ -204,6 +231,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
     setCompletedSteps(new Set());
     setHasSeenItemAlertsFeature(false);
     setHasSeenHeroStatsFeature(false);
+    setHasSeenCounterItemsFeature(false);
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(STEPS_STORAGE_KEY);
@@ -212,6 +240,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       localStorage.removeItem(DATA_CONTRIBUTION_STORAGE_KEY);
       localStorage.removeItem(ITEM_ALERTS_FEATURE_SEEN_KEY);
       localStorage.removeItem(HERO_STATS_FEATURE_SEEN_KEY);
+      localStorage.removeItem(COUNTER_ITEMS_FEATURE_SEEN_KEY);
     } catch {
       // Ignore errors
     }
@@ -288,9 +317,20 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       ) {
         return true;
       }
+      if (
+        !hasSeenCounterItemsFeature &&
+        COUNTER_ITEMS_VIEWS.includes(viewName)
+      ) {
+        return true;
+      }
       return false;
     },
-    [isFTUEComplete, hasSeenItemAlertsFeature, hasSeenHeroStatsFeature],
+    [
+      isFTUEComplete,
+      hasSeenItemAlertsFeature,
+      hasSeenHeroStatsFeature,
+      hasSeenCounterItemsFeature,
+    ],
   );
 
   // ── Auto-complete when all steps in a group are done ──────
@@ -319,6 +359,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
         markDataContributionSeen,
         markItemAlertsFeatureSeen,
         markHeroStatsFeatureSeen,
+        markCounterItemsFeatureSeen,
       }}
     >
       {children}

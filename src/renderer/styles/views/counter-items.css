@@ -1,0 +1,223 @@
+/* Counter Items Overlay Window */
+
+.ci-root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-ark);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+.ci-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+}
+
+.ci-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.ci-hotkey-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* Enemy hero toggle row */
+
+.ci-enemy-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.ci-enemy-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: var(--color-bg-secondary);
+  overflow: hidden;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.ci-enemy-btn--active {
+  border-color: var(--color-accent-primary);
+  opacity: 1;
+}
+
+.ci-enemy-btn--inactive {
+  border-color: transparent;
+  opacity: 0.35;
+}
+
+.ci-enemy-btn:hover {
+  opacity: 0.85;
+}
+
+.ci-enemy-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ci-enemy-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* Item list */
+
+.ci-list-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.ci-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ci-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.1s;
+}
+
+.ci-item-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ci-item-img-wrap {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+}
+
+.ci-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.ci-item-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-card);
+}
+
+.ci-item-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ci-item-wr {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-success);
+  flex-shrink: 0;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* States */
+
+.ci-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.ci-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid
+    color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: ci-spin 0.8s linear infinite;
+}
+
+@keyframes ci-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ci-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px 14px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.ci-error {
+  padding: 16px 14px;
+  font-size: 13px;
+  color: var(--color-danger);
+  text-align: center;
+}
+
+/* Scrollbar */
+
+.ci-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ci-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ci-list-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.ci-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

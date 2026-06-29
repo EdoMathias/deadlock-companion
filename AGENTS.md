@@ -17,6 +17,7 @@ Deadlock Companion is an **Overwolf** companion app for Valve's *Deadlock* (Over
 | `main_ingame` | Same React app, rendered as an in-game overlay. | Deadlock is running |
 | `companion_app_ready` | Small pop-up confirming the companion launched in-game. | First seconds after match start |
 | `alert_overlay` | In-game item-purchase alert toast stack. | During an active match |
+| `counter_items` | In-game counter-item advisor based on enemy team composition. | During an active match (toggle via Alt+Shift+F) |
 | `uninstall` | Tiny page that opens the feedback form on uninstall. | Triggered by Overwolf |
 
 All renderer windows share a single React component tree, design system, and `@overwolf/odk-ts` integration.
@@ -199,13 +200,14 @@ You **must** update docs when you:
 - Add, rename, remove, or reorder a tab → [`docs/03-views-and-navigation.md`](docs/03-views-and-navigation.md) (and the SideNav-order references in [`AGENTS.md`](AGENTS.md) §3 if the tab list changes).
 - Add or rename a `localStorage` key, IndexedDB DB/store, or `apiCache` namespace → [`docs/05-data-and-persistence.md`](docs/05-data-and-persistence.md) §6 (canonical key registry).
 - Add a value to `MessageType` → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §4 (the enum reference table).
-- Add or change an Overwolf window → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §1 and the window list in [`AGENTS.md`](AGENTS.md) §1.
+- Add or change an Overwolf window → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §1 and the window list in [`AGENTS.md`](AGENTS.md) §1. If the window is an overlay widget managed by `overlayLayoutStore`, also add a dedicated preview branch in [`WidgetPreview.tsx`](src/renderer/main-window/views/OverlayEditor/components/WidgetPreview.tsx) so the Overlay Editor screen shows an accurate mock of the new widget.
 - Add or change a hotkey → [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) §2.
 - Add a FTUE step, storage key, or "NEW" feature flag → [`docs/04-ftue.md`](docs/04-ftue.md) §3, §4, §7.
 - Add a shared component to [`src/renderer/components/index.ts`](src/renderer/components/index.ts) → [`docs/02-ui-and-design-system.md`](docs/02-ui-and-design-system.md) §3 (component inventory).
 - Add a design token to [`variables.css`](src/renderer/styles/variables.css), or a new file under `styles/components/` or `styles/views/` → [`docs/02-ui-and-design-system.md`](docs/02-ui-and-design-system.md) §1, §2.
 - Add a new context, hook category, or convention → [`docs/07-conventions.md`](docs/07-conventions.md).
 - Add a new dependency (only with explicit user approval) → [`AGENTS.md`](AGENTS.md) §2.
+- Ship a new app version → bump the version in both [`package.json`](package.json) and [`public/manifest.json`](public/manifest.json), and add a matching authored release note at `docs/release-notes/release-<version>.md` following [`docs/09-release-notes.md`](docs/09-release-notes.md).
 
 If you're unsure whether something needs a doc update, the answer is yes — at minimum, mention it in the relevant doc's "Things to avoid" or registry sections. Per-change checklists with the exact lines to edit live in [`docs/08-adding-a-feature.md`](docs/08-adding-a-feature.md) §5.
 
@@ -225,6 +227,7 @@ Pick the doc that matches what you're about to do:
 | [`docs/06-overwolf-integration.md`](docs/06-overwolf-integration.md) | You're touching the manifest, hotkeys, GEP, messages, the deadlock-api client, or the alert overlay pipeline. |
 | [`docs/07-conventions.md`](docs/07-conventions.md) | You're unsure about TS, imports, error handling, or state management style. |
 | [`docs/08-adding-a-feature.md`](docs/08-adding-a-feature.md) | End-to-end checklists for the four most common changes. |
+| [`docs/09-release-notes.md`](docs/09-release-notes.md) | You're writing a release note. Authored notes live in [`docs/release-notes/`](docs/release-notes/), one `release-<version>.md` per shipped version. |
 
 ---
 

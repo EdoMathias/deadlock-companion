@@ -55,6 +55,9 @@ export class WindowsController {
     // Close the alert overlay window
     await this._windowsService.closeAlertOverlayWindow();
 
+    // Close the counter items window
+    await this._windowsService.closeCounterItemsWindow();
+
     // Move the main desktop window to the center of the main monitor
     await this._windowsService.showMainDesktopWindow('primary');
   }
@@ -124,6 +127,18 @@ export class WindowsController {
     await this._windowsService.closeAlertOverlayWindow();
   }
 
+  public async showCounterItemsWindow(dockTo?: Edge): Promise<void> {
+    await this._windowsService.showCounterItemsWindow('primary', dockTo);
+  }
+
+  public async closeCounterItemsWindow(): Promise<void> {
+    await this._windowsService.closeCounterItemsWindow();
+  }
+
+  public async toggleCounterItemsWindow(): Promise<void> {
+    await this._windowsService.toggleCounterItemsWindow();
+  }
+
   public async closeAllWindows(): Promise<void> {
     try {
       await this._windowsService.closeMainDesktopWindow();
@@ -149,6 +164,11 @@ export class WindowsController {
       await this._windowsService.closeAlertOverlayWindow();
     } catch (error) {
       logger.error('Error closing alert overlay window:', error);
+    }
+    try {
+      await this._windowsService.closeCounterItemsWindow();
+    } catch (error) {
+      logger.error('Error closing counter items window:', error);
     }
   }
 

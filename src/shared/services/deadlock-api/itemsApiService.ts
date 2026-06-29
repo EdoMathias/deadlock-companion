@@ -5,8 +5,10 @@ import {
   type ItemStats,
   type Patch,
 } from 'deadlock_api_client';
+import axios from 'axios';
 import { createDeadlockApiConfig } from './deadlockApiClient';
 import { apiCache, CACHE_TTL } from '../../utils/apiCache';
+import { DEADLOCK_API_BASE_URL } from '../../consts';
 import type { ItemStatsFilters } from '../../types/items';
 
 function filtersToHash(filters: ItemStatsFilters): string {
@@ -41,6 +43,36 @@ export async function fetchItemStats(
 
   apiCache.set('item_stats', hash, data, CACHE_TTL.ITEM_ANALYTICS);
   return data;
+}
+
+/**
+ * Fetches item stats filtered by the player's hero vs specific enemy heroes.
+ * Uses a direct axios call because the generated client lacks `enemy_hero_ids`.
+ */
+export async function fetchCounterItemStats(
+  heroId: number,
+  enemyHeroIds: number[],
+  minAverageBadge?: number,
+): Promise<ItemStats[]> {
+  const sortedEnemies = [...enemyHeroIds].sort((a, b) => a - b);
+  const cacheKey = `${heroId}_vs_${sortedEnemies.join(',')}`;
+  const cached = apiCache.get<ItemStats[]>('counter_item_stats', cacheKey);
+  if (cached) return cached;
+
+  const response = await axios.get<ItemStats[]>(
+    `${DEADLOCK_API_BASE_URL}/v1/analytics/item-stats`,
+    {
+      params: {
+        hero_ids: heroId,
+        enemy_hero_ids: sortedEnemies.join(','),
+        min_average_badge: minAverageBadge ?? 100,
+        min_matches: 20,
+      },
+    },
+  );
+
+  apiCache.set('counter_item_stats', cacheKey, response.data, CACHE_TTL.ITEM_ANALYTICS);
+  return response.data;
 }
 
 export async function fetchPatches(): Promise<Patch[]> {

@@ -34,15 +34,23 @@ function getPositionStyle(edge: Edge): React.CSSProperties {
   }
 }
 
-const cardStyle: React.CSSProperties = {
+/* ── Shared styles ─────────────────────────────────────────────────── */
+
+const cardBase: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   background: 'rgba(34, 32, 33, 0.92)',
   border: '1px solid rgba(114, 148, 127, 0.5)',
   borderRadius: 6,
-  padding: '8px 12px',
   backdropFilter: 'blur(8px)',
   fontFamily: "'Inter', system-ui, sans-serif",
+};
+
+/* ── Alert preview styles ──────────────────────────────────────────── */
+
+const alertCardStyle: React.CSSProperties = {
+  ...cardBase,
+  padding: '8px 12px',
   minWidth: 200,
 };
 
@@ -110,40 +118,180 @@ const descriptionStyle: React.CSSProperties = {
   lineHeight: 1.4,
 };
 
-const WidgetPreview: React.FC<Props> = ({ widget }) => {
-  if (!widget.enabled) return null;
+/* ── Counter Items preview styles ──────────────────────────────────── */
 
-  const posStyle = getPositionStyle(widget.dock_edge);
+const ciCardStyle: React.CSSProperties = {
+  ...cardBase,
+  minWidth: 180,
+  maxWidth: 220,
+  overflow: 'hidden',
+};
+
+const ciHeaderStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '6px 10px',
+  borderBottom: '1px solid rgba(63, 93, 77, 0.6)',
+  background: 'rgba(47, 68, 66, 0.6)',
+};
+
+const ciTitleStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 600,
+  color: '#efdebf',
+};
+
+const ciHintStyle: React.CSSProperties = {
+  fontSize: 8,
+  color: '#9c8c72',
+  background: 'rgba(255,255,255,0.06)',
+  padding: '1px 5px',
+  borderRadius: 3,
+};
+
+const ciEnemyRowStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: 4,
+  padding: '5px 10px',
+  borderBottom: '1px solid rgba(63, 93, 77, 0.6)',
+};
+
+const ciEnemyBtnStyle = (active: boolean): React.CSSProperties => ({
+  width: 22,
+  height: 22,
+  borderRadius: 3,
+  border: active ? '1.5px solid #72947f' : '1.5px solid transparent',
+  opacity: active ? 1 : 0.35,
+  overflow: 'hidden',
+  padding: 0,
+  background: 'rgba(47, 68, 66, 0.6)',
+});
+
+const ciEnemyIconStyle: React.CSSProperties = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  display: 'block',
+};
+
+const ciItemRowStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '3px 10px',
+  borderBottom: '1px solid rgba(255,255,255,0.04)',
+};
+
+const ciItemImgStyle: React.CSSProperties = {
+  width: 18,
+  height: 18,
+  objectFit: 'contain',
+  borderRadius: 2,
+  background: 'rgba(47, 68, 66, 0.6)',
+  flexShrink: 0,
+};
+
+const ciItemNameStyle: React.CSSProperties = {
+  flex: 1,
+  fontSize: 9,
+  fontWeight: 500,
+  color: '#efdebf',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+};
+
+const ciWrStyle: React.CSSProperties = {
+  fontSize: 9,
+  fontWeight: 600,
+  color: '#72947f',
+  flexShrink: 0,
+};
+
+const MOCK_ENEMY_IDS = [15, 2, 8, 11, 35];
+const MOCK_ITEMS = [
+  { name: 'Unstoppable', wr: '54.2%', img: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/unstoppable.webp' },
+  { name: 'Mystic Reverb', wr: '53.1%', img: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_reverb.webp' },
+  { name: 'Crippling Headshot', wr: '52.8%', img: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/crippling_headshot.webp' },
+];
+
+/* ── Sub-components ────────────────────────────────────────────────── */
+
+const AlertPreview: React.FC<{ widget: OverlayWidgetConfig }> = ({ widget }) => {
   const showDescription =
     widget.layout_mode === 'expanded' || widget.layout_mode === 'expanded_all';
 
   return (
-    <div className="widget-preview-item" style={posStyle}>
-      <div style={cardStyle}>
-        <div style={mainRowStyle}>
-          <img
-            style={heroImgStyle}
-            src={HEROES[1]?.images.icon_image_small_webp ?? ''}
-            alt="Infernus"
-          />
-          <span style={heroNameStyle}>INFERNUS</span>
-          <span style={textStyle}>
-            <span style={playerStyle}>EnemyPlayer42</span>
-            <span style={boughtStyle}> bought </span>
-            <span style={itemNameStyle}>Unstoppable</span>
-          </span>
-          <img
-            style={itemIconStyle}
-            src={MOCK_ITEM_IMAGE}
-            alt="Unstoppable"
-          />
-        </div>
-        {showDescription && (
-          <div style={descriptionStyle}>
-            Active: Become immune to immobilize, slow and debuffs for 3s
-          </div>
-        )}
+    <div style={alertCardStyle}>
+      <div style={mainRowStyle}>
+        <img
+          style={heroImgStyle}
+          src={HEROES[1]?.images.icon_image_small_webp ?? ''}
+          alt="Infernus"
+        />
+        <span style={heroNameStyle}>INFERNUS</span>
+        <span style={textStyle}>
+          <span style={playerStyle}>EnemyPlayer42</span>
+          <span style={boughtStyle}> bought </span>
+          <span style={itemNameStyle}>Unstoppable</span>
+        </span>
+        <img
+          style={itemIconStyle}
+          src={MOCK_ITEM_IMAGE}
+          alt="Unstoppable"
+        />
       </div>
+      {showDescription && (
+        <div style={descriptionStyle}>
+          Active: Become immune to immobilize, slow and debuffs for 3s
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CounterItemsPreview: React.FC = () => (
+  <div style={ciCardStyle}>
+    <div style={ciHeaderStyle}>
+      <span style={ciTitleStyle}>Counter Items</span>
+      <span style={ciHintStyle}>Alt+Shift+F</span>
+    </div>
+    <div style={ciEnemyRowStyle}>
+      {MOCK_ENEMY_IDS.map((id, i) => {
+        const hero = HEROES[id];
+        const img = hero?.images.icon_image_small_webp ?? hero?.images.icon_image_small;
+        return (
+          <div key={id} style={ciEnemyBtnStyle(i < 4)}>
+            {img && <img style={ciEnemyIconStyle} src={img} alt={hero?.name ?? ''} />}
+          </div>
+        );
+      })}
+    </div>
+    {MOCK_ITEMS.map((item) => (
+      <div key={item.name} style={ciItemRowStyle}>
+        <img style={ciItemImgStyle} src={item.img} alt={item.name} />
+        <span style={ciItemNameStyle}>{item.name}</span>
+        <span style={ciWrStyle}>{item.wr}</span>
+      </div>
+    ))}
+  </div>
+);
+
+/* ── Main component ────────────────────────────────────────────────── */
+
+const WidgetPreview: React.FC<Props> = ({ widget }) => {
+  if (!widget.enabled) return null;
+
+  const posStyle = getPositionStyle(widget.dock_edge);
+
+  return (
+    <div className="widget-preview-item" style={posStyle}>
+      {widget.widget_id === 'counter_items' ? (
+        <CounterItemsPreview />
+      ) : (
+        <AlertPreview widget={widget} />
+      )}
     </div>
   );
 };

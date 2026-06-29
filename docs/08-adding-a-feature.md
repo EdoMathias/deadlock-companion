@@ -280,6 +280,7 @@ my_window: {
 - [ ] Add a `MessageType` so the new window can receive data — see checklist 3 above.
 - [ ] Add a hotkey to toggle it — see [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §2.
 - [ ] Add a Settings UI to enable/disable it (overlay layout pattern from `overlayLayoutStore`).
+- [ ] If the window is an in-game overlay managed by `overlayLayoutStore`, register it as a widget in `DEFAULT_OVERLAY_LAYOUT` and `OverlayEditorView` — then **add a matching preview** in [`WidgetPreview.tsx`](../src/renderer/main-window/views/OverlayEditor/components/WidgetPreview.tsx) that visually represents the new widget. Each widget type must have its own preview branch so the Overlay Editor screen shows an accurate mock, not a generic placeholder.
 
 ### Verification
 
@@ -310,6 +311,7 @@ Documentation updates are part of the feature. A change that ships without the m
 | Added a `localStorage` key, IndexedDB DB/store, or `apiCache` namespace | [`docs/05-data-and-persistence.md`](05-data-and-persistence.md) §6 (canonical key registry) |
 | Added a value to `MessageType` | [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §4 (`MessageType` table) |
 | Added an Overwolf window | [`AGENTS.md`](../AGENTS.md) §1 (window table), [`docs/01-architecture.md`](01-architecture.md) §2 (mermaid + lifecycle), [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §1 |
+| Added an overlay widget to `overlayLayoutStore` | Register in `DEFAULT_OVERLAY_LAYOUT`, add to `OverlayEditorView` (`WIDGET_IDS`, labels, descriptions), and **add a dedicated preview branch** in [`WidgetPreview.tsx`](../src/renderer/main-window/views/OverlayEditor/components/WidgetPreview.tsx) |
 | Added or changed a hotkey | [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §2 |
 | Added a FTUE step, storage key, or "NEW" feature flag | [`docs/04-ftue.md`](04-ftue.md) §3 (step list), §4 (storage keys), §7 ("NEW" badges) |
 | Added a shared component to [`src/renderer/components/index.ts`](../src/renderer/components/index.ts) | [`docs/02-ui-and-design-system.md`](02-ui-and-design-system.md) §3 (component inventory) |

@@ -1,7 +1,7 @@
 /**
- * Static rank data derived from the deadlock-api.com /v2/ranks response.
+ * Static rank data derived from the deadlock-api.com assets ranks response.
  *
- * Source: https://assets.deadlock-api.com/v2/ranks
+ * Source: https://api.deadlock-api.com/v1/assets/ranks
  * Last updated: 2026-03-28
  *
  * Badge values encode as tier * 10 + subrank (e.g. Arcanist 5 = 45).

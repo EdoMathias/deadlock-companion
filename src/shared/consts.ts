@@ -9,12 +9,14 @@ export const kWindowNames = {
   rotationIngame: 'rotation_ingame',
   companionAppReady: 'companion_app_ready',
   alertOverlay: 'alert_overlay',
+  counterItems: 'counter_items',
 };
 
 export const kHotkeys = {
   toggleMainIngameWindow: 'ToggleInGameMain',
   toggleMainDesktopWindow: 'ToggleDesktopMain',
   toggleRotationIngameWindow: 'ToggleInGameRotation',
+  toggleCounterItemsWindow: 'ToggleCounterItems',
 };
 
 export type HotkeyData = {
@@ -26,7 +28,10 @@ export type HotkeyData = {
 };
 
 export const DEADLOCK_API_BASE_URL = 'https://api.deadlock-api.com';
-export const DEADLOCK_ASSETS_BASE_URL = 'https://assets.deadlock-api.com';
+// Assets API was migrated from the standalone assets.deadlock-api.com host
+// (decommissioned) to /v1/assets under the main API. Paths are now /items,
+// /heroes, /ranks (no /v2 prefix).
+export const DEADLOCK_ASSETS_BASE_URL = `${DEADLOCK_API_BASE_URL}/v1/assets`;
 export const kGepStatusUrl = `https://game-events-status.overwolf.com/${kDeadlockClassId}_prod.json`;
 
 export const GAME_MODE_LABELS: Record<number, string> = {

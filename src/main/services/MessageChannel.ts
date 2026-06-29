@@ -19,6 +19,7 @@ export enum MessageType {
   REQUEST_LIVE_MATCH_STATE = 'request-live-match-state',
   ROSTER_SNAPSHOT = 'roster-snapshot',
   ITEM_PURCHASE_ALERT = 'item-purchase-alert',
+  WIDGET_DOCK_CHANGED = 'widget-dock-changed',
   CUSTOM = 'custom',
 }
 

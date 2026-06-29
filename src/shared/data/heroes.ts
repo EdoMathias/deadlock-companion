@@ -1,11 +1,11 @@
 /**
- * Static hero map derived from the deadlock-api.com /v2/heroes response.
+ * Static hero map derived from the deadlock-api.com assets heroes response.
  * Keyed by hero ID (the same `hero_id` used in match history, live match, etc.).
  *
  * Contains only the fields needed for display purposes:
  *   id, class_name, name, tags, images
  *
- * Source: https://assets.deadlock-api.com/v2/heroes
+ * Source: https://api.deadlock-api.com/v1/assets/heroes
  * Last updated: 2026-03-05
  */
 

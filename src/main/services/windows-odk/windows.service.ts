@@ -76,6 +76,16 @@ const windowsConfigs: Record<string, OSRWindowOptions | DesktopWindowOptions> =
       transparent: true,
       autoDpi: true,
     },
+    counter_items: {
+      id: 'counter_items',
+      url: 'counter_items.html',
+      width: 380,
+      height: 500,
+      type: OSRType.InGameOnly,
+      resizable: false,
+      transparent: true,
+      autoDpi: true,
+    },
   };
 
 export class WindowsService {
@@ -84,6 +94,7 @@ export class WindowsService {
   // private _rotationIngameWindow: OSRWindow | undefined;
   private _companionAppReadyWindow: OSRWindow | undefined;
   private _alertOverlayWindow: OSRWindow | undefined;
+  private _counterItemsWindow: OSRWindow | undefined;
 
   private _monitorsService: MonitorsService;
 
@@ -300,6 +311,56 @@ export class WindowsService {
 
   public async closeAlertOverlayWindow(): Promise<void> {
     await this.closeWindow(this._alertOverlayWindow);
+  }
+
+  //--------------------------------------------------------------------------
+  // Counter Items Window
+  public async createCounterItemsWindow(): Promise<void> {
+    if (
+      this._counterItemsWindow &&
+      (await this._counterItemsWindow.isOpen())
+    ) {
+      return;
+    }
+    this._counterItemsWindow = new OSRWindow(windowsConfigs['counter_items']);
+    logger.log('Counter items window created');
+  }
+
+  public async showCounterItemsWindow(
+    centerOnMonitor?: 'primary' | 'secondary',
+    dockTo?: Edge,
+  ): Promise<void> {
+    if (
+      !this._counterItemsWindow ||
+      !(await this._counterItemsWindow.isOpen())
+    ) {
+      await this.createCounterItemsWindow();
+    }
+
+    // If user hid via hotkey, revive before docking (same heuristic as toggle)
+    try {
+      const ws = await this._counterItemsWindow.getWindowState();
+      const visible =
+        ws === overwolf.windows.WindowStateEx.NORMAL ||
+        ws === overwolf.windows.WindowStateEx.MAXIMIZED;
+      if (!visible) {
+        await this._counterItemsWindow.restore();
+        await this._counterItemsWindow.bringToFront();
+        logger.log('counter_items: revived from minimized/hidden before show');
+      }
+    } catch {
+      await this.createCounterItemsWindow();
+    }
+
+    await this.showWindow(this._counterItemsWindow, centerOnMonitor, dockTo);
+  }
+
+  public async closeCounterItemsWindow(): Promise<void> {
+    await this.closeWindow(this._counterItemsWindow);
+  }
+
+  public async toggleCounterItemsWindow(): Promise<void> {
+    await this.toggleWindow(this._counterItemsWindow, false);
   }
 
   //--------------------------------------------------------------------------
