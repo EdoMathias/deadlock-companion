@@ -86,6 +86,16 @@ const windowsConfigs: Record<string, OSRWindowOptions | DesktopWindowOptions> =
       transparent: true,
       autoDpi: true,
     },
+    ultimate_alert: {
+      id: 'ultimate_alert',
+      url: 'ultimate_alert.html',
+      width: 400,
+      height: 500,
+      type: OSRType.InGameOnly,
+      resizable: false,
+      transparent: true,
+      autoDpi: true,
+    },
   };
 
 export class WindowsService {
@@ -95,6 +105,7 @@ export class WindowsService {
   private _companionAppReadyWindow: OSRWindow | undefined;
   private _alertOverlayWindow: OSRWindow | undefined;
   private _counterItemsWindow: OSRWindow | undefined;
+  private _ultimateAlertWindow: OSRWindow | undefined;
 
   private _monitorsService: MonitorsService;
 
@@ -361,6 +372,37 @@ export class WindowsService {
 
   public async toggleCounterItemsWindow(): Promise<void> {
     await this.toggleWindow(this._counterItemsWindow, false);
+  }
+
+  //--------------------------------------------------------------------------
+  // Ultimate Alert Window
+  public async createUltimateAlertWindow(): Promise<void> {
+    if (
+      this._ultimateAlertWindow &&
+      (await this._ultimateAlertWindow.isOpen())
+    ) {
+      return;
+    }
+    this._ultimateAlertWindow = new OSRWindow(windowsConfigs['ultimate_alert']);
+    logger.log('Ultimate alert window created');
+  }
+
+  public async showUltimateAlertWindow(
+    centerOnMonitor?: 'primary' | 'secondary',
+    dockTo?: Edge,
+  ): Promise<void> {
+    if (
+      !this._ultimateAlertWindow ||
+      !(await this._ultimateAlertWindow.isOpen())
+    ) {
+      await this.createUltimateAlertWindow();
+    }
+
+    await this.showWindow(this._ultimateAlertWindow, centerOnMonitor, dockTo);
+  }
+
+  public async closeUltimateAlertWindow(): Promise<void> {
+    await this.closeWindow(this._ultimateAlertWindow);
   }
 
   //--------------------------------------------------------------------------

@@ -11,15 +11,21 @@ import {
   setWidgetRefreshInterval,
   resetWidgetConfig,
 } from '../../../../shared/stores/overlayLayoutStore';
+import {
+  getUltimateNotificationPreferences,
+  setUltimateNotificationPreferences,
+} from '../../../../shared/stores/ultimateNotificationPreferences';
+import type { UltimateNotificationPreferences } from '../../../../shared/types/ultimateAlerts';
 import DockingSelector from './components/DockingSelector';
 import WidgetPreview from './components/WidgetPreview';
 import '../../../styles/views/overlay-editor.css';
 
-const WIDGET_IDS = ['item_purchase_alert', 'counter_items'] as const;
+const WIDGET_IDS = ['item_purchase_alert', 'counter_items', 'ultimate_alert'] as const;
 
 const WIDGET_LABELS: Record<string, string> = {
   item_purchase_alert: 'Enemy Item Purchase Alert',
   counter_items: 'Counter Items Advisor',
+  ultimate_alert: 'Ultimate Ready Alerts',
 };
 
 const WIDGET_DESCRIPTIONS: Record<string, string> = {
@@ -27,17 +33,31 @@ const WIDGET_DESCRIPTIONS: Record<string, string> = {
     'Shows an in-game notification when an enemy buys items you track in the Item Stats view.',
   counter_items:
     'Recommends items to buy based on the enemy team composition during a live match.',
+  ultimate_alert:
+    'Shows an in-game notification when a hero unlocks or recharges their ultimate ability.',
 };
 
 const ALERT_ONLY_WIDGETS = new Set(['item_purchase_alert']);
 const REFRESH_INTERVAL_WIDGETS = new Set(['counter_items']);
+const ULTIMATE_ALERT_WIDGETS = new Set(['ultimate_alert']);
 
 const OverlayEditorView: React.FC = () => {
   const [layout, setLayout] = useState<OverlayLayoutConfig>(getOverlayLayout);
+  const [ultimatePrefs, setUltimatePrefs] = useState<UltimateNotificationPreferences>(
+    getUltimateNotificationPreferences,
+  );
 
   const refresh = useCallback(() => {
     setLayout(getOverlayLayout());
   }, []);
+
+  const handleUltimatePrefChange = useCallback(
+    (key: keyof UltimateNotificationPreferences, value: boolean) => {
+      setUltimateNotificationPreferences({ [key]: value });
+      setUltimatePrefs(getUltimateNotificationPreferences());
+    },
+    [],
+  );
 
   const handleDockChange = useCallback(
     (widgetId: string, edge: Edge) => {
@@ -212,6 +232,62 @@ const OverlayEditorView: React.FC = () => {
                         }
                       />
                     </div>
+                  )}
+
+                  {ULTIMATE_ALERT_WIDGETS.has(widgetId) && (
+                    <>
+                      <div className="overlay-widget-control-group">
+                        <label className="overlay-widget-label">
+                          Dismiss: {widget.dismiss_timeout_s ?? 5}s
+                        </label>
+                        <input
+                          type="range"
+                          className="overlay-widget-range"
+                          min={5}
+                          max={30}
+                          step={1}
+                          value={widget.dismiss_timeout_s ?? 5}
+                          onChange={(e) =>
+                            handleDismissTimeoutChange(widgetId, Number(e.target.value))
+                          }
+                        />
+                      </div>
+                      <div className="overlay-widget-control-group">
+                        <label className="overlay-widget-label">Notify for</label>
+                        <div className="overlay-widget-checkboxes">
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={ultimatePrefs.notify_enemies}
+                              onChange={(e) =>
+                                handleUltimatePrefChange('notify_enemies', e.target.checked)
+                              }
+                            />
+                            Enemies
+                          </label>
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={ultimatePrefs.notify_allies}
+                              onChange={(e) =>
+                                handleUltimatePrefChange('notify_allies', e.target.checked)
+                              }
+                            />
+                            Allies
+                          </label>
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={ultimatePrefs.notify_self}
+                              onChange={(e) =>
+                                handleUltimatePrefChange('notify_self', e.target.checked)
+                              }
+                            />
+                            You
+                          </label>
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   <button

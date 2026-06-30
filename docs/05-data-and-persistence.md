@@ -139,6 +139,7 @@ If you find yourself writing more than ~3 keys for one feature, promote them to 
 |---|---|---|
 | [`notificationPreferences.ts`](../src/shared/stores/notificationPreferences.ts) | `dl_notification_prefs` | `NotificationPreferences` (`tracked_item_ids`, presets) |
 | [`overlayLayoutStore.ts`](../src/shared/stores/overlayLayoutStore.ts) | `dl_overlay_layout` | `OverlayLayoutConfig` (per-widget enabled/dock_edge/layout_mode/dismiss_timeout_s) |
+| [`ultimateNotificationPreferences.ts`](../src/shared/stores/ultimateNotificationPreferences.ts) | `dl_ultimate_notification_prefs` | `UltimateNotificationPreferences` (`notify_self`, `notify_allies`, `notify_enemies`) |
 
 When promoting flags to a store:
 
@@ -173,6 +174,7 @@ If you add a key, add it here. If a key is missing here, treat its existence as 
 | `deadlock_companion_discord_badge_clicked` | `SideNav` | Discord "new" pip dismissed |
 | `dl_notification_prefs` | `notificationPreferences` store | Tracked items + preset state |
 | `dl_overlay_layout` | `overlayLayoutStore` | Per-widget overlay layout |
+| `dl_ultimate_notification_prefs` | `ultimateNotificationPreferences` store | Ultimate-alert team filters (notify_self/allies/enemies) |
 | `dl_ingest_card_expanded` | `IngestCacheCard` | User expanded the card |
 | `dl_ingest_card_auto_expand` | `IngestCacheCard` | One-shot auto-expand flag |
 | `dl_ingest_prompt_dismissed` | `IngestPromptModal` | "Don't ask again" |

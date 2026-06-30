@@ -58,6 +58,9 @@ export class WindowsController {
     // Close the counter items window
     await this._windowsService.closeCounterItemsWindow();
 
+    // Close the ultimate alert window
+    await this._windowsService.closeUltimateAlertWindow();
+
     // Move the main desktop window to the center of the main monitor
     await this._windowsService.showMainDesktopWindow('primary');
   }
@@ -139,6 +142,14 @@ export class WindowsController {
     await this._windowsService.toggleCounterItemsWindow();
   }
 
+  public async showUltimateAlertWindow(dockTo?: Edge): Promise<void> {
+    await this._windowsService.showUltimateAlertWindow('primary', dockTo);
+  }
+
+  public async closeUltimateAlertWindow(): Promise<void> {
+    await this._windowsService.closeUltimateAlertWindow();
+  }
+
   public async closeAllWindows(): Promise<void> {
     try {
       await this._windowsService.closeMainDesktopWindow();
@@ -169,6 +180,11 @@ export class WindowsController {
       await this._windowsService.closeCounterItemsWindow();
     } catch (error) {
       logger.error('Error closing counter items window:', error);
+    }
+    try {
+      await this._windowsService.closeUltimateAlertWindow();
+    } catch (error) {
+      logger.error('Error closing ultimate alert window:', error);
     }
   }
 

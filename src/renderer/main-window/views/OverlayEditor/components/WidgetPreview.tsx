@@ -2,6 +2,7 @@ import React from 'react';
 import { Edge } from '@overwolf/odk-ts/window/enums/edge';
 import type { OverlayWidgetConfig } from '../../../../../shared/types/overlayLayout';
 import { HEROES } from '../../../../../shared/data/heroes';
+import { UltReadyIcon } from '../../../../components/UltimateGlyphIcons';
 
 interface Props {
   widget: OverlayWidgetConfig;
@@ -278,6 +279,81 @@ const CounterItemsPreview: React.FC = () => (
   </div>
 );
 
+/* ── Ultimate Alert preview styles ────────────────────────────────── */
+
+const ultCardStyle: React.CSSProperties = {
+  ...cardBase,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  padding: '8px 12px',
+  borderRadius: 7,
+  width: 320,
+};
+
+const ultHeroImgStyle: React.CSSProperties = {
+  width: 34,
+  height: 34,
+  objectFit: 'cover',
+  borderRadius: 5,
+  flexShrink: 0,
+};
+
+const ultHeroNameStyle: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: '#c8a96a',
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+  flexShrink: 0,
+  minWidth: 66,
+};
+
+const ultStatusStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 5,
+  flex: 1,
+};
+
+const ultGlyphStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  color: '#72947f',
+  lineHeight: 1,
+};
+
+const ultLabelStyle: React.CSSProperties = {
+  fontSize: 14,
+  fontWeight: 600,
+  color: '#efdebf',
+  whiteSpace: 'nowrap',
+};
+
+const ultRelationStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: '#9c8c72',
+  flexShrink: 0,
+};
+
+const UltimateAlertPreview: React.FC = () => (
+  <div style={ultCardStyle}>
+    <img
+      style={ultHeroImgStyle}
+      src={HEROES[1]?.images.icon_image_small_webp ?? ''}
+      alt="Infernus"
+    />
+    <span style={ultHeroNameStyle}>INFERNUS</span>
+    <span style={ultStatusStyle}>
+      <span style={ultGlyphStyle}>
+        <UltReadyIcon size={17} />
+      </span>
+      <span style={ultLabelStyle}>Ult Ready</span>
+    </span>
+    <span style={ultRelationStyle}>Enemy</span>
+  </div>
+);
+
 /* ── Main component ────────────────────────────────────────────────── */
 
 const WidgetPreview: React.FC<Props> = ({ widget }) => {
@@ -289,6 +365,8 @@ const WidgetPreview: React.FC<Props> = ({ widget }) => {
     <div className="widget-preview-item" style={posStyle}>
       {widget.widget_id === 'counter_items' ? (
         <CounterItemsPreview />
+      ) : widget.widget_id === 'ultimate_alert' ? (
+        <UltimateAlertPreview />
       ) : (
         <AlertPreview widget={widget} />
       )}

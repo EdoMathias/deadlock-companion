@@ -17,6 +17,8 @@ module.exports = (env) => ({
       './src/renderer/alert-overlay-window/AlertOverlay.tsx',
     counter_items:
       './src/renderer/counter-items-window/CounterItems.tsx',
+    ultimate_alert:
+      './src/renderer/ultimate-alert-window/UltimateAlert.tsx',
   },
   devtool: 'inline-source-map',
   module: {
@@ -108,6 +110,12 @@ module.exports = (env) => ({
         './src/renderer/counter-items-window/counter_items.html',
       filename: path.resolve(__dirname, './dist/counter_items.html'),
       chunks: ['counter_items'],
+    }),
+    new HtmlWebpackPlugin({
+      template:
+        './src/renderer/ultimate-alert-window/ultimate_alert.html',
+      filename: path.resolve(__dirname, './dist/ultimate_alert.html'),
+      chunks: ['ultimate_alert'],
     }),
     new HtmlWebpackPlugin({
       template: './src/renderer/uninstall-window/uninstall.html',

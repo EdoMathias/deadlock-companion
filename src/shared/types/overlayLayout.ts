@@ -33,5 +33,12 @@ export const DEFAULT_OVERLAY_LAYOUT: OverlayLayoutConfig = {
       layout_mode: 'compact',
       refresh_interval_s: 120,
     },
+    ultimate_alert: {
+      widget_id: 'ultimate_alert',
+      enabled: true,
+      dock_edge: Edge.TopLeft,
+      layout_mode: 'compact',
+      dismiss_timeout_s: 5,
+    },
   },
 };

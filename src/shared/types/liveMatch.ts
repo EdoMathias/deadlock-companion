@@ -16,6 +16,10 @@ export interface LiveRosterEntry {
   health: number;
   souls: number;
   hero_name: string;
+  /** Whether this hero has spent a skill point to unlock their ultimate ability. */
+  ultimate_trained?: boolean;
+  /** Whether this hero's ultimate ability is off cooldown and castable. */
+  ultimate_ready?: boolean;
   /** Current item IDs owned by this player, sourced from items_N GEP events. */
   items?: number[];
 }

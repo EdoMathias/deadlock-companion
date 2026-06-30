@@ -31,6 +31,8 @@ import { ItemPurchaseTracker } from '../services/item-purchase-tracker.service';
 import type { GepItemsUpdate, ItemPurchaseAlert } from '../../shared/types/itemAlerts';
 import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
 import { fetchAllItems } from '../../shared/services/deadlock-api/assetsApiService';
+import { UltimateTracker } from '../services/ultimate-tracker.service';
+import type { UltimateAlert } from '../../shared/types/ultimateAlerts';
 
 const logger = createLogger('BackgroundController');
 
@@ -50,6 +52,7 @@ export class BackgroundController {
   private _trayIconService: TrayIconService;
   private _gameEventsService: GameEventsService;
   private _itemPurchaseTracker: ItemPurchaseTracker;
+  private _ultimateTracker: UltimateTracker;
 
   private _isGameRunning: boolean = false;
   private _companionReadyDismissTimer: ReturnType<typeof setTimeout> | null =
@@ -117,6 +120,11 @@ export class BackgroundController {
       this.handleItemPurchaseAlert(alert),
     );
     this.loadItemMetadataForTracker();
+
+    this._ultimateTracker = new UltimateTracker();
+    this._ultimateTracker.setAlertCallback((alert) =>
+      this.handleUltimateAlert(alert),
+    );
 
     // Set up service callbacks
     this.setupHotkeyHandlers();
@@ -362,6 +370,7 @@ export class BackgroundController {
     this._rosterUpdateCount = 0;
     this._itemPurchaseTracker.reset();
     this.loadItemMetadataForTracker();
+    this._ultimateTracker.reset();
 
     overwolf.games.events.getInfo((result) => {
       if (!result.success) {
@@ -439,6 +448,15 @@ export class BackgroundController {
         .showCounterItemsWindow(counterConfig?.dock_edge)
         .catch((err) => {
           logger.warn('Failed to show counter items on match_start:', err);
+        });
+    }
+
+    const ultimateConfig = getWidgetConfig('ultimate_alert');
+    if (ultimateConfig?.enabled !== false) {
+      this._windowsController
+        .showUltimateAlertWindow(ultimateConfig?.dock_edge)
+        .catch((err) => {
+          logger.warn('Failed to show ultimate alert window on match_start:', err);
         });
     }
   }
@@ -536,6 +554,15 @@ export class BackgroundController {
               logger.warn('Failed to show counter items on active match:', err);
             });
         }
+
+        const ultimateCfg = getWidgetConfig('ultimate_alert');
+        if (ultimateCfg?.enabled !== false) {
+          this._windowsController
+            .showUltimateAlertWindow(ultimateCfg?.dock_edge)
+            .catch((err) => {
+              logger.warn('Failed to show ultimate alert window on active match:', err);
+            });
+        }
       });
     }, 1500);
   }
@@ -565,6 +592,11 @@ export class BackgroundController {
     // Close the counter items window
     this._windowsController.closeCounterItemsWindow().catch((err) => {
       logger.warn('Failed to close counter items on match_end:', err);
+    });
+
+    // Close the ultimate alert window
+    this._windowsController.closeUltimateAlertWindow().catch((err) => {
+      logger.warn('Failed to close ultimate alert window on match_end:', err);
     });
 
     // Send roster snapshot to renderer windows via the message channel so
@@ -643,6 +675,12 @@ export class BackgroundController {
           health: Number(rosterEntry.health ?? 0),
           souls: Number(rosterEntry.souls ?? 0),
           hero_name: String(rosterEntry.hero_name ?? ''),
+          ultimate_trained:
+            rosterEntry.ultimate_trained === true ||
+            rosterEntry.ultimate_trained === 'true',
+          ultimate_ready:
+            rosterEntry.ultimate_ready === true ||
+            rosterEntry.ultimate_ready === 'true',
         };
 
         // Don't let an empty/reset entry overwrite existing good data.
@@ -656,6 +694,7 @@ export class BackgroundController {
         const rosterIdx = parseInt(key.replace('roster_', ''), 10);
         if (!isNaN(rosterIdx)) {
           this._itemPurchaseTracker.onRosterUpdate(rosterIdx, entry);
+          this._ultimateTracker.onRosterUpdate(rosterIdx, entry);
         }
 
         if (entry.is_local) {
@@ -726,6 +765,12 @@ export class BackgroundController {
         .catch((err) =>
           logger.warn('Failed to re-dock alert overlay window:', err),
         );
+    } else if (widget_id === 'ultimate_alert') {
+      this._windowsController
+        .showUltimateAlertWindow(dock_edge)
+        .catch((err) =>
+          logger.warn('Failed to re-dock ultimate alert window:', err),
+        );
     }
   }
 
@@ -754,6 +799,21 @@ export class BackgroundController {
     this._messageChannel.sendMessage(
       kWindowNames.alertOverlay,
       MessageType.ITEM_PURCHASE_ALERT,
+      alert,
+    );
+  }
+
+  /**
+   * Handles an ultimate alert from the UltimateTracker.
+   * Forwards it to the ultimate alert overlay window via MessageChannel.
+   */
+  private handleUltimateAlert(alert: UltimateAlert): void {
+    logger.log(
+      `Ultimate alert: ${alert.hero_name} [${alert.kind}] (${alert.team_relation})`,
+    );
+    this._messageChannel.sendMessage(
+      kWindowNames.ultimateAlert,
+      MessageType.ULTIMATE_ALERT,
       alert,
     );
   }
@@ -848,6 +908,12 @@ export class BackgroundController {
           health: Number(rosterEntry.health ?? 0),
           souls: Number(rosterEntry.souls ?? 0),
           hero_name: String(rosterEntry.hero_name ?? ''),
+          ultimate_trained:
+            rosterEntry.ultimate_trained === true ||
+            rosterEntry.ultimate_trained === 'true',
+          ultimate_ready:
+            rosterEntry.ultimate_ready === true ||
+            rosterEntry.ultimate_ready === 'true',
         };
 
         // Don't let an empty/reset entry overwrite existing good data.
@@ -863,6 +929,7 @@ export class BackgroundController {
         const rosterIdx = parseInt(key.replace('roster_', ''), 10);
         if (!isNaN(rosterIdx)) {
           this._itemPurchaseTracker.onRosterUpdate(rosterIdx, entry);
+          this._ultimateTracker.onRosterUpdate(rosterIdx, entry);
         }
 
         if (entry.is_local) {

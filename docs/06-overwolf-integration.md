@@ -23,7 +23,7 @@ Key sections:
 "data": {
   "start_window": "background",
   "hotkeys": { "ToggleInGameMain": ..., "ToggleDesktopMain": ..., "ToggleCounterItems": ... },
-  "windows": { "background": ..., "main_desktop": ..., "main_ingame": ..., "alert_overlay": ..., "counter_items": ... },
+  "windows": { "background": ..., "main_desktop": ..., "main_ingame": ..., "alert_overlay": ..., "counter_items": ..., "ultimate_alert": ... },
   "game_targeting": { "type": "dedicated", "game_ids": [24482] },
   "game_events": [24482],
   "launch_events": [{ "event": "GameLaunch", "event_data": { "game_ids": [24482] }, "start_minimized": true }]
@@ -124,8 +124,8 @@ Two top-level features for Deadlock:
 
 `onNewEvents(events)` → `BackgroundController.handleGameEvent` switches on `events.events[*].name`:
 
-- `match_start` → `onMatchStart()` — broadcasts `LIVE_MATCH_START`, shows `alert_overlay` (if enabled in `overlayLayoutStore`), resets `ItemPurchaseTracker`.
-- `match_end` → `onMatchEnd()` — broadcasts `LIVE_MATCH_END`, persists final roster snapshot to `dl-roster-snapshots`, closes `alert_overlay`.
+- `match_start` → `onMatchStart()` — broadcasts `LIVE_MATCH_START`, shows `alert_overlay`, `counter_items`, and `ultimate_alert` (if enabled in `overlayLayoutStore`), resets `ItemPurchaseTracker` and `UltimateTracker`.
+- `match_end` → `onMatchEnd()` — broadcasts `LIVE_MATCH_END`, persists final roster snapshot to `dl-roster-snapshots`, closes `alert_overlay`, `counter_items`, and `ultimate_alert`.
 - Anything else is logged at warn level and ignored.
 
 `onInfoUpdates2(update)` → `handleInfoUpdate` walks each feature key in `update.info`:
@@ -133,7 +133,7 @@ Two top-level features for Deadlock:
 - `match_info.match_id` → store as current match id
 - `match_info.match_outcome` → call `submitSaltsToApi(match_outcome)` if Patreon API key configured
 - `match_info.items_N` → forward to `ItemPurchaseTracker.onItemsUpdate(playerSlot, items)`
-- `match_info.<roster fields>` → forward to `ItemPurchaseTracker.onRosterUpdate` and broadcast `LIVE_ROSTER_UPDATE`
+- `match_info.<roster fields>` → forward to `ItemPurchaseTracker.onRosterUpdate` and `UltimateTracker.onRosterUpdate`, broadcast `LIVE_ROSTER_UPDATE`
 - `game_info.match_history` → JSON.parse, normalize, broadcast `MATCH_HISTORY_UPDATE` (consumed by `useGameEventMatches`, persisted to `dl-game-event-matches`)
 - `game_info.game_mode` / `team_score` → update internal state, broadcast `LIVE_ROSTER_UPDATE`
 
@@ -169,6 +169,7 @@ export enum MessageType {
   REQUEST_LIVE_MATCH_STATE  = 'request-live-match-state',
   ROSTER_SNAPSHOT           = 'roster-snapshot',
   ITEM_PURCHASE_ALERT       = 'item-purchase-alert',
+  ULTIMATE_ALERT            = 'ultimate-alert',       // Background → ultimate_alert window; payload: UltimateAlert
   WIDGET_DOCK_CHANGED       = 'widget-dock-changed',
   CUSTOM                    = 'custom',
 }

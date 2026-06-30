@@ -36,11 +36,13 @@ flowchart LR
     WS --> Ready[companion_app_ready]
     WS --> Alert[alert_overlay]
     WS --> Counter[counter_items]
+    WS --> UltAlert[ultimate_alert]
 
     Bg <-->|"MessageChannel sendMessage / onMessageReceived"| Desk
     Bg <-->|MessageChannel| Ing
     Bg -->|ITEM_PURCHASE_ALERT| Alert
     Bg -->|LIVE_ROSTER_UPDATE| Counter
+    Bg -->|ULTIMATE_ALERT| UltAlert
 
     Desk --> API[deadlock-api.com vendor client]
     Ing --> API
@@ -77,6 +79,7 @@ Services owned by the controller:
 | `GameStateService` | [`src/main/services/game-state.service.ts`](../src/main/services/game-state.service.ts) | `overwolf.games.onGameInfoUpdated` filtered to Deadlock. |
 | `GameEventsService` | [`src/main/services/game-events.service.ts`](../src/main/services/game-events.service.ts) | GEP: `setRequiredFeatures`, `onNewEvents`, `onInfoUpdates2`, error retries. |
 | `ItemPurchaseTracker` | [`src/main/services/item-purchase-tracker.service.ts`](../src/main/services/item-purchase-tracker.service.ts) | Diffs `items_N` and roster, emits `ITEM_PURCHASE_ALERT`. |
+| `UltimateTracker` | [`src/main/services/ultimate-tracker.service.ts`](../src/main/services/ultimate-tracker.service.ts) | Diffs `ultimate_trained`/`ultimate_ready` per roster entry, emits `ULTIMATE_ALERT`. |
 | `WindowsController` | [`src/main/controllers/windows.controller.ts`](../src/main/controllers/windows.controller.ts) | Thin facade over `WindowsService` for show/hide/close per window. |
 
 ### Why a singleton?
@@ -99,8 +102,8 @@ Lifecycle handlers:
 | App launches & game is **not** running | `BackgroundController.run()` | `showMainDesktopWindow('primary')` |
 | Deadlock launches | `WindowsController.onGameLaunch()` | Ensures monitors map, shows desktop on secondary monitor (if any), shows `companion_app_ready`, creates `main_ingame` |
 | Deadlock exits | `WindowsController.onGameExit()` | Closes in-game, companion-ready, alert overlay; shows desktop primary |
-| Match starts (GEP) | `BackgroundController.onMatchStart` | Shows `alert_overlay` and `counter_items` (if enabled in `overlayLayoutStore`), broadcasts `LIVE_MATCH_START` |
-| Match ends (GEP) | `BackgroundController.onMatchEnd` | Closes `alert_overlay` and `counter_items`, broadcasts `LIVE_MATCH_END`, persists roster snapshot |
+| Match starts (GEP) | `BackgroundController.onMatchStart` | Shows `alert_overlay`, `counter_items`, and `ultimate_alert` (if enabled in `overlayLayoutStore`), broadcasts `LIVE_MATCH_START` |
+| Match ends (GEP) | `BackgroundController.onMatchEnd` | Closes `alert_overlay`, `counter_items`, and `ultimate_alert`, broadcasts `LIVE_MATCH_END`, persists roster snapshot |
 | Hotkey | `HotkeysService` callback → `WindowsController.toggle*` | Toggles desktop, in-game main, or counter items window |
 
 **Manifest contract:** every window name string used in `WindowsService.windowsConfigs` must also exist in [`public/manifest.json`](../public/manifest.json) `data.windows` (or be created dynamically via odk-ts) and in [`kWindowNames`](../src/shared/consts.ts).

@@ -18,6 +18,7 @@ Deadlock Companion is an **Overwolf** companion app for Valve's *Deadlock* (Over
 | `companion_app_ready` | Small pop-up confirming the companion launched in-game. | First seconds after match start |
 | `alert_overlay` | In-game item-purchase alert toast stack. | During an active match |
 | `counter_items` | In-game counter-item advisor based on enemy team composition. | During an active match (toggle via Alt+Shift+F) |
+| `ultimate_alert` | In-game ultimate-ready/unlocked alert toast stack. | During an active match |
 | `uninstall` | Tiny page that opens the feedback form on uninstall. | Triggered by Overwolf |
 
 All renderer windows share a single React component tree, design system, and `@overwolf/odk-ts` integration.

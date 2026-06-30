@@ -284,3 +284,26 @@
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
+
+/* Team-filter checkboxes (Ultimate Alert widget) */
+
+.overlay-widget-checkboxes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.overlay-widget-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.overlay-widget-checkbox-label input[type='checkbox'] {
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+}

@@ -10,6 +10,7 @@ export const kWindowNames = {
   companionAppReady: 'companion_app_ready',
   alertOverlay: 'alert_overlay',
   counterItems: 'counter_items',
+  ultimateAlert: 'ultimate_alert',
 };
 
 export const kHotkeys = {
