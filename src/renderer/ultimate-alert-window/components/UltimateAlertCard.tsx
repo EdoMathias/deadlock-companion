@@ -5,6 +5,9 @@ import { UltReadyIcon, UltUnlockedIcon } from '../../components/UltimateGlyphIco
 interface Props {
   alert: UltimateAlert;
   onDismiss: (id: string) => void;
+  showBorder: boolean;
+  showTint: boolean;
+  showPulse: boolean;
 }
 
 function relationLabel(relation: UltimateAlert['team_relation']): string {
@@ -13,15 +16,33 @@ function relationLabel(relation: UltimateAlert['team_relation']): string {
   return 'Enemy';
 }
 
-const UltimateAlertCard: React.FC<Props> = ({ alert, onDismiss }) => {
+const UltimateAlertCard: React.FC<Props> = ({
+  alert,
+  onDismiss,
+  showBorder,
+  showTint,
+  showPulse,
+}) => {
   const isReady = alert.kind === 'ready';
   const glyphClass = isReady
     ? 'ultimate-alert-glyph ultimate-alert-glyph--ready'
     : 'ultimate-alert-glyph ultimate-alert-glyph--unlocked';
   const label = isReady ? 'Ult Ready' : 'Ult Unlocked';
 
+  const cardClass = [
+    'ultimate-alert-card',
+    alert.team_relation === 'enemy'
+      ? 'ultimate-alert-card--enemy'
+      : 'ultimate-alert-card--team',
+    showBorder && 'ultimate-alert-card--border',
+    showTint && 'ultimate-alert-card--tint',
+    showPulse && 'ultimate-alert-card--pulse',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="ultimate-alert-card" onClick={() => onDismiss(alert.id)}>
+    <div className={cardClass} onClick={() => onDismiss(alert.id)}>
       {alert.hero_image && (
         <img
           className="ultimate-alert-hero-img"

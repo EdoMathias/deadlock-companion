@@ -54,6 +54,31 @@ body {
   opacity: 0.85;
 }
 
+/* Relation color carrier (RGB triplet for solid + translucent uses) */
+.ultimate-alert-card--enemy {
+  --ult-relation-rgb: 168, 70, 50; /* --color-danger */
+}
+
+.ultimate-alert-card--team {
+  --ult-relation-rgb: 114, 148, 127; /* --color-accent-primary */
+}
+
+/* Independent, toggleable prominence treatments */
+.ultimate-alert-card--border {
+  border: 2px solid rgb(var(--ult-relation-rgb));
+}
+
+.ultimate-alert-card--tint {
+  background-image: linear-gradient(
+    rgba(var(--ult-relation-rgb), 0.18),
+    rgba(var(--ult-relation-rgb), 0.18)
+  );
+}
+
+.ultimate-alert-card--pulse {
+  animation: ult-slide-in-pulse 0.45s ease-out;
+}
+
 .ultimate-alert-hero-img {
   width: 34px;
   height: 34px;
@@ -122,5 +147,22 @@ body {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* Slide-in combined with a brief overshoot for the "appear pulse" treatment.
+   Kept as one keyframe so transform isn't driven by two animations at once. */
+@keyframes ult-slide-in-pulse {
+  0% {
+    opacity: 0;
+    transform: translateX(16px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(0) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }

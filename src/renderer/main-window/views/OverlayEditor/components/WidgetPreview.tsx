@@ -2,7 +2,7 @@ import React from 'react';
 import { Edge } from '@overwolf/odk-ts/window/enums/edge';
 import type { OverlayWidgetConfig } from '../../../../../shared/types/overlayLayout';
 import { HEROES } from '../../../../../shared/data/heroes';
-import { UltReadyIcon } from '../../../../components/UltimateGlyphIcons';
+import { UltReadyIcon, UltUnlockedIcon } from '../../../../components/UltimateGlyphIcons';
 
 interface Props {
   widget: OverlayWidgetConfig;
@@ -291,6 +291,10 @@ const ultCardStyle: React.CSSProperties = {
   width: 320,
 };
 
+/* Relation colors mirror the in-game card: red = enemy, green = team. */
+const ULT_ENEMY_RGB = '168, 70, 50';
+const ULT_TEAM_RGB = '114, 148, 127';
+
 const ultHeroImgStyle: React.CSSProperties = {
   width: 34,
   height: 34,
@@ -336,23 +340,83 @@ const ultRelationStyle: React.CSSProperties = {
   flexShrink: 0,
 };
 
-const UltimateAlertPreview: React.FC = () => (
-  <div style={ultCardStyle}>
-    <img
-      style={ultHeroImgStyle}
-      src={HEROES[1]?.images.icon_image_small_webp ?? ''}
-      alt="Infernus"
-    />
-    <span style={ultHeroNameStyle}>INFERNUS</span>
-    <span style={ultStatusStyle}>
-      <span style={ultGlyphStyle}>
-        <UltReadyIcon size={17} />
+const ultStackStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+};
+
+interface UltPreviewCardProps {
+  widget: OverlayWidgetConfig;
+  relationRgb: string;
+  relationLabel: string;
+  heroId: number;
+  kind: 'ready' | 'unlocked';
+}
+
+const UltimateAlertPreviewCard: React.FC<UltPreviewCardProps> = ({
+  widget,
+  relationRgb,
+  relationLabel,
+  heroId,
+  kind,
+}) => {
+  const showBorder = widget.relation_border !== false;
+  const showTint = widget.relation_tint !== false;
+  const showPulse = widget.appear_pulse !== false;
+  const isReady = kind === 'ready';
+
+  const hero = HEROES[heroId];
+  const heroImg = hero?.images.icon_image_small_webp ?? hero?.images.icon_image_small ?? '';
+  const heroName = (hero?.name ?? '').toUpperCase();
+
+  const style: React.CSSProperties = {
+    ...ultCardStyle,
+    ...(showBorder && { border: `2px solid rgb(${relationRgb})` }),
+    ...(showTint && {
+      backgroundImage: `linear-gradient(rgba(${relationRgb}, 0.18), rgba(${relationRgb}, 0.18))`,
+    }),
+  };
+
+  return (
+    <div className={showPulse ? 'ult-preview-pulse-anim' : undefined} style={style}>
+      <img style={ultHeroImgStyle} src={heroImg} alt={heroName} />
+      <span style={ultHeroNameStyle}>{heroName}</span>
+      <span style={ultStatusStyle}>
+        <span style={{ ...ultGlyphStyle, color: isReady ? '#72947f' : '#c8a96a' }}>
+          {isReady ? <UltReadyIcon size={17} /> : <UltUnlockedIcon size={17} />}
+        </span>
+        <span style={ultLabelStyle}>{isReady ? 'Ult Ready' : 'Ult Unlocked'}</span>
       </span>
-      <span style={ultLabelStyle}>Ult Ready</span>
-    </span>
-    <span style={ultRelationStyle}>Enemy</span>
-  </div>
-);
+      <span style={ultRelationStyle}>{relationLabel}</span>
+    </div>
+  );
+};
+
+const UltimateAlertPreview: React.FC<{ widget: OverlayWidgetConfig }> = ({ widget }) => {
+  // Re-mount the stack whenever the pulse toggle flips so the CSS animation
+  // replays, giving the user a live preview of the effect on toggle.
+  const pulseKey = widget.appear_pulse !== false ? 'pulse-on' : 'pulse-off';
+
+  return (
+    <div style={ultStackStyle} key={pulseKey}>
+      <UltimateAlertPreviewCard
+        widget={widget}
+        relationRgb={ULT_ENEMY_RGB}
+        relationLabel="Enemy"
+        heroId={1}
+        kind="ready"
+      />
+      <UltimateAlertPreviewCard
+        widget={widget}
+        relationRgb={ULT_TEAM_RGB}
+        relationLabel="Ally"
+        heroId={2}
+        kind="unlocked"
+      />
+    </div>
+  );
+};
 
 /* ── Main component ────────────────────────────────────────────────── */
 
@@ -366,7 +430,7 @@ const WidgetPreview: React.FC<Props> = ({ widget }) => {
       {widget.widget_id === 'counter_items' ? (
         <CounterItemsPreview />
       ) : widget.widget_id === 'ultimate_alert' ? (
-        <UltimateAlertPreview />
+        <UltimateAlertPreview widget={widget} />
       ) : (
         <AlertPreview widget={widget} />
       )}

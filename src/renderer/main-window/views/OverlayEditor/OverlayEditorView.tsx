@@ -9,6 +9,7 @@ import {
   setWidgetLayoutMode,
   setWidgetDismissTimeout,
   setWidgetRefreshInterval,
+  setWidgetVisualFlag,
   resetWidgetConfig,
 } from '../../../../shared/stores/overlayLayoutStore';
 import {
@@ -57,6 +58,18 @@ const OverlayEditorView: React.FC = () => {
       setUltimatePrefs(getUltimateNotificationPreferences());
     },
     [],
+  );
+
+  const handleVisualFlagChange = useCallback(
+    (
+      widgetId: string,
+      key: 'relation_border' | 'relation_tint' | 'appear_pulse',
+      value: boolean,
+    ) => {
+      setWidgetVisualFlag(widgetId, key, value);
+      refresh();
+    },
+    [refresh],
   );
 
   const handleDockChange = useCallback(
@@ -284,6 +297,53 @@ const OverlayEditorView: React.FC = () => {
                               }
                             />
                             You
+                          </label>
+                        </div>
+                      </div>
+                      <div className="overlay-widget-control-group">
+                        <label className="overlay-widget-label">Style</label>
+                        <div className="overlay-widget-checkboxes">
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={widget.relation_border !== false}
+                              onChange={(e) =>
+                                handleVisualFlagChange(
+                                  widgetId,
+                                  'relation_border',
+                                  e.target.checked,
+                                )
+                              }
+                            />
+                            Relation border
+                          </label>
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={widget.relation_tint !== false}
+                              onChange={(e) =>
+                                handleVisualFlagChange(
+                                  widgetId,
+                                  'relation_tint',
+                                  e.target.checked,
+                                )
+                              }
+                            />
+                            Background tint
+                          </label>
+                          <label className="overlay-widget-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={widget.appear_pulse !== false}
+                              onChange={(e) =>
+                                handleVisualFlagChange(
+                                  widgetId,
+                                  'appear_pulse',
+                                  e.target.checked,
+                                )
+                              }
+                            />
+                            Appear pulse
                           </label>
                         </div>
                       </div>

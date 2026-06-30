@@ -104,6 +104,18 @@ export function setWidgetRefreshInterval(
   save(layout);
 }
 
+export function setWidgetVisualFlag(
+  widgetId: string,
+  key: 'relation_border' | 'relation_tint' | 'appear_pulse',
+  value: boolean,
+): void {
+  const layout = load();
+  if (layout.widgets[widgetId]) {
+    layout.widgets[widgetId][key] = value;
+  }
+  save(layout);
+}
+
 export function resetWidgetConfig(widgetId: string): void {
   const layout = load();
   const defaultWidget = DEFAULT_OVERLAY_LAYOUT.widgets[widgetId];

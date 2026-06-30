@@ -307,3 +307,21 @@
   accent-color: var(--color-accent-primary);
   cursor: pointer;
 }
+
+/* Ultimate Alert preview "appear pulse" — replays when the toggle flips
+   (the preview stack is re-keyed on change so this animation re-runs). */
+@keyframes ult-preview-pulse {
+  0% {
+    transform: scale(0.96);
+  }
+  55% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.ult-preview-pulse-anim {
+  animation: ult-preview-pulse 0.45s ease-out;
+}

@@ -11,6 +11,12 @@ export interface OverlayWidgetConfig {
   dismiss_timeout_s?: number;
   /** How often (in seconds) to refresh time-based item filtering. Only used by counter_items. */
   refresh_interval_s?: number;
+  /** Show a relation-colored border (red enemy / green team). Only used by ultimate_alert. */
+  relation_border?: boolean;
+  /** Tint the card background in the relation color. Only used by ultimate_alert. */
+  relation_tint?: boolean;
+  /** Play a brief scale pulse when the card appears. Only used by ultimate_alert. */
+  appear_pulse?: boolean;
 }
 
 export interface OverlayLayoutConfig {
@@ -36,9 +42,12 @@ export const DEFAULT_OVERLAY_LAYOUT: OverlayLayoutConfig = {
     ultimate_alert: {
       widget_id: 'ultimate_alert',
       enabled: true,
-      dock_edge: Edge.TopLeft,
+      dock_edge: Edge.Left,
       layout_mode: 'compact',
       dismiss_timeout_s: 5,
+      relation_border: true,
+      relation_tint: true,
+      appear_pulse: true,
     },
   },
 };
