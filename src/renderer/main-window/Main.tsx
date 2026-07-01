@@ -23,6 +23,8 @@ import { viewsConfig } from './config/views.config';
 import { kHotkeys } from '../../shared/consts';
 import { HotkeysAPI } from '../../shared/services/hotkeys';
 import { MessageType } from '../../main/services/MessageChannel';
+import { initAnalytics, track } from '../../shared/services/analytics';
+import type { ScreenName } from '../../shared/services/analytics';
 
 const DEFAULT_HOTKEYS = {
   toggleMainIngameWindow: 'Ctrl+T',
@@ -102,6 +104,34 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
     } catch {
       // Ignore errors
     }
+  }, [activeView]);
+
+  // Analytics: fire screen_viewed on every view change, carrying the dwell time
+  // of the screen being left. entry_method defaults to 'sidebar'; the match-start
+  // auto-navigation overrides it to 'auto_nav', and the first view is 'default'.
+  const previousScreenRef = React.useRef<ScreenName | null>(null);
+  const screenEnteredAtRef = React.useRef<number>(Date.now());
+  const entryMethodRef = React.useRef<'sidebar' | 'auto_nav' | 'default'>(
+    'default',
+  );
+  useEffect(() => {
+    const now = Date.now();
+    const previousScreen = previousScreenRef.current;
+    const dwellSeconds =
+      previousScreen != null
+        ? Math.round((now - screenEnteredAtRef.current) / 1000)
+        : undefined;
+
+    track('screen_viewed', {
+      screen_name: activeView as ScreenName,
+      entry_method: entryMethodRef.current,
+      previous_screen: previousScreen,
+      previous_screen_dwell_seconds: dwellSeconds,
+    });
+
+    previousScreenRef.current = activeView as ScreenName;
+    screenEnteredAtRef.current = now;
+    entryMethodRef.current = 'sidebar';
   }, [activeView]);
 
   // Dismiss "NEW" badges when the user visits an item-alerts feature view
@@ -224,6 +254,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
             : message?.content;
         if (payload?.type === MessageType.LIVE_MATCH_START) {
           setShowSettings(false);
+          entryMethodRef.current = 'auto_nav';
           setActiveView('Live Match');
           setNavExpanded(false);
         }
@@ -492,6 +523,8 @@ const mountMain = () => {
 };
 
 const bootstrap = async () => {
+  // Auto-detects main_desktop vs main_ingame (both share this entry).
+  initAnalytics();
   mountMain();
 };
 

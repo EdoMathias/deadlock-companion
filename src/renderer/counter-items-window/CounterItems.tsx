@@ -14,6 +14,7 @@ import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
 import { getHero } from '../../shared/data/heroes';
 import { HotkeysAPI } from '../../shared/services/hotkeys';
 import { createLogger } from '../../shared/services/Logger';
+import { initAnalytics } from '../../shared/services/analytics';
 import '../styles/index.css';
 
 const logger = createLogger('CounterItems');
@@ -413,4 +414,5 @@ const mountApp = () => {
   root.render(<CounterItems />);
 };
 
+initAnalytics('counter_items');
 mountApp();

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import AlertQueue from './components/AlertQueue';
 import { useAlertMessages } from './hooks/useAlertMessages';
 import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
+import { initAnalytics } from '../../shared/services/analytics';
 import './alert-overlay.css';
 
 const AlertOverlay: React.FC = () => {
@@ -32,4 +33,5 @@ const mountApp = () => {
   root.render(<AlertOverlay />);
 };
 
+initAnalytics('alert_overlay');
 mountApp();

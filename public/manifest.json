@@ -4,7 +4,7 @@
   "meta": {
     "name": "Deadlock Companion",
     "author": "KofimBadam",
-    "version": "1.3.3",
+    "version": "1.3.4",
     "minimum-overwolf-version": "0.160.0",
     "description": "An Overwolf companion app for Deadlock",
     "dock_button_title": "DeadlockCompanion",
@@ -48,7 +48,9 @@
         "https://www.googleapis.com",
         "https://*.deadlock-api.com",
         "https://*.steampowered.com",
-        "http://*.valve.net"
+        "http://*.valve.net",
+        "https://*.posthog.com",
+        "https://*.i.posthog.com"
       ]
     },
     "force_browser": "user",

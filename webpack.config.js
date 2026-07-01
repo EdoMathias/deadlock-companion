@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const path = require('path'),
   webpack = require('webpack'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
@@ -10,13 +12,10 @@ module.exports = (env) => ({
     background: './src/main/background.ts',
     main_desktop: './src/renderer/main-window/Main.tsx',
     main_ingame: './src/renderer/main-window/Main.tsx',
-    // rotation_ingame: './src/renderer/rotation-window/Rotation.tsx',
     companion_app_ready:
       './src/renderer/companion-ready-window/CompanionAppReady.tsx',
-    alert_overlay:
-      './src/renderer/alert-overlay-window/AlertOverlay.tsx',
-    counter_items:
-      './src/renderer/counter-items-window/CounterItems.tsx',
+    alert_overlay: './src/renderer/alert-overlay-window/AlertOverlay.tsx',
+    counter_items: './src/renderer/counter-items-window/CounterItems.tsx',
   },
   devtool: 'inline-source-map',
   module: {
@@ -86,11 +85,6 @@ module.exports = (env) => ({
       filename: path.resolve(__dirname, './dist/main_ingame.html'),
       chunks: ['main_ingame'],
     }),
-    // new HtmlWebpackPlugin({
-    //   template: './src/renderer/rotation-window/rotation_ingame.html',
-    //   filename: path.resolve(__dirname, './dist/rotation_ingame.html'),
-    //   chunks: ['rotation_ingame'],
-    // }),
     new HtmlWebpackPlugin({
       template:
         './src/renderer/companion-ready-window/companion_app_ready.html',
@@ -98,14 +92,12 @@ module.exports = (env) => ({
       chunks: ['companion_app_ready'],
     }),
     new HtmlWebpackPlugin({
-      template:
-        './src/renderer/alert-overlay-window/alert_overlay.html',
+      template: './src/renderer/alert-overlay-window/alert_overlay.html',
       filename: path.resolve(__dirname, './dist/alert_overlay.html'),
       chunks: ['alert_overlay'],
     }),
     new HtmlWebpackPlugin({
-      template:
-        './src/renderer/counter-items-window/counter_items.html',
+      template: './src/renderer/counter-items-window/counter_items.html',
       filename: path.resolve(__dirname, './dist/counter_items.html'),
       chunks: ['counter_items'],
     }),
@@ -118,6 +110,14 @@ module.exports = (env) => ({
       // Base64-encoded Steam Web API key — decoded at runtime via atob()
       __STEAM_WEB_KEY__: JSON.stringify(
         'MjI3RkRCQzdCMzQxMjA1MjBGQkRCNzlGNTNGNEMzMTc=',
+      ),
+      // PostHog analytics config, injected at build time from env vars (loaded
+      // from a gitignored .env by dotenv above) so the (public) project key is
+      // not committed and dev/prod keys can differ. See .env.example.
+      // If POSTHOG_KEY is empty, analytics init no-ops (app runs without telemetry).
+      __POSTHOG_KEY__: JSON.stringify(process.env.POSTHOG_KEY || ''),
+      __POSTHOG_HOST__: JSON.stringify(
+        process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
       ),
     }),
     new OverwolfPlugin(env),

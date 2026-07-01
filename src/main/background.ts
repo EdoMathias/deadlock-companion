@@ -1,6 +1,8 @@
 import { BackgroundController } from './controllers/background.controller';
+import { initAnalytics } from '../shared/services/analytics';
 
 const bootstrap = async () => {
+  initAnalytics('background');
   await BackgroundController.instance().run();
 };
 

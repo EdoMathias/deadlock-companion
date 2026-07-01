@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import '../styles/index.css';
 import { HotkeysAPI } from '../../shared/services/hotkeys';
 import { kHotkeys } from '../../shared/consts';
+import { initAnalytics } from '../../shared/services/analytics';
 
 const DISMISS_SECONDS = 10;
 
@@ -141,6 +142,7 @@ const mountApp = () => {
 };
 
 const bootstrap = async () => {
+  initAnalytics('companion_app_ready');
   mountApp();
 };
 

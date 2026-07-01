@@ -1,5 +1,6 @@
 import { OWGames, OWGamesEvents } from '@overwolf/overwolf-api-ts';
 import { createLogger } from '../../shared/services/Logger';
+import { track } from '../../shared/services/analytics';
 
 const logger = createLogger('GameEventsService');
 
@@ -175,10 +176,16 @@ export class GameEventsService {
     requiredFeatures: string[],
     maxRetries = 30,
   ): Promise<GEPEnabledFeatures> {
+    const startedAt = Date.now();
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const enabled = await this.trySetRequiredFeatures(requiredFeatures);
         if (enabled.length > 0) {
+          track('gep_connected', {
+            time_to_connect_seconds: Math.round(
+              (Date.now() - startedAt) / 1000,
+            ),
+          });
           return { enabled, requested: requiredFeatures };
         }
       } catch (err) {
@@ -187,6 +194,7 @@ export class GameEventsService {
           err,
         );
         if (attempt >= maxRetries) {
+          track('gep_connection_failed', { attempt, reason: String(err) });
           throw new Error(
             `Failed to set required features after ${maxRetries} attempts: ${err}`,
           );
@@ -196,6 +204,10 @@ export class GameEventsService {
       await this.delay(3000);
     }
 
+    track('gep_connection_failed', {
+      attempt: maxRetries,
+      reason: 'no supported features returned',
+    });
     throw new Error(
       `Failed to set required features after ${maxRetries} attempts`,
     );

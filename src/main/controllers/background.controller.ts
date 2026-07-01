@@ -30,6 +30,9 @@ import { submitSaltsToApi } from '../../shared/services/matchMetadataFetcher';
 import { ItemPurchaseTracker } from '../services/item-purchase-tracker.service';
 import type { GepItemsUpdate, ItemPurchaseAlert } from '../../shared/types/itemAlerts';
 import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
+import { getNotificationPreferences } from '../../shared/stores/notificationPreferences';
+import { track } from '../../shared/services/analytics';
+import type { OverlayType } from '../../shared/services/analytics';
 import { fetchAllItems } from '../../shared/services/deadlock-api/assetsApiService';
 
 const logger = createLogger('BackgroundController');
@@ -63,6 +66,12 @@ export class BackgroundController {
   private _gameMode: GameModeInfo | null = null;
   private _teamScores: TeamScores | null = null;
   private _rosterUpdateCount: number = 0;
+
+  // Analytics per-match counters (reset on match_start / mid-match bootstrap).
+  private _analyticsOverlaysShown: Set<OverlayType> = new Set();
+  private _analyticsItemAlertsShown: number = 0;
+  private _analyticsCounterItemsShown: number = 0;
+  private _analyticsFirstOverlayAt: number | null = null;
 
   private constructor() {
     // Initialize MessageChannel first (used by other services)
@@ -137,6 +146,13 @@ export class BackgroundController {
     // Determine which window to show based on game state
     const shouldShowInGame =
       await this._gameStateService.isSupportedGameRunning();
+
+    track('app_launched', {
+      launch_source: shouldShowInGame ? 'game_launch' : 'manual',
+      game_running: shouldShowInGame,
+      is_first_launch: this.consumeIsFirstLaunch(),
+    });
+
     if (shouldShowInGame) {
       logger.log('Game is Deadlock, showing in-game window');
       await this._windowsController.onGameLaunch();
@@ -161,6 +177,7 @@ export class BackgroundController {
     if (isDeadlockRunning) {
       await this._windowsController.onGameLaunch();
       this._isGameRunning = true;
+      track('game_detected');
       await this.showCompanionReadyNotification();
       await this._gameEventsService.onGameLaunched(['game_info', 'match_info']);
     } else {
@@ -169,6 +186,7 @@ export class BackgroundController {
         logger.log('Game was Deadlock, showing main desktop window');
         await this._windowsController.onGameExit();
         this._isGameRunning = false;
+        track('game_closed');
 
         // Prompt user to scan httpcache after game exit (throttled to once per day)
         try {
@@ -361,6 +379,7 @@ export class BackgroundController {
     this._teamScores = null;
     this._rosterUpdateCount = 0;
     this._itemPurchaseTracker.reset();
+    this.resetMatchAnalytics();
     this.loadItemMetadataForTracker();
 
     overwolf.games.events.getInfo((result) => {
@@ -409,6 +428,7 @@ export class BackgroundController {
         }
         this.broadcastRosterUpdate();
       }
+      this.trackMatchStarted(true);
     });
 
     // Broadcast match start so renderer windows can activate the live view
@@ -437,6 +457,10 @@ export class BackgroundController {
     if (counterConfig?.enabled !== false) {
       this._windowsController
         .showCounterItemsWindow(counterConfig?.dock_edge)
+        .then(() => {
+          this._analyticsCounterItemsShown++;
+          this.recordOverlayShown('counter_items');
+        })
         .catch((err) => {
           logger.warn('Failed to show counter items on match_start:', err);
         });
@@ -477,6 +501,7 @@ export class BackgroundController {
         this._currentMatchId = String(matchInfo.match_id);
         this._matchStartTimestamp = Date.now(); // Approximate — we don't know exact start
         this._rosterUpdateCount = 0;
+        this.resetMatchAnalytics();
 
         // Extract roster entries
         this.extractAllRosterEntries(matchInfo);
@@ -532,10 +557,16 @@ export class BackgroundController {
         if (counterCfg?.enabled !== false) {
           this._windowsController
             .showCounterItemsWindow(counterCfg?.dock_edge)
+            .then(() => {
+              this._analyticsCounterItemsShown++;
+              this.recordOverlayShown('counter_items');
+            })
             .catch((err) => {
               logger.warn('Failed to show counter items on active match:', err);
             });
         }
+
+        this.trackMatchStarted(false);
       });
     }, 1500);
   }
@@ -548,6 +579,10 @@ export class BackgroundController {
    * Also broadcasts LIVE_MATCH_END to renderer windows.
    */
   private async handleMatchEnd(): Promise<void> {
+    // Fire the aggregated match summary once per match (before the flag flips).
+    if (!this._isMatchEnded) {
+      this.trackMatchTracked();
+    }
     this._isMatchEnded = true;
 
     // Broadcast LIVE_MATCH_END so the scoreboard shows "Match Ended"
@@ -751,11 +786,108 @@ export class BackgroundController {
     logger.log(
       `Item purchase alert: ${alert.hero_name} bought ${alert.item.name}`,
     );
+    this._analyticsItemAlertsShown++;
+    this.recordOverlayShown('item_purchase_alert');
     this._messageChannel.sendMessage(
       kWindowNames.alertOverlay,
       MessageType.ITEM_PURCHASE_ALERT,
       alert,
     );
+  }
+
+  // ---------------------------- Analytics helpers ----------------------------
+
+  /** Reset the per-match analytics counters at match start / bootstrap. */
+  private resetMatchAnalytics(): void {
+    this._analyticsOverlaysShown = new Set();
+    this._analyticsItemAlertsShown = 0;
+    this._analyticsCounterItemsShown = 0;
+    this._analyticsFirstOverlayAt = null;
+  }
+
+  /**
+   * Record that an overlay was shown. Fires `overlay_shown` once per overlay
+   * type per match (reach); repeat shows only feed the match summary counters.
+   */
+  private recordOverlayShown(
+    type: OverlayType,
+    trigger: 'auto' | 'hotkey' = 'auto',
+  ): void {
+    if (this._analyticsFirstOverlayAt == null) {
+      this._analyticsFirstOverlayAt = Date.now();
+    }
+    if (this._analyticsOverlaysShown.has(type)) return;
+    this._analyticsOverlaysShown.add(type);
+    track('overlay_shown', {
+      overlay_type: type,
+      match_id: this._currentMatchId ?? undefined,
+      trigger,
+    });
+  }
+
+  /** The local player's hero name, if the roster snapshot is available. */
+  private getLocalHeroName(): string | undefined {
+    const roster = this._localPlayerRosterData as Record<string, unknown> | null;
+    if (!roster) return undefined;
+    const heroId = Number(roster.hero_id ?? 0);
+    const heroInfo = HEROES[heroId];
+    return heroInfo?.name ?? (roster.hero_name as string) ?? undefined;
+  }
+
+  private getTrackedItemsCount(): number {
+    try {
+      return getNotificationPreferences().tracked_item_ids.length;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Returns true only on the very first app launch (persisted flag). */
+  private consumeIsFirstLaunch(): boolean {
+    try {
+      if (!localStorage.getItem('dl_first_launch_done')) {
+        localStorage.setItem('dl_first_launch_done', 'true');
+        return true;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return false;
+  }
+
+  private trackMatchStarted(appOpenedDuringMatch: boolean): void {
+    track('match_started', {
+      match_id: this._currentMatchId ?? undefined,
+      game_mode: this._gameMode?.game_mode,
+      hero: this.getLocalHeroName(),
+      app_opened_during_match: appOpenedDuringMatch,
+      tracked_items_count: this.getTrackedItemsCount(),
+    });
+  }
+
+  /** Fire the aggregated per-match summary event at match end. */
+  private trackMatchTracked(): void {
+    if (this._matchStartTimestamp == null) return;
+    const now = Date.now();
+    const startTs = this._matchStartTimestamp;
+    const durationTracked = Math.round((now - startTs) / 1000);
+    const timeToFirstOverlay =
+      this._analyticsFirstOverlayAt != null
+        ? Math.round((this._analyticsFirstOverlayAt - startTs) / 1000)
+        : undefined;
+    track('match_tracked', {
+      match_id: this._currentMatchId ?? undefined,
+      game_mode: this._gameMode?.game_mode,
+      hero: this.getLocalHeroName(),
+      result: 'unknown',
+      duration_tracked_seconds: durationTracked,
+      time_to_first_overlay_seconds: timeToFirstOverlay,
+      overlays_shown_types: Array.from(this._analyticsOverlaysShown),
+      counter_items_shown: this._analyticsCounterItemsShown,
+      item_alerts_shown: this._analyticsItemAlertsShown,
+      ultimate_alerts_shown: 0,
+      tracked_items_count: this.getTrackedItemsCount(),
+    });
   }
 
   /**
