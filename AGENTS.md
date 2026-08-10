@@ -42,8 +42,8 @@ Manifest lives at [`public/manifest.json`](public/manifest.json) and is copied i
 
 Dependencies (from [`package.json`](package.json)) — keep this set minimal:
 
-- Runtime: `react`, `react-dom`, `react-chartjs-2`, `chart.js`, `axios`, `@overwolf/odk-ts`
-- Tooling: `typescript@^4.2`, `webpack@^5`, `ts-loader`, `style-loader`, `css-loader`, `html-webpack-plugin`, `copy-webpack-plugin`, `clean-webpack-plugin`, `zip-a-folder`, `@overwolf/types`, `@overwolf/overwolf-api-ts`
+- Runtime: `react`, `react-dom`, `react-chartjs-2`, `chart.js`, `axios`, `posthog-js`, `@overwolf/odk-ts`
+- Tooling: `typescript@^4.2`, `webpack@^5`, `ts-loader`, `style-loader`, `css-loader`, `html-webpack-plugin`, `copy-webpack-plugin`, `clean-webpack-plugin`, `zip-a-folder`, `dotenv`, `@overwolf/types`, `@overwolf/overwolf-api-ts`
 
 Do **not** add new dependencies without an explicit user request — bundle size matters for an Overwolf app.
 

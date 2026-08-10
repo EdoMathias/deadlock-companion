@@ -4,6 +4,10 @@ This doc collects the four most common change shapes into copy-pasteable checkli
 
 Read [`AGENTS.md`](../AGENTS.md) before using any of these.
 
+**Analytics is part of every feature.** Before you call a change done, run the
+decision gate in [`docs/10-analytics.md`](10-analytics.md) §1 — decide whether the
+feature warrants an event, and if so add it *then*, not later.
+
 ---
 
 ## 1. Add a new main-window tab
@@ -44,6 +48,7 @@ Add a tab the user can navigate to from the SideNav.
 - [ ] **Add a FTUE tour step** — see [`docs/04-ftue.md`](04-ftue.md) §9. Adds two lines to `FTUEStep` + `MAIN_STEPS` and one `<FTUETooltip>` in `Main.tsx`.
 - [ ] **Add a "NEW" badge** for existing users — see [`docs/04-ftue.md`](04-ftue.md) §7. Add a feature key + `MARK_*` action to `FTUEContext`.
 - [ ] **Persist a per-tab user preference** (filters, sort) — see [`docs/05-data-and-persistence.md`](05-data-and-persistence.md). For one or two flags, `localStorage` with a `dl_<view>_*` key. For more, promote to a typed store.
+- [ ] **Instrument analytics** (decide first) — see [`docs/10-analytics.md`](10-analytics.md). A registered tab gets `screen_viewed` reach automatically; add one event for its primary action if it clears the §1 gate.
 
 ### Verification
 
@@ -281,6 +286,7 @@ my_window: {
 - [ ] Add a hotkey to toggle it — see [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §2.
 - [ ] Add a Settings UI to enable/disable it (overlay layout pattern from `overlayLayoutStore`).
 - [ ] If the window is an in-game overlay managed by `overlayLayoutStore`, register it as a widget in `DEFAULT_OVERLAY_LAYOUT` and `OverlayEditorView` — then **add a matching preview** in [`WidgetPreview.tsx`](../src/renderer/main-window/views/OverlayEditor/components/WidgetPreview.tsx) that visually represents the new widget. Each widget type must have its own preview branch so the Overlay Editor screen shows an accurate mock, not a generic placeholder.
+- [ ] **Instrument analytics** (decide first) — see [`docs/10-analytics.md`](10-analytics.md). An overlay usually warrants an `overlay_shown` reach value and, if interactive, an `overlay_interacted` value — extend the `OverlayType` union in [`events.ts`](../src/shared/services/analytics/events.ts).
 
 ### Verification
 
@@ -319,6 +325,7 @@ Documentation updates are part of the feature. A change that ships without the m
 | Added a new file under `styles/components/` or `styles/views/` | Confirm it's `@import`ed in [`src/renderer/styles/index.css`](../src/renderer/styles/index.css) and noted in [`docs/02-ui-and-design-system.md`](02-ui-and-design-system.md) §2 |
 | Added a context or a new hook category | [`docs/07-conventions.md`](07-conventions.md) §3 (state hierarchy) |
 | Added a deadlock-api wrapper or asset endpoint | [`docs/06-overwolf-integration.md`](06-overwolf-integration.md) §5 (wrappers + caching table) |
+| Added a user-facing action, flow, or value moment worth measuring | [`docs/10-analytics.md`](10-analytics.md) — run the §1 gate, then add the event to [`events.ts`](../src/shared/services/analytics/events.ts) |
 | Added a new dependency (with explicit user approval) | [`AGENTS.md`](../AGENTS.md) §2 (dependency list) |
 | Established a new convention or pattern | [`docs/07-conventions.md`](07-conventions.md) (the relevant section) and a "Things to avoid" entry in the related doc |
 
@@ -334,3 +341,4 @@ Documentation updates are part of the feature. A change that ships without the m
 ## 6. Where to look next
 
 - The doc that explains the *why* behind each step → [`01-architecture.md`](01-architecture.md), [`02-ui-and-design-system.md`](02-ui-and-design-system.md), [`03-views-and-navigation.md`](03-views-and-navigation.md), [`04-ftue.md`](04-ftue.md), [`05-data-and-persistence.md`](05-data-and-persistence.md), [`06-overwolf-integration.md`](06-overwolf-integration.md), [`07-conventions.md`](07-conventions.md).
+- How to decide on and add analytics for a feature → [`10-analytics.md`](10-analytics.md).
