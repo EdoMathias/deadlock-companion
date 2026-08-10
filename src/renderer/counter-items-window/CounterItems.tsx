@@ -14,7 +14,7 @@ import { getWidgetConfig } from '../../shared/stores/overlayLayoutStore';
 import { getHero } from '../../shared/data/heroes';
 import { HotkeysAPI } from '../../shared/services/hotkeys';
 import { createLogger } from '../../shared/services/Logger';
-import { initAnalytics } from '../../shared/services/analytics';
+import { initAnalytics, track } from '../../shared/services/analytics';
 import '../styles/index.css';
 
 const logger = createLogger('CounterItems');
@@ -265,18 +265,29 @@ const CounterItems: React.FC = () => {
     };
   }, [startMatchTimer, stopMatchTimer]);
 
-  const toggleEnemy = useCallback((heroId: number) => {
-    setSelectedEnemyIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(heroId)) {
-        if (next.size > 1) next.delete(heroId);
-      } else {
-        next.add(heroId);
+  const toggleEnemy = useCallback(
+    (heroId: number) => {
+      const willDeselect = selectedEnemyIds.has(heroId);
+      // Deselecting the last remaining enemy is a no-op, so don't track it.
+      if (!(willDeselect && selectedEnemyIds.size <= 1)) {
+        track('overlay_interacted', {
+          overlay_type: 'counter_items',
+          interaction: willDeselect ? 'enemy_deselected' : 'enemy_selected',
+        });
       }
-      return next;
-    });
-    prevEnemyKeyRef.current = '';
-  }, []);
+      setSelectedEnemyIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(heroId)) {
+          if (next.size > 1) next.delete(heroId);
+        } else {
+          next.add(heroId);
+        }
+        return next;
+      });
+      prevEnemyKeyRef.current = '';
+    },
+    [selectedEnemyIds],
+  );
 
   // Bucket the elapsed time into the refresh window so the memo only
   // recalculates when the window ticks, not every second.

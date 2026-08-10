@@ -13,6 +13,7 @@ import { matchCache } from '../../../services/matchCache';
 import { getHero, HeroInfo } from '../../../../shared/data/heroes';
 import { GAME_MODE_LABELS } from '../../../../shared/consts';
 import { RefreshButton } from '../../../components/RefreshButton';
+import { track } from '../../../../shared/services/analytics';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -342,7 +343,10 @@ const ProfileView: React.FC = () => {
             </div>
           )}
           <RefreshButton
-            onRefresh={() => fetchProfile(true)}
+            onRefresh={() => {
+              track('profile_refreshed');
+              fetchProfile(true);
+            }}
             isLoading={isLoading}
             isCached={isCached}
             lastRefreshTime={lastRefreshTime}
@@ -363,7 +367,10 @@ const ProfileView: React.FC = () => {
           <p>{error}</p>
           <button
             className="btn btn--secondary btn--sm"
-            onClick={() => fetchProfile(true)}
+            onClick={() => {
+              track('profile_refreshed');
+              fetchProfile(true);
+            }}
           >
             Retry
           </button>

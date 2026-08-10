@@ -1073,6 +1073,11 @@ export class BackgroundController {
     // Show/Hide Counter Items Window
     this._hotkeysService.on(kHotkeys.toggleCounterItemsWindow, async () => {
       try {
+        track('overlay_interacted', {
+          overlay_type: 'counter_items',
+          interaction: 'hotkey_toggle',
+          match_id: this._currentMatchId ?? undefined,
+        });
         await this._windowsController.toggleCounterItemsWindow();
       } catch (error) {
         logger.error('Error toggling counter items window:', error);

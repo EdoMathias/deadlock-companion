@@ -117,6 +117,76 @@ export interface AnalyticsEventProperties {
   gep_connected: {
     time_to_connect_seconds?: number;
   };
+
+  // === Phase 2a: surface engagement depth ===
+
+  // --- Overlay interactions ---
+  overlay_interacted: {
+    overlay_type: OverlayType;
+    interaction:
+      | 'hotkey_toggle'
+      | 'enemy_selected'
+      | 'enemy_deselected'
+      | 'alert_dismissed'
+      | 'alert_clicked';
+    match_id?: string;
+  };
+  overlay_config_changed: {
+    widget: 'item_purchase_alert' | 'counter_items';
+    setting:
+      | 'enabled'
+      | 'docking'
+      | 'layout_mode'
+      | 'timeout'
+      | 'refresh_interval'
+      | 'reset';
+    value?: string | number | boolean;
+  };
+
+  // --- Item Stats ---
+  item_tracking_toggled: {
+    item_id: number;
+    tracked: boolean;
+    source: 'table' | 'preset' | 'clear_all';
+  };
+  item_stats_filtered: {
+    filter_type:
+      | 'search'
+      | 'hero'
+      | 'rank_range'
+      | 'game_mode'
+      | 'slot_type'
+      | 'item_tier'
+      | 'min_matches';
+    has_value?: boolean;
+  };
+  item_stats_preset_applied: {
+    preset_name: string;
+  };
+
+  // --- Hero Stats ---
+  hero_stats_filtered: {
+    filter_type:
+      | 'game_mode'
+      | 'rank_range'
+      | 'date_range'
+      | 'min_matches'
+      | 'min_matches_all_time';
+  };
+  stats_sorted: {
+    view: 'hero_stats' | 'item_stats';
+    column: string;
+    direction: 'asc' | 'desc';
+  };
+
+  // --- Match History & Profile ---
+  match_detail_opened: {
+    match_id?: string;
+  };
+  match_history_refreshed: {
+    trigger: 'manual' | 'steam_sync';
+  };
+  profile_refreshed: Record<string, never>;
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;

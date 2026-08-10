@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ItemPurchaseAlert } from '../../../shared/types/itemAlerts';
 import type { OverlayLayoutMode } from '../../../shared/types/overlayLayout';
+import { track } from '../../../shared/services/analytics';
 
 interface Props {
   alert: ItemPurchaseAlert;
@@ -14,8 +15,17 @@ const AlertCard: React.FC<Props> = ({ alert, onDismiss, layoutMode }) => {
     (layoutMode === 'expanded_all' ||
       (layoutMode === 'expanded' && alert.item.is_active_item));
 
+  const handleDismiss = () => {
+    // Fires only on a manual click (auto-dismiss timeout is a separate path).
+    track('overlay_interacted', {
+      overlay_type: 'item_purchase_alert',
+      interaction: 'alert_dismissed',
+    });
+    onDismiss(alert.id);
+  };
+
   return (
-    <div className="alert-card" onClick={() => onDismiss(alert.id)}>
+    <div className="alert-card" onClick={handleDismiss}>
       <div className="alert-card-main">
         {alert.hero_image && (
           <img

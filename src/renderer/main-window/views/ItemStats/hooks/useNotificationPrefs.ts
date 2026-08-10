@@ -10,6 +10,7 @@ import {
 } from '../../../../../shared/stores/notificationPreferences';
 import type { NotificationPreset } from '../../../../../shared/types/itemAlerts';
 import type { ItemMetadata } from '../../../../../shared/types/items';
+import { track } from '../../../../../shared/services/analytics';
 
 export function useNotificationPrefs() {
   const [prefs, setPrefs] = useState<NotificationPreferences>(
@@ -22,7 +23,12 @@ export function useNotificationPrefs() {
 
   const toggle = useCallback(
     (itemId: number) => {
-      toggleItemTracked(itemId);
+      const nowTracked = toggleItemTracked(itemId);
+      track('item_tracking_toggled', {
+        item_id: itemId,
+        tracked: nowTracked,
+        source: 'table',
+      });
       refresh();
     },
     [refresh],
@@ -38,12 +44,19 @@ export function useNotificationPrefs() {
 
   const clearAll = useCallback(() => {
     clearAllTracked();
+    // item_id -1 is a sentinel meaning "all tracked items cleared".
+    track('item_tracking_toggled', {
+      item_id: -1,
+      tracked: false,
+      source: 'clear_all',
+    });
     refresh();
   }, [refresh]);
 
   const applyPresetAction = useCallback(
     (preset: NotificationPreset, allItems: ItemMetadata[]) => {
       applyPreset(preset, allItems);
+      track('item_stats_preset_applied', { preset_name: preset.name });
       refresh();
     },
     [refresh],

@@ -13,7 +13,10 @@ import {
 } from '../../../../shared/stores/overlayLayoutStore';
 import DockingSelector from './components/DockingSelector';
 import WidgetPreview from './components/WidgetPreview';
+import { track } from '../../../../shared/services/analytics';
 import '../../../styles/views/overlay-editor.css';
+
+type WidgetId = 'item_purchase_alert' | 'counter_items';
 
 const WIDGET_IDS = ['item_purchase_alert', 'counter_items'] as const;
 
@@ -42,6 +45,11 @@ const OverlayEditorView: React.FC = () => {
   const handleDockChange = useCallback(
     (widgetId: string, edge: Edge) => {
       setWidgetDockEdge(widgetId, edge);
+      track('overlay_config_changed', {
+        widget: widgetId as WidgetId,
+        setting: 'docking',
+        value: String(edge),
+      });
       refresh();
       if (typeof overwolf !== 'undefined') {
         const payload = {
@@ -63,6 +71,11 @@ const OverlayEditorView: React.FC = () => {
   const handleEnabledChange = useCallback(
     (widgetId: string, enabled: boolean) => {
       setWidgetEnabled(widgetId, enabled);
+      track('overlay_config_changed', {
+        widget: widgetId as WidgetId,
+        setting: 'enabled',
+        value: enabled,
+      });
       refresh();
     },
     [refresh],
@@ -71,6 +84,11 @@ const OverlayEditorView: React.FC = () => {
   const handleLayoutModeChange = useCallback(
     (widgetId: string, mode: OverlayLayoutMode) => {
       setWidgetLayoutMode(widgetId, mode);
+      track('overlay_config_changed', {
+        widget: widgetId as WidgetId,
+        setting: 'layout_mode',
+        value: mode,
+      });
       refresh();
     },
     [refresh],
@@ -95,6 +113,10 @@ const OverlayEditorView: React.FC = () => {
   const handleReset = useCallback(
     (widgetId: string) => {
       resetWidgetConfig(widgetId);
+      track('overlay_config_changed', {
+        widget: widgetId as WidgetId,
+        setting: 'reset',
+      });
       refresh();
     },
     [refresh],
@@ -190,6 +212,15 @@ const OverlayEditorView: React.FC = () => {
                           onChange={(e) =>
                             handleDismissTimeoutChange(widgetId, Number(e.target.value))
                           }
+                          onMouseUp={(e) =>
+                            track('overlay_config_changed', {
+                              widget: widgetId,
+                              setting: 'timeout',
+                              value: Number(
+                                (e.target as HTMLInputElement).value,
+                              ),
+                            })
+                          }
                         />
                       </div>
                     </>
@@ -209,6 +240,13 @@ const OverlayEditorView: React.FC = () => {
                         value={widget.refresh_interval_s ?? 120}
                         onChange={(e) =>
                           handleRefreshIntervalChange(widgetId, Number(e.target.value))
+                        }
+                        onMouseUp={(e) =>
+                          track('overlay_config_changed', {
+                            widget: widgetId,
+                            setting: 'refresh_interval',
+                            value: Number((e.target as HTMLInputElement).value),
+                          })
                         }
                       />
                     </div>

@@ -3,6 +3,7 @@ import { PlayersApi, PlayerMatchHistoryEntry } from 'deadlock_api_client';
 import { deadlockApiConfig } from '../../../../shared/services/deadlock-api/deadlockApiClient';
 import { useSteamId } from '../../../hooks/useSteamId';
 import { steamIdToAccountId } from '../../../../shared/utils/steamUtils';
+import { track } from '../../../../shared/services/analytics';
 import { matchCache } from '../../../services/matchCache';
 import { getHero } from '../../../../shared/data/heroes';
 import HeroSelect from '../../../components/HeroSelect';
@@ -361,7 +362,10 @@ const MatchHistoryView: React.FC = () => {
             onChange={setCharacterFilter}
           />
           <RefreshButton
-            onRefresh={() => fetchMatches(true)}
+            onRefresh={() => {
+              track('match_history_refreshed', { trigger: 'manual' });
+              fetchMatches(true);
+            }}
             isLoading={isLoading || isSyncing}
             isCached={isCached}
             lastRefreshTime={lastRefreshTime}
@@ -371,7 +375,10 @@ const MatchHistoryView: React.FC = () => {
           <div className="full-sync-btn-wrap">
             <button
               className="full-sync-btn"
-              onClick={fetchMatchesFull}
+              onClick={() => {
+                track('match_history_refreshed', { trigger: 'steam_sync' });
+                fetchMatchesFull();
+              }}
               disabled={isSyncing || isLoading || !forceFetchAvailable}
               title={
                 forceFetchAvailable
@@ -452,7 +459,10 @@ const MatchHistoryView: React.FC = () => {
           <p>{error}</p>
           <button
             className="btn btn--secondary btn--sm"
-            onClick={() => fetchMatches(true)}
+            onClick={() => {
+              track('match_history_refreshed', { trigger: 'manual' });
+              fetchMatches(true);
+            }}
           >
             Retry
           </button>
@@ -493,12 +503,22 @@ const MatchHistoryView: React.FC = () => {
               <div
                 key={match.match_id}
                 className={`match-card ${match.is_win === true ? 'match-card--win' : match.is_win === false ? 'match-card--loss' : ''}`}
-                onClick={() => setSelectedMatchId(match.match_id)}
+                onClick={() => {
+                  track('match_detail_opened', {
+                    match_id: String(match.match_id),
+                  });
+                  setSelectedMatchId(match.match_id);
+                }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' && setSelectedMatchId(match.match_id)
-                }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    track('match_detail_opened', {
+                      match_id: String(match.match_id),
+                    });
+                    setSelectedMatchId(match.match_id);
+                  }
+                }}
               >
                 {hero?.images?.icon_image_small && (
                   <img

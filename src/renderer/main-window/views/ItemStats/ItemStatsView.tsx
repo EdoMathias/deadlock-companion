@@ -6,6 +6,7 @@ import { useNotificationPrefs } from './hooks/useNotificationPrefs';
 import { useGepItemsSupport } from './hooks/useGepItemsSupport';
 import ItemStatsFiltersBar from './components/ItemStatsFilters';
 import ItemStatsTable from './components/ItemStatsTable';
+import { track } from '../../../../shared/services/analytics';
 import '../../../styles/views/item-stats.css';
 
 const DEFAULT_FILTERS: ItemStatsFilters = {
@@ -69,16 +70,55 @@ const ItemStatsView: React.FC = () => {
   const loading = metaLoading || statsLoading;
   const error = metaError || statsError;
 
+  // Map each filter field to the analytics filter_type it represents.
+  const FILTER_TYPE_BY_KEY: Partial<
+    Record<
+      keyof ItemStatsFilters,
+      'hero' | 'rank_range' | 'game_mode' | 'min_matches' | 'slot_type' | 'item_tier'
+    >
+  > = {
+    hero_id: 'hero',
+    min_average_badge: 'rank_range',
+    max_average_badge: 'rank_range',
+    game_mode: 'game_mode',
+    min_matches: 'min_matches',
+    item_slot_type: 'slot_type',
+    item_tier: 'item_tier',
+  };
+
+  const handleFiltersChange = (next: ItemStatsFilters) => {
+    const fired = new Set<string>();
+    (Object.keys(FILTER_TYPE_BY_KEY) as (keyof ItemStatsFilters)[]).forEach(
+      (key) => {
+        const type = FILTER_TYPE_BY_KEY[key];
+        if (type && filters[key] !== next[key] && !fired.has(type)) {
+          fired.add(type);
+          track('item_stats_filtered', {
+            filter_type: type,
+            has_value: next[key] != null && next[key] !== '',
+          });
+        }
+      },
+    );
+    setFilters(next);
+  };
+
   const handleSortChange = (sortBy: ItemStatsFilters['sort_by']) => {
+    const direction =
+      filters.sort_by === sortBy
+        ? filters.sort_direction === 'desc'
+          ? 'asc'
+          : 'desc'
+        : 'desc';
+    track('stats_sorted', {
+      view: 'item_stats',
+      column: String(sortBy),
+      direction,
+    });
     setFilters((prev) => ({
       ...prev,
       sort_by: sortBy,
-      sort_direction:
-        prev.sort_by === sortBy
-          ? prev.sort_direction === 'desc'
-            ? 'asc'
-            : 'desc'
-          : 'desc',
+      sort_direction: direction,
     }));
   };
 
@@ -90,7 +130,7 @@ const ItemStatsView: React.FC = () => {
 
       <ItemStatsFiltersBar
         filters={filters}
-        onChange={setFilters}
+        onChange={handleFiltersChange}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         presets={presets}

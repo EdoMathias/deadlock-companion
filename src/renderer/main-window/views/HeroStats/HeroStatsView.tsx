@@ -9,6 +9,7 @@ import { createLogger } from '../../../../shared/services/Logger';
 import { useHeroStats } from './hooks/useHeroStats';
 import HeroStatsFiltersBar from './components/HeroStatsFilters';
 import HeroStatsTable from './components/HeroStatsTable';
+import { track } from '../../../../shared/services/analytics';
 
 const logger = createLogger('HeroStatsView');
 
@@ -60,21 +61,59 @@ const HeroStatsView: React.FC = () => {
     return copy;
   }, [rows, sortBy, sortDirection]);
 
+  // Map each filter field to the analytics filter_type it represents.
+  const FILTER_TYPE_BY_KEY: Partial<
+    Record<
+      keyof HeroStatsFilters,
+      | 'game_mode'
+      | 'rank_range'
+      | 'date_range'
+      | 'min_matches'
+      | 'min_matches_all_time'
+    >
+  > = {
+    game_mode: 'game_mode',
+    min_average_badge: 'rank_range',
+    max_average_badge: 'rank_range',
+    min_unix_timestamp: 'date_range',
+    max_unix_timestamp: 'date_range',
+    min_hero_matches: 'min_matches',
+    min_hero_matches_total: 'min_matches_all_time',
+  };
+
+  const handleFiltersChange = (next: HeroStatsFilters) => {
+    const fired = new Set<string>();
+    (Object.keys(FILTER_TYPE_BY_KEY) as (keyof HeroStatsFilters)[]).forEach(
+      (key) => {
+        const type = FILTER_TYPE_BY_KEY[key];
+        if (type && filters[key] !== next[key] && !fired.has(type)) {
+          fired.add(type);
+          track('hero_stats_filtered', { filter_type: type });
+        }
+      },
+    );
+    setFilters(next);
+  };
+
   const handleSortChange = (key: HeroStatsSortKey) => {
-    setFilters((prev) => {
-      if (prev.sort_by === key) {
-        return {
-          ...prev,
-          sort_direction: prev.sort_direction === 'desc' ? 'asc' : 'desc',
-        };
-      }
-      // Alphabetical default is ascending; numeric defaults to descending.
-      return {
-        ...prev,
-        sort_by: key,
-        sort_direction: key === 'name' ? 'asc' : 'desc',
-      };
+    const direction: 'asc' | 'desc' =
+      filters.sort_by === key
+        ? filters.sort_direction === 'desc'
+          ? 'asc'
+          : 'desc'
+        : key === 'name'
+        ? 'asc'
+        : 'desc';
+    track('stats_sorted', {
+      view: 'hero_stats',
+      column: String(key),
+      direction,
     });
+    setFilters((prev) => ({
+      ...prev,
+      sort_by: key,
+      sort_direction: direction,
+    }));
   };
 
   if (error) {
@@ -87,7 +126,7 @@ const HeroStatsView: React.FC = () => {
         <h2 className="view-title">Hero Stats</h2>
       </div>
 
-      <HeroStatsFiltersBar filters={filters} onChange={setFilters} />
+      <HeroStatsFiltersBar filters={filters} onChange={handleFiltersChange} />
 
       {error && (
         <div className="hero-stats-error-banner">
