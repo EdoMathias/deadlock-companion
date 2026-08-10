@@ -5,6 +5,7 @@ import {
 } from '../../../../shared/services/httpcacheScan';
 import { submitSaltsToApi } from '../../../../shared/services/matchMetadataFetcher';
 import { createLogger } from '../../../../shared/services/Logger';
+import { track } from '../../../../shared/services/analytics';
 import { useWindowInfo } from '../../../hooks/useWindowInfo';
 
 const logger = createLogger('ContributeView');
@@ -30,12 +31,14 @@ const ContributeView: React.FC = () => {
         onProgress: (n: number) => void,
       ) => Promise<import('deadlock_api_client').ClickhouseSalts[]>,
       fileCount: number,
+      source: 'drag_drop' | 'file_picker',
     ) => {
       setIsScanning(true);
       setSaltsFound(0);
       setFilesScanned(0);
       setTotalFiles(fileCount);
       setResult(null);
+      track('contribute_started', { source });
       logger.log(
         `[Ingestion] Starting httpcache scan: ${fileCount} files to process`,
       );
@@ -49,6 +52,10 @@ const ContributeView: React.FC = () => {
         logger.log(
           `[Ingestion] Scan complete: ${salts.length} unique salts found, ${duplicatesSkipped} duplicates skipped`,
         );
+        track('contribute_scan_completed', {
+          files_scanned: fileCount,
+          salts_found: salts.length,
+        });
 
         if (salts.length === 0) {
           setResult({
@@ -66,12 +73,16 @@ const ContributeView: React.FC = () => {
           logger.log(
             `[Ingestion] Successfully submitted ${salts.length} salts to API`,
           );
+          track('contribute_upload_succeeded', {
+            salts_uploaded: salts.length,
+          });
           setResult({
             type: 'success',
             message: `Successfully uploaded ${salts.length} match salts! Matches usually appear in 1-10 minutes. During high load, processing may take longer.`,
           });
         } else {
           logger.error(`[Ingestion] Failed to submit salts to API`);
+          track('contribute_upload_failed', { reason: 'api_rejected' });
           setResult({
             type: 'error',
             message: 'Failed to upload match data. Please try again.',
@@ -79,6 +90,9 @@ const ContributeView: React.FC = () => {
         }
       } catch (err) {
         logger.error('httpcache scan error:', err);
+        track('contribute_upload_failed', {
+          reason: err instanceof Error ? err.message : 'scan_error',
+        });
         setResult({
           type: 'error',
           message: 'An error occurred while scanning. Please try again.',
@@ -97,6 +111,7 @@ const ContributeView: React.FC = () => {
         await processScan(
           (onProgress) => scanFileList(files, onProgress),
           files.length,
+          'file_picker',
         );
         e.target.value = '';
       }
@@ -175,6 +190,7 @@ const ContributeView: React.FC = () => {
         await processScan(
           (onProgress) => scanFiles(allFiles, onProgress),
           allFiles.length,
+          'drag_drop',
         );
       }
     },

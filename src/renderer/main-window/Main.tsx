@@ -232,6 +232,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
             ? JSON.parse(message.content)
             : message?.content;
         if (payload?.type === MessageType.INGEST_PROMPT) {
+          track('ingest_prompt_shown');
           setShowIngestPrompt(true);
         }
       } catch {
@@ -269,6 +270,7 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
   }, []);
 
   const handleIngestGoToScanner = React.useCallback(() => {
+    track('ingest_prompt_clicked');
     setShowIngestPrompt(false);
     setShowSettings(false);
     setActiveView('Contribute');
@@ -349,7 +351,10 @@ const MainInner: React.FC<{ resetTrigger: number }> = ({ resetTrigger }) => {
         <main className="main-content">
           <IngestPromptModal
             isOpen={showIngestPrompt}
-            onClose={() => setShowIngestPrompt(false)}
+            onClose={() => {
+              track('ingest_prompt_dismissed');
+              setShowIngestPrompt(false);
+            }}
             onGoToScanner={handleIngestGoToScanner}
             scope="content"
           />

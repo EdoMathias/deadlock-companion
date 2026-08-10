@@ -1,6 +1,6 @@
 import React from 'react';
 
-type SettingsTab = 'general' | 'hotkeys' | 'data' | 'about';
+type SettingsTab = 'general' | 'hotkeys' | 'data' | 'privacy' | 'about';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
@@ -33,6 +33,13 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
         onClick={() => onTabChange('data')}
       >
         Data
+      </button>
+      <button
+        type="button"
+        className={`settings-sidebar-item ${activeTab === 'privacy' ? 'active' : ''}`}
+        onClick={() => onTabChange('privacy')}
+      >
+        Privacy
       </button>
       <button
         type="button"

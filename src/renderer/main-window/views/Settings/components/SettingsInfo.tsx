@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface SettingsInfoProps {
-  tab: 'general' | 'hotkeys' | 'data' | 'about';
+  tab: 'general' | 'hotkeys' | 'data' | 'privacy' | 'about';
 }
 
 const SettingsInfo: React.FC<SettingsInfoProps> = ({ tab }) => {
@@ -70,6 +70,23 @@ const SettingsInfo: React.FC<SettingsInfoProps> = ({ tab }) => {
               Steam stores match replay URLs in its local HTTP cache. Scanning
               this folder extracts match IDs and salts, which are submitted to
               the Deadlock API — making those matches available for everyone.
+            </p>
+          </>
+        );
+      case 'privacy':
+        return (
+          <>
+            <h3>Privacy &amp; Analytics</h3>
+            <p>
+              Control whether the app shares anonymous usage data to help
+              improve features.
+            </p>
+
+            <h4>What we collect</h4>
+            <p>
+              Only anonymous usage events (which screens and features are used).
+              No personal information — no Steam ID or player names — is ever
+              collected. You can opt out at any time.
             </p>
           </>
         );

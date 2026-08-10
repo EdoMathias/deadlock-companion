@@ -6,6 +6,7 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
+import { track } from '../../shared/services/analytics';
 
 export type FTUEStep =
   | 'welcome'
@@ -91,6 +92,7 @@ const FTUEContext = createContext<FTUEContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'deadlock_companion_ftue_completed';
 const STEPS_STORAGE_KEY = 'deadlock_companion_ftue_steps';
+const FTUE_STARTED_TRACKED_KEY = 'deadlock_companion_ftue_started_tracked';
 const ROTATIONS_FTUE_STORAGE_KEY =
   'deadlock_companion_rotations_ftue_completed';
 const INTERACTIVE_MAP_FTUE_STORAGE_KEY =
@@ -209,6 +211,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
   });
 
   const markStepComplete = (step: FTUEStep) => {
+    track('ftue_step_viewed', { step_name: step });
     setCompletedSteps((prev) => {
       const newSet = new Set(prev);
       newSet.add(step);
@@ -227,6 +230,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
   };
 
   const resetFTUE = () => {
+    track('ftue_reset');
     setIsFTUEComplete(false);
     setCompletedSteps(new Set());
     setHasSeenItemAlertsFeature(false);
@@ -241,6 +245,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       localStorage.removeItem(ITEM_ALERTS_FEATURE_SEEN_KEY);
       localStorage.removeItem(HERO_STATS_FEATURE_SEEN_KEY);
       localStorage.removeItem(COUNTER_ITEMS_FEATURE_SEEN_KEY);
+      localStorage.removeItem(FTUE_STARTED_TRACKED_KEY);
     } catch {
       // Ignore errors
     }
@@ -249,6 +254,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
 
   // ── Completion helpers ────────────────────────────────────
   const completeMainFTUE = () => {
+    track('ftue_completed');
     setIsFTUEComplete(true);
     try {
       localStorage.setItem(STORAGE_KEY, 'true');
@@ -266,6 +272,7 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
   };
 
   const skipTour = useCallback(() => {
+    track('ftue_skipped');
     setCompletedSteps(() => {
       const newSet = new Set<FTUEStep>(MAIN_STEPS);
       try {
@@ -332,6 +339,20 @@ export const FTUEProvider: React.FC<FTUEProviderProps> = ({
       hasSeenCounterItemsFeature,
     ],
   );
+
+  // ── Fire ftue_started once for a new user (onboarding funnel entry) ──
+  useEffect(() => {
+    if (isFTUEComplete) return;
+    try {
+      if (localStorage.getItem(FTUE_STARTED_TRACKED_KEY)) return;
+      localStorage.setItem(FTUE_STARTED_TRACKED_KEY, 'true');
+    } catch {
+      // Ignore errors
+    }
+    track('ftue_started');
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Auto-complete when all steps in a group are done ──────
   useEffect(() => {

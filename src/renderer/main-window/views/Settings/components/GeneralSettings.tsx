@@ -4,10 +4,8 @@ import { useFTUE } from '../../../../contexts/FTUEContext';
 import { useSteamId } from '../../../../hooks/useSteamId';
 import { isValidSteamId64 } from '../../../../../shared/utils/steamUtils';
 import {
-  isAnalyticsOptedOut,
-  optInAnalytics,
-  optOutAnalytics,
   track,
+  setPersonProperties,
 } from '../../../../../shared/services/analytics';
 
 const GeneralSettings: React.FC = () => {
@@ -33,6 +31,8 @@ const GeneralSettings: React.FC = () => {
     const trimmed = inputValue.trim();
     if (trimmed === '') {
       clearSteamId();
+      track('steam_id_cleared');
+      setPersonProperties({ steam_connected: false });
       showFeedback('Steam ID cleared.', 'success');
       return;
     }
@@ -44,28 +44,13 @@ const GeneralSettings: React.FC = () => {
       return;
     }
     setSteamId(trimmed);
+    track('steam_id_connected', { source: 'settings' });
+    setPersonProperties({ steam_connected: true });
     showFeedback('Steam ID saved!', 'success');
   };
 
   const handleResetFTUE = () => {
     resetFTUE();
-  };
-
-  const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>(
-    !isAnalyticsOptedOut(),
-  );
-
-  const handleToggleAnalytics = () => {
-    const nextEnabled = !analyticsEnabled;
-    setAnalyticsEnabled(nextEnabled);
-    if (nextEnabled) {
-      optInAnalytics();
-      track('analytics_opt_in');
-    } else {
-      // Fire the event before opting out, so the opt-out itself is recorded.
-      track('analytics_opt_out');
-      optOutAnalytics();
-    }
   };
 
   return (
@@ -125,32 +110,6 @@ const GeneralSettings: React.FC = () => {
       <Button variant="secondary" onClick={handleResetFTUE}>
         Reset Tutorial
       </Button>
-
-      {/* Divider */}
-      <div className="settings-divider" />
-
-      {/* Privacy & Analytics Section */}
-      <h3 className="settings-section-title">Privacy &amp; Analytics</h3>
-      <p className="settings-section-description">
-        Help improve Deadlock Companion by sharing anonymous usage data. No
-        personal information (no Steam ID or player names) is ever collected.
-      </p>
-      <label
-        className="settings-section-caption"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          cursor: 'pointer',
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={analyticsEnabled}
-          onChange={handleToggleAnalytics}
-        />
-        Share anonymous usage analytics
-      </label>
     </div>
   );
 };

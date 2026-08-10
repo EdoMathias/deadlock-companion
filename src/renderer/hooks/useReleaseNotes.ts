@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { releaseNotesService, ReleaseNoteEntry } from '../services/ReleaseNotesService';
 import { createLogger } from '../../shared/services/Logger';
+import { track } from '../../shared/services/analytics';
 
 const logger = createLogger('useReleaseNotes');
 
@@ -48,6 +49,10 @@ export const useReleaseNotes = (
         if (entry && !releaseNotesService.hasViewedReleaseNote(entry)) {
           if (shouldAutoOpen) {
             setIsOpen(true);
+            track('release_notes_viewed', {
+              version: appVersion ?? undefined,
+              trigger: 'auto',
+            });
           } else {
             setPendingAutoOpen(true);
           }
@@ -71,14 +76,22 @@ export const useReleaseNotes = (
     if (shouldAutoOpen && pendingAutoOpen) {
       setIsOpen(true);
       setPendingAutoOpen(false);
+      track('release_notes_viewed', {
+        version: appVersion ?? undefined,
+        trigger: 'auto',
+      });
     }
-  }, [shouldAutoOpen, pendingAutoOpen]);
+  }, [shouldAutoOpen, pendingAutoOpen, appVersion]);
 
   const open = useCallback(() => {
     if (releaseNote) {
       setIsOpen(true);
+      track('release_notes_viewed', {
+        version: appVersion ?? undefined,
+        trigger: 'manual',
+      });
     }
-  }, [releaseNote]);
+  }, [releaseNote, appVersion]);
 
   const dismiss = useCallback(() => {
     setIsOpen(false);

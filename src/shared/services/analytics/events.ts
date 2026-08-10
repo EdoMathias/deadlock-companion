@@ -187,6 +187,45 @@ export interface AnalyticsEventProperties {
     trigger: 'manual' | 'steam_sync';
   };
   profile_refreshed: Record<string, never>;
+
+  // === Phase 2b: onboarding, gates & contribution ===
+
+  // --- First-time user experience (onboarding funnel) ---
+  ftue_started: Record<string, never>;
+  ftue_step_viewed: { step_name: string };
+  ftue_completed: Record<string, never>;
+  ftue_skipped: Record<string, never>;
+  ftue_reset: Record<string, never>;
+
+  // --- Activation gate: Steam ID ---
+  steam_id_connected: { source: 'settings' | 'prompt' };
+  steam_id_cleared: Record<string, never>;
+
+  // --- Release notes ---
+  release_notes_viewed: {
+    version?: string;
+    trigger: 'auto' | 'manual';
+  };
+
+  // --- Post-match ingest prompt ---
+  ingest_prompt_shown: Record<string, never>;
+  ingest_prompt_clicked: Record<string, never>;
+  ingest_prompt_dismissed: Record<string, never>;
+
+  // --- Contribute (match-data upload) funnel ---
+  contribute_started: {
+    source: 'drag_drop' | 'file_picker' | 'post_match_prompt';
+  };
+  contribute_scan_completed: {
+    files_scanned?: number;
+    salts_found?: number;
+  };
+  contribute_upload_succeeded: {
+    salts_uploaded?: number;
+  };
+  contribute_upload_failed: {
+    reason?: string;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;

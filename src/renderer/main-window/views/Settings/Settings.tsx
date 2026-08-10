@@ -6,10 +6,11 @@ import {
   AboutSettings,
   HotkeysSettings,
   DataSettings,
+  PrivacySettings,
   SettingsInfo,
 } from './components';
 
-type SettingsTab = 'general' | 'hotkeys' | 'data' | 'about';
+type SettingsTab = 'general' | 'hotkeys' | 'data' | 'privacy' | 'about';
 
 interface SettingsProps {
   onClose: () => void;
@@ -30,6 +31,8 @@ const Settings: React.FC<SettingsProps> = ({
         return <HotkeysSettings />;
       case 'data':
         return <DataSettings />;
+      case 'privacy':
+        return <PrivacySettings />;
       case 'about':
         return <AboutSettings />;
       default:
