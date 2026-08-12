@@ -47,11 +47,10 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
   useEffect(() => {
     if (open && !preloadedRef.current) {
       preloadedRef.current = true;
+      // Art is per-tier now (one image per tier, shared across subranks).
       for (const rank of SELECTABLE_RANKS) {
-        for (let s = 1; s <= 6; s++) {
-          const img = new Image();
-          img.src = getRankIconUrl(rank.tier, s);
-        }
+        const img = new Image();
+        img.src = getRankIconUrl(rank.tier);
       }
     }
   }, [open]);
@@ -137,7 +136,7 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
         {lowInfo && (
           <img
             className="rank-slider__trigger-icon"
-            src={getRankIconUrl(lowInfo.tier, lowInfo.subrank)}
+            src={getRankIconUrl(lowInfo.tier)}
             alt=""
           />
         )}
@@ -152,7 +151,7 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
               {lowInfo ? (
                 <img
                   className="rank-slider__icon"
-                  src={getRankIconUrl(lowInfo.tier, lowInfo.subrank)}
+                  src={getRankIconUrl(lowInfo.tier)}
                   alt=""
                 />
               ) : (
@@ -167,7 +166,7 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
               {highInfo && (
                 <img
                   className="rank-slider__icon"
-                  src={getRankIconUrl(highInfo.tier, highInfo.subrank)}
+                  src={getRankIconUrl(highInfo.tier)}
                   alt=""
                 />
               )}

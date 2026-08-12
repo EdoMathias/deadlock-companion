@@ -173,6 +173,8 @@ export interface AnalyticsEventProperties {
       | 'min_matches'
       | 'min_matches_all_time';
   };
+  /** Fired when the user switches Hero Stats into the Ranked-vs-Normal view. */
+  hero_stats_comparison_viewed: Record<string, never>;
   stats_sorted: {
     view: 'hero_stats' | 'item_stats';
     column: string;

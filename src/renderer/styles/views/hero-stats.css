@@ -295,3 +295,72 @@
   text-align: right;
   flex-shrink: 0;
 }
+
+/* View-mode toggle (Standard / Ranked vs Normal) */
+
+.view-header--with-tabs {
+  flex-wrap: wrap;
+}
+
+.hero-stats-mode-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-bg-card);
+}
+
+.hero-stats-mode-tab {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.hero-stats-mode-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.hero-stats-mode-tab--active {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 20%,
+    transparent
+  );
+  color: var(--color-accent-primary);
+}
+
+/* Ranked-vs-Normal comparison cells */
+
+.hero-compare-cell--ranked,
+.hero-compare-cell--normal {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-compare-cell--normal {
+  color: var(--color-text-secondary);
+}
+
+.hero-compare-cell--delta {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-compare-cell--delta-pos {
+  color: var(--color-success);
+}
+
+.hero-compare-cell--delta-neg {
+  color: var(--color-danger);
+}
+
+.hero-compare-cell--delta-neutral {
+  color: var(--color-text-muted);
+}

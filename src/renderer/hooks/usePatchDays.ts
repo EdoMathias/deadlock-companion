@@ -34,6 +34,30 @@ interface UsePatchDaysState {
   error: string | null;
 }
 
+/**
+ * Patch boundaries the deadlock-api forum feed (`/v1/patches`) does not
+ * carry — matchmaking-only updates that ship no forum changelog. The
+ * deadlock-api website curates these into its own patch selector; we mirror
+ * that here so users can filter stats to "since the Matchmaking Update".
+ * A feed entry on the same day always wins (see `withSupplementalPatches`).
+ */
+const SUPPLEMENTAL_PATCHES: PatchDay[] = [
+  {
+    iso: '2026-07-30T00:00:00Z',
+    date: '2026-07-30',
+    epochSec: Math.floor(Date.parse('2026-07-30T00:00:00Z') / 1000),
+    label: 'Matchmaking Update',
+    isBig: true,
+  },
+];
+
+/** Append supplemental patches whose date isn't already in the feed. */
+function withSupplementalPatches(feedDays: PatchDay[]): PatchDay[] {
+  const seen = new Set(feedDays.map((d) => d.date));
+  const extras = SUPPLEMENTAL_PATCHES.filter((p) => !seen.has(p.date));
+  return [...feedDays, ...extras];
+}
+
 function toIsoDateOnly(epochSec: number): string {
   const iso = new Date(epochSec * 1000).toISOString();
   return iso.slice(0, 10);
@@ -95,10 +119,12 @@ export function usePatchDays(): UsePatchDaysState {
         ]);
         if (cancelled) return;
         const bigDates = bigDaysToDateSet(rawBigDays);
-        const days = (Array.isArray(rawPatches) ? rawPatches : [])
+        const feedDays = (Array.isArray(rawPatches) ? rawPatches : [])
           .map((p) => patchToPatchDay(p, bigDates))
-          .filter((d): d is PatchDay => d !== null)
-          .sort((a, b) => b.epochSec - a.epochSec);
+          .filter((d): d is PatchDay => d !== null);
+        const days = withSupplementalPatches(feedDays).sort(
+          (a, b) => b.epochSec - a.epochSec,
+        );
         setState({ days, loading: false, error: null });
       } catch (err) {
         logger.error('Failed to load patches', err);

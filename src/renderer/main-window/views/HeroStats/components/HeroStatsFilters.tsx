@@ -7,6 +7,12 @@ import InfoIcon from '../../../../components/InfoIcon';
 interface Props {
   filters: Filters;
   onChange: (filters: Filters) => void;
+  /**
+   * Hide the game-mode dropdown (used by the Ranked-vs-Normal view, which
+   * fixes game mode to Normal since only the standard game has a
+   * ranked/unranked split).
+   */
+  hideGameMode?: boolean;
 }
 
 const GAME_MODES: { value: string; label: string }[] = [
@@ -24,7 +30,11 @@ const MIN_HERO_MATCHES_TOTAL_TOOLTIP =
 const RANK_DISABLED_TOOLTIP =
   'Street Brawl does not support rank-based filtering yet. Switch to Normal or All Modes to filter by rank.';
 
-const HeroStatsFiltersBar: React.FC<Props> = ({ filters, onChange }) => {
+const HeroStatsFiltersBar: React.FC<Props> = ({
+  filters,
+  onChange,
+  hideGameMode = false,
+}) => {
   const update = (patch: Partial<Filters>) => {
     onChange({ ...filters, ...patch });
   };
@@ -49,20 +59,22 @@ const HeroStatsFiltersBar: React.FC<Props> = ({ filters, onChange }) => {
   return (
     <div className="hero-stats-filters">
       <div className="hero-stats-filters-row">
-        <select
-          className="hero-stats-filter-select"
-          value={filters.game_mode ?? ''}
-          onChange={(e) =>
-            update({ game_mode: e.target.value || undefined })
-          }
-          aria-label="Game mode"
-        >
-          {GAME_MODES.map((gm) => (
-            <option key={gm.value || 'all'} value={gm.value}>
-              {gm.label}
-            </option>
-          ))}
-        </select>
+        {!hideGameMode && (
+          <select
+            className="hero-stats-filter-select"
+            value={filters.game_mode ?? ''}
+            onChange={(e) =>
+              update({ game_mode: e.target.value || undefined })
+            }
+            aria-label="Game mode"
+          >
+            {GAME_MODES.map((gm) => (
+              <option key={gm.value || 'all'} value={gm.value}>
+                {gm.label}
+              </option>
+            ))}
+          </select>
+        )}
 
         <DateRangeSelector
           minUnixTimestamp={filters.min_unix_timestamp}

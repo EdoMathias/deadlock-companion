@@ -1,7 +1,16 @@
 export type HeroStatsGameMode = 'normal' | 'street_brawl';
 
+/**
+ * Matchmaking queue, orthogonal to `game_mode`. Maps to the deadlock-api
+ * `/v1/analytics/hero-stats` `match_mode` param. Only the standard game
+ * (`game_mode=normal`) has a ranked/unranked split.
+ */
+export type HeroMatchMode = 'ranked' | 'unranked';
+
 export interface HeroStatsFilters {
   game_mode?: HeroStatsGameMode | string;
+  /** Restrict aggregation to a single matchmaking queue (ranked vs normal). */
+  match_mode?: HeroMatchMode;
   min_average_badge?: number;
   max_average_badge?: number;
   min_unix_timestamp?: number;
@@ -74,3 +83,27 @@ export interface HeroStatsComputed {
   pick_rate: number;
   ban_rate: number;
 }
+
+/**
+ * One hero's win rate in ranked vs normal (unranked) side by side, with the
+ * delta between them. `win_rate`/`win_rate_delta` are fractions (0..1);
+ * multiply by 100 for display. Delta = ranked - normal (positive means the
+ * hero over-performs in ranked).
+ */
+export interface HeroWinRateComparisonRow {
+  hero_id: number;
+  ranked_matches: number;
+  ranked_wins: number;
+  ranked_win_rate: number;
+  normal_matches: number;
+  normal_wins: number;
+  normal_win_rate: number;
+  win_rate_delta: number;
+}
+
+export type HeroComparisonSortKey =
+  | 'name'
+  | 'ranked_win_rate'
+  | 'normal_win_rate'
+  | 'win_rate_delta'
+  | 'ranked_matches';
