@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
 import type { HeroStatsFilters as Filters } from '../../../../../shared/types/heroStats';
+import {
+  STATS_MODE_OPTIONS,
+  filtersToStatsMode,
+  statsModeToFilters,
+} from '../../../../../shared/data/modeOptions';
 import RankRangeSlider from '../../../../components/RankRangeSlider';
 import DateRangeSelector from '../../../../components/DateRangeSelector';
 import InfoIcon from '../../../../components/InfoIcon';
+import ModeSelect from '../../../../components/ModeSelect';
 
 interface Props {
   filters: Filters;
@@ -13,13 +19,11 @@ interface Props {
    * ranked/unranked split).
    */
   hideGameMode?: boolean;
+  /** Restores the default filter set. */
+  onReset: () => void;
+  /** False when the filters already equal the defaults. */
+  canReset: boolean;
 }
-
-const GAME_MODES: { value: string; label: string }[] = [
-  { value: '', label: 'All Modes' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'street_brawl', label: 'Street Brawl' },
-];
 
 const MIN_HERO_MATCHES_TOOLTIP =
   'Only count games from players who have played this hero at least N times in the selected period. Hides first-time tryouts so the numbers lean toward players who know the hero.';
@@ -34,6 +38,8 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
   filters,
   onChange,
   hideGameMode = false,
+  onReset,
+  canReset,
 }) => {
   const update = (patch: Partial<Filters>) => {
     onChange({ ...filters, ...patch });
@@ -60,20 +66,12 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
     <div className="hero-stats-filters">
       <div className="hero-stats-filters-row">
         {!hideGameMode && (
-          <select
-            className="hero-stats-filter-select"
-            value={filters.game_mode ?? ''}
-            onChange={(e) =>
-              update({ game_mode: e.target.value || undefined })
-            }
-            aria-label="Game mode"
-          >
-            {GAME_MODES.map((gm) => (
-              <option key={gm.value || 'all'} value={gm.value}>
-                {gm.label}
-              </option>
-            ))}
-          </select>
+          <ModeSelect
+            value={filtersToStatsMode(filters)}
+            options={STATS_MODE_OPTIONS}
+            onChange={(mode) => update(statsModeToFilters(mode))}
+            ariaLabel="Game mode"
+          />
         )}
 
         <DateRangeSelector
@@ -139,6 +137,20 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
             }
           />
         </div>
+
+        <button
+          type="button"
+          className="stats-filter-reset"
+          onClick={onReset}
+          disabled={!canReset}
+          title={
+            canReset
+              ? 'Restore the default filters'
+              : 'Filters are already at their defaults'
+          }
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

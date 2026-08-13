@@ -10,6 +10,7 @@ import { useItemMetadata } from '../../../hooks/useItemMetadata';
 import type { EnrichedRosterEntry } from '../../../hooks/useLiveMatch';
 import type { GameModeInfo } from '../../../../shared/types/liveMatch';
 import type { ItemMetadata } from '../../../../shared/types/items';
+import MatchModeBadge from '../../../components/MatchModeBadge';
 import ScoreboardTable from './ScoreboardTable';
 
 function formatTimer(seconds: number): string {
@@ -151,11 +152,7 @@ const LiveMatchView: React.FC = () => {
                 {gameMode?.game_mode && (
                   <span className="lm-header__mode">{gameMode.game_mode}</span>
                 )}
-                {gameMode?.match_mode && (
-                  <span className="lm-header__mode lm-header__mode--secondary">
-                    {gameMode.match_mode}
-                  </span>
-                )}
+                <MatchModeBadge matchMode={gameMode?.match_mode} rankedOnly={false} />
               </div>
               <div className="lm-header__scores">
                 <span className="lm-header__team-label lm-header__team-label--amber">

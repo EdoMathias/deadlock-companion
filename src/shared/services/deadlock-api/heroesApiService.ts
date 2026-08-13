@@ -64,6 +64,13 @@ function filtersToApiRequest(
 export async function fetchHeroStats(
   filters: HeroStatsFilters = {},
 ): Promise<AnalyticsHeroStats[]> {
+  // The vendored OpenAPI client predates the `match_mode` param and drops
+  // unknown keys, so a ranked/unranked selection has to go through the raw
+  // axios path instead.
+  if (filters.match_mode) {
+    return requestHeroStats(filters, filters.match_mode);
+  }
+
   const hash = filtersToHash(filters);
   const cached = apiCache.get<AnalyticsHeroStats[]>('hero_stats', hash);
   if (cached) return cached;
@@ -84,8 +91,11 @@ export async function fetchHeroStats(
  * like `fetchHeroBanStats` — we call the endpoint directly through axios.
  * Ranked/unranked only exist for the standard game, so callers should pass
  * `game_mode: 'normal'` (rank/badge filters are honoured normally).
+ *
+ * Throws on failure, matching `fetchHeroStats`. Use
+ * `fetchHeroStatsByMatchMode` where a missing queue should degrade quietly.
  */
-export async function fetchHeroStatsByMatchMode(
+async function requestHeroStats(
   filters: HeroStatsFilters,
   matchMode: HeroMatchMode,
 ): Promise<AnalyticsHeroStats[]> {
@@ -109,15 +119,27 @@ export async function fetchHeroStatsByMatchMode(
   if (filters.min_hero_matches_total != null)
     params.min_hero_matches_total = filters.min_hero_matches_total;
 
-  try {
-    const response = await axios.get<AnalyticsHeroStats[]>(
-      `${DEADLOCK_API_BASE_URL}/v1/analytics/hero-stats`,
-      { params },
-    );
-    const data = Array.isArray(response.data) ? response.data : [];
+  const response = await axios.get<AnalyticsHeroStats[]>(
+    `${DEADLOCK_API_BASE_URL}/v1/analytics/hero-stats`,
+    { params },
+  );
+  const data = Array.isArray(response.data) ? response.data : [];
 
-    apiCache.set('hero_stats', hash, data, CACHE_TTL.HERO_ANALYTICS);
-    return data;
+  apiCache.set('hero_stats', hash, data, CACHE_TTL.HERO_ANALYTICS);
+  return data;
+}
+
+/**
+ * Same as `requestHeroStats` but returns `[]` instead of throwing. Used by the
+ * Ranked-vs-Normal comparison, which fetches both queues in parallel and
+ * simply drops heroes missing from either side.
+ */
+export async function fetchHeroStatsByMatchMode(
+  filters: HeroStatsFilters,
+  matchMode: HeroMatchMode,
+): Promise<AnalyticsHeroStats[]> {
+  try {
+    return await requestHeroStats(filters, matchMode);
   } catch (err) {
     logger.warn(
       `Failed to fetch hero-stats for match_mode=${matchMode}`,
@@ -143,6 +165,9 @@ export async function fetchHeroBanStats(
   const rankOk = supportsRankFilter(filters.game_mode);
   const params: Record<string, string | number> = {};
   if (filters.game_mode) params.game_mode = filters.game_mode;
+  // Keep the ban population aligned with the win-rate population, otherwise
+  // ban rate would be computed over a different set of matches.
+  if (filters.match_mode) params.match_mode = filters.match_mode;
   if (rankOk && filters.min_average_badge != null)
     params.min_average_badge = filters.min_average_badge;
   if (rankOk && filters.max_average_badge != null)

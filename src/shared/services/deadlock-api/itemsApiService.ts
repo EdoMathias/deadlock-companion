@@ -36,13 +36,51 @@ export async function fetchItemStats(
   const cached = apiCache.get<ItemStats[]>('item_stats', hash);
   if (cached) return cached;
 
-  const api = new AnalyticsApi(createDeadlockApiConfig());
-  const request = filtersToApiRequest(filters);
-  const response = await api.itemStats(request);
-  const data = response.data;
+  let data: ItemStats[];
+  if (filters.match_mode) {
+    data = await requestItemStatsByMatchMode(filters);
+  } else {
+    const api = new AnalyticsApi(createDeadlockApiConfig());
+    const response = await api.itemStats(filtersToApiRequest(filters));
+    data = response.data;
+  }
 
   apiCache.set('item_stats', hash, data, CACHE_TTL.ITEM_ANALYTICS);
   return data;
+}
+
+/**
+ * `/v1/analytics/item-stats` accepts a `match_mode` param (ranked vs
+ * unranked), but the vendored OpenAPI client predates it and drops unknown
+ * keys, so a queue-filtered request goes through axios directly — same
+ * approach as `fetchCounterItemStats` and `fetchHeroStatsByMatchMode`.
+ *
+ * The params below mirror `filtersToApiRequest` exactly so ranked numbers stay
+ * comparable to the unfiltered ones.
+ */
+async function requestItemStatsByMatchMode(
+  filters: ItemStatsFilters,
+): Promise<ItemStats[]> {
+  const params: Record<string, string | number> = {
+    match_mode: filters.match_mode!,
+    min_matches: filters.min_matches ?? 20,
+  };
+  if (filters.hero_id != null) params.hero_id = filters.hero_id;
+  if (filters.game_mode) params.game_mode = filters.game_mode;
+  if (filters.min_average_badge != null)
+    params.min_average_badge = filters.min_average_badge;
+  if (filters.max_average_badge != null)
+    params.max_average_badge = filters.max_average_badge;
+  if (filters.min_unix_timestamp != null)
+    params.min_unix_timestamp = filters.min_unix_timestamp;
+  if (filters.max_unix_timestamp != null)
+    params.max_unix_timestamp = filters.max_unix_timestamp;
+
+  const response = await axios.get<ItemStats[]>(
+    `${DEADLOCK_API_BASE_URL}/v1/analytics/item-stats`,
+    { params },
+  );
+  return Array.isArray(response.data) ? response.data : [];
 }
 
 /**

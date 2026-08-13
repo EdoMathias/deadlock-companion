@@ -17,7 +17,7 @@ import type {
   MatchSummaryPlayer,
 } from './matchMetadata.types';
 import { createLogger } from '../../../../shared/services/Logger';
-import { MATCH_MODE_LABELS } from '../../../../shared/consts';
+import MatchModeBadge from '../../../components/MatchModeBadge';
 import MatchTimelineChart from './components/MatchTimelineChart';
 import TeamComparison from './components/TeamComparison';
 
@@ -737,14 +737,7 @@ const MatchDetailView: React.FC<MatchDetailViewProps> = ({
               {formatDateTime(info?.start_time ?? listEntry!.start_time)}
             </span>
           )}
-          {listEntry?.match_mode != null && listEntry.match_mode > 0 && (
-            <span
-              className={`match-detail-header__mode-badge match-detail-header__mode-badge--${listEntry.match_mode === 4 ? 'ranked' : 'unranked'}`}
-            >
-              {MATCH_MODE_LABELS[listEntry.match_mode] ??
-                `Mode ${listEntry.match_mode}`}
-            </span>
-          )}
+          <MatchModeBadge matchMode={listEntry?.match_mode} rankedOnly={false} />
         </div>
       </div>
 

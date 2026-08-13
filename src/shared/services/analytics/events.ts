@@ -157,7 +157,9 @@ export interface AnalyticsEventProperties {
       | 'game_mode'
       | 'slot_type'
       | 'item_tier'
-      | 'min_matches';
+      | 'min_matches'
+      /** The whole filter bar was restored to its defaults. */
+      | 'reset';
     has_value?: boolean;
   };
   item_stats_preset_applied: {
@@ -171,10 +173,22 @@ export interface AnalyticsEventProperties {
       | 'rank_range'
       | 'date_range'
       | 'min_matches'
-      | 'min_matches_all_time';
+      | 'min_matches_all_time'
+      /** The whole filter bar was restored to its defaults. */
+      | 'reset';
   };
   /** Fired when the user switches Hero Stats into the Ranked-vs-Normal view. */
   hero_stats_comparison_viewed: Record<string, never>;
+  /**
+   * Fired when the user switches a view between its table modes — currently
+   * Hero Stats' Standard and Ranked-vs-Normal tables. Unlike
+   * `hero_stats_comparison_viewed` this fires in both directions, so the two
+   * tables' engagement can be compared.
+   */
+  table_mode_switched: {
+    view: 'hero_stats';
+    mode: 'standard' | 'comparison';
+  };
   stats_sorted: {
     view: 'hero_stats' | 'item_stats';
     column: string;
