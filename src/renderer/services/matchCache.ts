@@ -181,7 +181,18 @@ export const matchCache = {
         logger.warn(
           `  storing match ${entry.match_id} (hero: ${entry.hero_name}, KDA: ${entry.kills}/${entry.deaths}/${entry.assists})`,
         );
-        await gameEventMatchStore.set(String(entry.match_id), entry);
+        // Merge rather than overwrite: the entry built at match_end carries
+        // match_mode/game_mode, while entries from the in-game match history
+        // tab don't. A blind set() would wipe the richer fields.
+        const key = String(entry.match_id);
+        const existing = await gameEventMatchStore.get(key);
+        const defined = Object.fromEntries(
+          Object.entries(entry).filter(([, value]) => value !== undefined),
+        );
+        await gameEventMatchStore.set(key, {
+          ...existing,
+          ...defined,
+        } as GameEventMatchEntry);
       }
       logger.log('mergeGameEventMatches: all entries written successfully');
     } catch (err) {

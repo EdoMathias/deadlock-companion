@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import type { ItemStatsFilters, ItemStatsRow, ItemAnalyticsComputed } from '../../../../shared/types/items';
 import { useItemMetadata } from '../../../hooks/useItemMetadata';
 import { useItemAnalytics } from './hooks/useItemStats';
@@ -7,18 +7,43 @@ import { useGepItemsSupport } from './hooks/useGepItemsSupport';
 import ItemStatsFiltersBar from './components/ItemStatsFilters';
 import ItemStatsTable from './components/ItemStatsTable';
 import { track } from '../../../../shared/services/analytics';
+import {
+  DEFAULT_ITEM_STATS_FILTERS,
+  getItemStatsFilters,
+  setItemStatsFilters,
+} from '../../../../shared/stores/statsFilterPrefs';
 import '../../../styles/views/item-stats.css';
 
-const DEFAULT_FILTERS: ItemStatsFilters = {
-  sort_by: 'win_rate',
-  sort_direction: 'desc',
-  min_matches: 20,
-  game_mode: 'normal',
-};
+const DEFAULT_FILTERS = DEFAULT_ITEM_STATS_FILTERS;
+
+/**
+ * Reset restores the filter controls only — the current sort is deliberately
+ * preserved.
+ */
+const FILTER_KEYS: (keyof ItemStatsFilters)[] = [
+  'hero_id',
+  'game_mode',
+  'match_mode',
+  'min_average_badge',
+  'max_average_badge',
+  'min_unix_timestamp',
+  'max_unix_timestamp',
+  'min_matches',
+  'item_slot_type',
+  'item_tier',
+];
+
+function isDefaultFilters(filters: ItemStatsFilters): boolean {
+  return FILTER_KEYS.every((key) => filters[key] === DEFAULT_FILTERS[key]);
+}
 
 const ItemStatsView: React.FC = () => {
-  const [filters, setFilters] = useState<ItemStatsFilters>(DEFAULT_FILTERS);
+  // Filters persist across navigation and restarts; the search box does not —
+  // a stale query silently hiding rows on return is worse than retyping.
+  const [filters, setFilters] = useState<ItemStatsFilters>(getItemStatsFilters);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => setItemStatsFilters(filters), [filters]);
 
   const { items: metadata, loading: metaLoading, error: metaError } = useItemMetadata();
   const { analytics, loading: statsLoading, error: statsError, totalMatches } = useItemAnalytics(filters);
@@ -81,6 +106,9 @@ const ItemStatsView: React.FC = () => {
     min_average_badge: 'rank_range',
     max_average_badge: 'rank_range',
     game_mode: 'game_mode',
+    // The mode dropdown writes both fields; the Set below dedupes them so
+    // picking "Ranked" still emits exactly one event.
+    match_mode: 'game_mode',
     min_matches: 'min_matches',
     item_slot_type: 'slot_type',
     item_tier: 'item_tier',
@@ -101,6 +129,17 @@ const ItemStatsView: React.FC = () => {
       },
     );
     setFilters(next);
+  };
+
+  const handleResetFilters = () => {
+    track('item_stats_filtered', { filter_type: 'reset' });
+    // Keep the current sort — resetting the table order isn't what "reset
+    // filters" means.
+    setFilters((prev) => ({
+      ...DEFAULT_FILTERS,
+      sort_by: prev.sort_by,
+      sort_direction: prev.sort_direction,
+    }));
   };
 
   const handleSortChange = (sortBy: ItemStatsFilters['sort_by']) => {
@@ -138,6 +177,8 @@ const ItemStatsView: React.FC = () => {
         onApplyPreset={applyPreset}
         onClearAll={clearAll}
         allItems={metadata}
+        onReset={handleResetFilters}
+        canReset={!isDefaultFilters(filters)}
       />
 
       {gepSupported === false && (

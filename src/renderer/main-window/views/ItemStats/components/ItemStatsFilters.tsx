@@ -2,7 +2,13 @@ import React from 'react';
 import type { ItemStatsFilters as Filters, ItemSlotType, ItemTier } from '../../../../../shared/types/items';
 import type { NotificationPreset } from '../../../../../shared/types/itemAlerts';
 import type { ItemMetadata } from '../../../../../shared/types/items';
+import {
+  STATS_MODE_OPTIONS,
+  filtersToStatsMode,
+  statsModeToFilters,
+} from '../../../../../shared/data/modeOptions';
 import HeroSelect from '../../../../components/HeroSelect';
+import ModeSelect from '../../../../components/ModeSelect';
 import RankRangeSlider from '../../../../components/RankRangeSlider';
 import PresetSelector from './PresetSelector';
 
@@ -16,6 +22,10 @@ interface Props {
   onApplyPreset: (preset: NotificationPreset, allItems: ItemMetadata[]) => void;
   onClearAll: () => void;
   allItems: ItemMetadata[];
+  /** Restores the default filter set. */
+  onReset: () => void;
+  /** False when the filters already equal the defaults. */
+  canReset: boolean;
 }
 
 const SLOT_TYPES: { value: ItemSlotType | ''; label: string }[] = [
@@ -40,12 +50,6 @@ const SORT_OPTIONS = [
   { value: 'confidence', label: 'Confidence' },
 ];
 
-const GAME_MODES: { value: string; label: string }[] = [
-  { value: '', label: 'All Modes' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'street_brawl', label: 'Street Brawl' },
-];
-
 const ItemStatsFiltersBar: React.FC<Props> = ({
   filters,
   onChange,
@@ -56,6 +60,8 @@ const ItemStatsFiltersBar: React.FC<Props> = ({
   onApplyPreset,
   onClearAll,
   allItems,
+  onReset,
+  canReset,
 }) => {
   const update = (patch: Partial<Filters>) => {
     onChange({ ...filters, ...patch });
@@ -85,19 +91,12 @@ const ItemStatsFiltersBar: React.FC<Props> = ({
           }
         />
 
-        <select
-          className="item-stats-filter-select"
-          value={filters.game_mode ?? ''}
-          onChange={(e) =>
-            update({ game_mode: e.target.value || undefined })
-          }
-        >
-          {GAME_MODES.map((gm) => (
-            <option key={gm.value} value={gm.value}>
-              {gm.label}
-            </option>
-          ))}
-        </select>
+        <ModeSelect
+          value={filtersToStatsMode(filters)}
+          options={STATS_MODE_OPTIONS}
+          onChange={(mode) => update(statsModeToFilters(mode))}
+          ariaLabel="Game mode"
+        />
 
         <PresetSelector
           presets={presets}
@@ -182,6 +181,20 @@ const ItemStatsFiltersBar: React.FC<Props> = ({
             }
           />
         </div>
+
+        <button
+          type="button"
+          className="stats-filter-reset"
+          onClick={onReset}
+          disabled={!canReset}
+          title={
+            canReset
+              ? 'Restore the default filters'
+              : 'Filters are already at their defaults'
+          }
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+import type { HeroMatchMode } from './heroStats';
+
 export type ItemSlotType = 'weapon' | 'spirit' | 'vitality';
 export type ItemTier = 1 | 2 | 3 | 4 | 5;
 
@@ -48,6 +50,8 @@ export interface ItemStatsFilters {
   min_average_badge?: number;
   max_average_badge?: number;
   game_mode?: string;
+  /** Restrict aggregation to a single matchmaking queue (ranked vs normal). */
+  match_mode?: HeroMatchMode;
   min_unix_timestamp?: number;
   max_unix_timestamp?: number;
   min_matches?: number;

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type {
   HeroStatsFilters,
   HeroStatsSortKey,
@@ -14,16 +14,40 @@ import HeroStatsFiltersBar from './components/HeroStatsFilters';
 import HeroStatsTable from './components/HeroStatsTable';
 import HeroComparisonTable from './components/HeroComparisonTable';
 import { track } from '../../../../shared/services/analytics';
+import {
+  DEFAULT_HERO_STATS_FILTERS,
+  getHeroStatsComparisonSort,
+  getHeroStatsFilters,
+  getHeroStatsViewMode,
+  setHeroStatsComparisonSort,
+  setHeroStatsFilters,
+  setHeroStatsViewMode,
+} from '../../../../shared/stores/statsFilterPrefs';
 
 const logger = createLogger('HeroStatsView');
 
 type ViewMode = 'standard' | 'comparison';
 
-const DEFAULT_FILTERS: HeroStatsFilters = {
-  game_mode: 'normal',
-  sort_by: 'win_rate',
-  sort_direction: 'desc',
-};
+const DEFAULT_FILTERS = DEFAULT_HERO_STATS_FILTERS;
+
+/**
+ * Reset restores the filter controls only — the current sort and the active
+ * Standard/Ranked-vs-Normal tab are deliberately preserved.
+ */
+const FILTER_KEYS: (keyof HeroStatsFilters)[] = [
+  'game_mode',
+  'match_mode',
+  'min_average_badge',
+  'max_average_badge',
+  'min_unix_timestamp',
+  'max_unix_timestamp',
+  'min_hero_matches',
+  'min_hero_matches_total',
+];
+
+function isDefaultFilters(filters: HeroStatsFilters): boolean {
+  return FILTER_KEYS.every((key) => filters[key] === DEFAULT_FILTERS[key]);
+}
 
 function heroName(heroId: number): string {
   return HEROES[heroId]?.name ?? `#${heroId}`;
@@ -63,12 +87,21 @@ function getComparisonSortValue(
 }
 
 const HeroStatsView: React.FC = () => {
-  const [filters, setFilters] = useState<HeroStatsFilters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<ViewMode>('standard');
+  // Filters, the active tab, and both sorts persist across navigation and app
+  // restarts — this view is fully unmounted when the user switches pages.
+  const [filters, setFilters] = useState<HeroStatsFilters>(getHeroStatsFilters);
+  const [viewMode, setViewMode] = useState<ViewMode>(getHeroStatsViewMode);
   const [comparisonSort, setComparisonSort] = useState<{
     key: HeroComparisonSortKey;
     direction: 'asc' | 'desc';
-  }>({ key: 'win_rate_delta', direction: 'desc' });
+  }>(getHeroStatsComparisonSort);
+
+  useEffect(() => setHeroStatsFilters(filters), [filters]);
+  useEffect(() => setHeroStatsViewMode(viewMode), [viewMode]);
+  useEffect(
+    () => setHeroStatsComparisonSort(comparisonSort),
+    [comparisonSort],
+  );
 
   const isComparison = viewMode === 'comparison';
 
@@ -130,6 +163,9 @@ const HeroStatsView: React.FC = () => {
     >
   > = {
     game_mode: 'game_mode',
+    // The mode dropdown writes both fields; the Set below dedupes them so
+    // picking "Ranked" still emits exactly one event.
+    match_mode: 'game_mode',
     min_average_badge: 'rank_range',
     max_average_badge: 'rank_range',
     min_unix_timestamp: 'date_range',
@@ -150,6 +186,17 @@ const HeroStatsView: React.FC = () => {
       },
     );
     setFilters(next);
+  };
+
+  const handleResetFilters = () => {
+    track('hero_stats_filtered', { filter_type: 'reset' });
+    // Keep the current sort — resetting the table order isn't what "reset
+    // filters" means.
+    setFilters((prev) => ({
+      ...DEFAULT_FILTERS,
+      sort_by: prev.sort_by,
+      sort_direction: prev.sort_direction,
+    }));
   };
 
   const handleSortChange = (key: HeroStatsSortKey) => {
@@ -194,12 +241,18 @@ const HeroStatsView: React.FC = () => {
 
   const handleModeChange = (mode: ViewMode) => {
     if (mode === viewMode) return;
+    track('table_mode_switched', { view: 'hero_stats', mode });
     if (mode === 'comparison') {
       track('hero_stats_comparison_viewed', {});
-      // Ranked/unranked only exist for the standard game; normalize game
-      // mode so the filter bar (rank slider) stays enabled and consistent.
-      if (filters.game_mode !== 'normal') {
-        setFilters((prev) => ({ ...prev, game_mode: 'normal' }));
+      // Ranked/unranked only exist for the standard game, and this view
+      // fetches both queues itself — normalize game mode so the filter bar
+      // (rank slider) stays enabled and drop any single-queue selection.
+      if (filters.game_mode !== 'normal' || filters.match_mode != null) {
+        setFilters((prev) => ({
+          ...prev,
+          game_mode: 'normal',
+          match_mode: undefined,
+        }));
       }
     }
     setViewMode(mode);
@@ -253,6 +306,8 @@ const HeroStatsView: React.FC = () => {
         filters={filters}
         onChange={handleFiltersChange}
         hideGameMode={isComparison}
+        onReset={handleResetFilters}
+        canReset={!isDefaultFilters(filters)}
       />
 
       {activeError && (

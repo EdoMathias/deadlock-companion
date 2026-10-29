@@ -7,10 +7,16 @@ import { track } from '../../../../shared/services/analytics';
 import { matchCache } from '../../../services/matchCache';
 import { getHero } from '../../../../shared/data/heroes';
 import HeroSelect from '../../../components/HeroSelect';
+import MatchModeBadge from '../../../components/MatchModeBadge';
+import ModeSelect from '../../../components/ModeSelect';
 import { useGameEventMatches } from '../../../hooks/useGameEventMatches';
 import MatchDetailView from './MatchDetailView';
 import { createLogger } from '../../../../shared/services/Logger';
-import { GAME_MODE_LABELS } from '../../../../shared/consts';
+import { GAME_MODE_LABELS, isRankedMatchMode } from '../../../../shared/consts';
+import {
+  getMatchHistoryFilters,
+  setMatchHistoryFilters,
+} from '../../../../shared/stores/statsFilterPrefs';
 import { RefreshButton } from '../../../components/RefreshButton';
 import { DataContributionModal } from '../../../components/DataContributionModal';
 import { useFTUE } from '../../../contexts/FTUEContext';
@@ -18,6 +24,30 @@ import { useFTUE } from '../../../contexts/FTUEContext';
 const logger = createLogger('MatchHistoryView');
 
 const playersApi = new PlayersApi(deadlockApiConfig);
+
+/** `game_mode` code for the standard game. */
+const NORMAL_GAME_MODE = 1;
+/** Sentinel for the Ranked entry, which filters on `match_mode` instead. */
+const RANKED_FILTER_VALUE = 'ranked';
+
+/**
+ * Mode dropdown entries. Ranked is a `match_mode` slice of the standard game
+ * rather than a `game_mode` of its own, so it sits alongside Normal here and
+ * Normal narrows to unranked (see `filteredMatches`).
+ */
+const MODE_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'All Modes' },
+  ...Object.entries(GAME_MODE_LABELS)
+    .filter(([key]) => key !== '0')
+    .flatMap(([key, label]) =>
+      key === String(NORMAL_GAME_MODE)
+        ? [
+            { value: key, label },
+            { value: RANKED_FILTER_VALUE, label: 'Ranked' },
+          ]
+        : [{ value: key, label }],
+    ),
+];
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -36,6 +66,12 @@ interface MergedMatchEntry {
   duration_s?: number;
   is_win?: boolean;
   game_mode?: number;
+  /**
+   * Ranked vs unranked queue. Comes from the API entry, or — for a match that
+   * just ended and hasn't reached the API yet — from the GEP game_mode payload
+   * captured at match end.
+   */
+  match_mode?: number;
   source: 'api' | 'game-event';
 }
 
@@ -58,8 +94,14 @@ const MatchHistoryView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
-  const [gameModeFilter, setGameModeFilter] = useState<number | null>(null);
-  const [characterFilter, setCharacterFilter] = useState<number | string | null>(null);
+  // Filters persist across navigation and restarts — the view is fully
+  // unmounted when the user switches pages, so plain useState would reset them.
+  const [modeFilter, setModeFilter] = useState<string | null>(
+    () => getMatchHistoryFilters().mode,
+  );
+  const [characterFilter, setCharacterFilter] = useState<number | string | null>(
+    () => getMatchHistoryFilters().hero_id,
+  );
   const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null);
   const [showDataModal, setShowDataModal] = useState(false);
   const [communityBannerDismissed, setCommunityBannerDismissed] = useState(
@@ -86,6 +128,10 @@ const MatchHistoryView: React.FC = () => {
     }
     return new Map();
   });
+
+  useEffect(() => {
+    setMatchHistoryFilters({ mode: modeFilter, hero_id: characterFilter });
+  }, [modeFilter, characterFilter]);
 
   // Persist verified match IDs so badges survive view navigation
   useEffect(() => {
@@ -237,6 +283,7 @@ const MatchHistoryView: React.FC = () => {
         duration_s: m.match_duration_s,
         is_win: m.match_result === m.player_team,
         game_mode: m.game_mode,
+        match_mode: m.match_mode,
         source: 'api',
       });
     }
@@ -252,6 +299,8 @@ const MatchHistoryView: React.FC = () => {
           kills: ge.kills,
           deaths: ge.deaths,
           assists: ge.assists,
+          game_mode: ge.game_mode,
+          match_mode: ge.match_mode,
           source: 'game-event',
         });
       }
@@ -284,9 +333,18 @@ const MatchHistoryView: React.FC = () => {
   }, [apiMatches, gameEventEntries, verifiedMatchIds]);
 
   const filteredMatches = useMemo(() => {
-    if (gameModeFilter === null) return mergedMatches;
-    return mergedMatches.filter((m) => m.game_mode === gameModeFilter);
-  }, [mergedMatches, gameModeFilter]);
+    if (modeFilter === null) return mergedMatches;
+    if (modeFilter === RANKED_FILTER_VALUE) {
+      return mergedMatches.filter((m) => isRankedMatchMode(m.match_mode));
+    }
+    const gameMode = Number(modeFilter);
+    return mergedMatches.filter((m) => {
+      if (m.game_mode !== gameMode) return false;
+      // Ranked is its own entry, so "Normal" means the unranked standard game.
+      if (gameMode === NORMAL_GAME_MODE) return !isRankedMatchMode(m.match_mode);
+      return true;
+    });
+  }, [mergedMatches, modeFilter]);
 
   const filteredMatchesByCharacter = useMemo(() => {
     if (characterFilter === null) return filteredMatches;
@@ -339,24 +397,12 @@ const MatchHistoryView: React.FC = () => {
       <div className="view-header">
         <h2 className="view-title">Match History</h2>
         <div className="view-header-actions">
-          <select
-            className="match-history-filter"
-            value={gameModeFilter === null ? '' : gameModeFilter}
-            onChange={(e) =>
-              setGameModeFilter(
-                e.target.value === '' ? null : Number(e.target.value),
-              )
-            }
-          >
-            <option value="">All</option>
-            {Object.entries(GAME_MODE_LABELS)
-              .filter(([key]) => key !== '0')
-              .map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-          </select>
+          <ModeSelect
+            value={modeFilter ?? ''}
+            options={MODE_FILTER_OPTIONS}
+            onChange={(value) => setModeFilter(value === '' ? null : value)}
+            ariaLabel="Game mode"
+          />
           <HeroSelect
             value={characterFilter}
             onChange={setCharacterFilter}
@@ -538,6 +584,7 @@ const MatchHistoryView: React.FC = () => {
                       `Mode ${match.game_mode}`}
                   </span>
                 )}
+                <MatchModeBadge matchMode={match.match_mode} />
                 <div className="match-card__details">
                   <span className="match-card__hero">{heroName}</span>
                   <span className="match-card__kda">

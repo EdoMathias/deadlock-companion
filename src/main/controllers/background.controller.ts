@@ -7,7 +7,14 @@ import {
   MessageType,
 } from '../services/MessageChannel';
 import { Edge } from '@overwolf/odk-ts/window/enums/edge';
-import { kDeadlockClassId, kHotkeys, kWindowNames, LIVE_GAME_MODE_LABELS } from '../../shared/consts';
+import {
+  kDeadlockClassId,
+  kHotkeys,
+  kWindowNames,
+  LIVE_GAME_MODE_LABELS,
+  parseGameMode,
+  parseMatchMode,
+} from '../../shared/consts';
 import { createLogger } from '../../shared/services/Logger';
 import { WindowsController } from './windows.controller';
 import { TrayIconService } from '../services/tray-icon.service';
@@ -626,6 +633,16 @@ export class BackgroundController {
     const heroId = String(roster.hero_id ?? '');
     const heroInfo = HEROES[Number(heroId)];
 
+    // The GEP match_history feed carries no mode fields, so stamp the live
+    // game_info values onto this entry — that's what lets a just-played ranked
+    // match show its Ranked badge before the deadlock-api knows about it.
+    const matchMode = parseMatchMode(this._gameMode?.match_mode);
+    if (this._gameMode?.match_mode && matchMode == null) {
+      logger.warn(
+        `match_end: unrecognised GEP match_mode "${this._gameMode.match_mode}"`,
+      );
+    }
+
     const matchEntry: GameEventMatchEntry = {
       match_id: this._currentMatchId ?? '',
       hero_id: heroId,
@@ -633,6 +650,8 @@ export class BackgroundController {
       deaths: Number(roster.deaths ?? 0),
       assists: Number(roster.assist ?? 0),
       hero_name: heroInfo?.name ?? String(roster.hero_name ?? 'Unknown'),
+      match_mode: matchMode,
+      game_mode: parseGameMode(this._gameMode?.game_mode),
     };
 
     logger.log('match_end: broadcasting match entry:', matchEntry);

@@ -12,3 +12,5 @@ export * from './IngestCacheCard';
 export * from './IngestPromptModal';
 export { default as DateRangeSelector } from './DateRangeSelector';
 export { default as InfoIcon } from './InfoIcon';
+export { default as MatchModeBadge } from './MatchModeBadge';
+export { default as ModeSelect } from './ModeSelect';
