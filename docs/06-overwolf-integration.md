@@ -285,6 +285,12 @@ Rules:
 - Always wrap fetchers in `try/catch` and degrade (return `null`/`[]`). Log via `createLogger`.
 - Respect cache TTLs (see [`docs/05-data-and-persistence.md`](05-data-and-persistence.md)).
 
+### Bundled hero display metadata
+
+Hero names, portraits, tags, and selector options come from the static [`src/shared/data/heroes.ts`](../src/shared/data/heroes.ts) map (`HEROES`, `getHero`, `HEROES_LIST`). These consumers do not call `fetchAllHeroes`, so refreshing the `heroes_metadata` cache does not update their display data. When Valve adds or renames a hero, verify its ID, class name, display name, tags, and image URLs against `https://api.deadlock-api.com/v1/assets/heroes?language=english` and update the bundled map.
+
+The September 2026 heroes were verified on October 10, 2026: Deadman Danny (`78`, formerly Airheart), Rat King (`84`), Solomon (`85`), Violet (`86`), Nurse Harrow (`87`), and Baba (`88`). ID `83` is an internal test hero and is excluded. Deadman Danny, Violet, and Nurse Harrow currently have no card/small icons in the API response; their available vertical portraits also serve as card/small icons in the bundled map. Use returned asset URLs rather than guessing filenames from display names (Solomon's asset prefix is `chessmaster`).
+
 ### Steam Web API key
 
 The Steam Web API key is base64-encoded in [`webpack.config.js`](../webpack.config.js) and injected as `__STEAM_WEB_KEY__` via `webpack.DefinePlugin`. [`steamWebApi.ts`](../src/shared/services/steamWebApi.ts) decodes it with `atob()` at runtime. Do not commit a plaintext key, and do not introduce a second key.

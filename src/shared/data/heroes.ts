@@ -6,7 +6,8 @@
  *   id, class_name, name, tags, images
  *
  * Source: https://api.deadlock-api.com/v1/assets/heroes
- * Last updated: 2026-03-05
+ * Base snapshot: 2026-03-05. September 2026 heroes refreshed: 2026-10-10.
+ * Heroes without card/small icons reuse their API-provided vertical portrait.
  */
 
 export interface HeroImages {
@@ -1489,18 +1490,28 @@ export const HEROES: Record<number, HeroInfo> = {
   },
   78: {
     id: 78,
-    class_name: 'hero_airheart',
-    name: 'Airheart',
-    tags: [],
+    class_name: 'hero_deadpack',
+    name: 'Deadman Danny',
+    tags: ['Reckless', 'High-flying', 'Explosive'],
     images: {
       icon_hero_card:
-        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/airheart_card.png',
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.png',
       icon_hero_card_webp:
-        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/airheart_card.webp',
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.webp',
       top_bar_vertical_image:
-        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/airheart_card.png',
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.png',
       top_bar_vertical_image_webp:
-        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/airheart_card.webp',
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/deadpack_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/deadpack_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/deadpack_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/deadpack.svg',
     },
   },
   79: {
@@ -1623,6 +1634,172 @@ export const HEROES: Record<number, HeroInfo> = {
     name: 'Opera',
     tags: [],
     images: {},
+  },
+  84: {
+    id: 84,
+    class_name: 'hero_ratking',
+    name: 'Rat King',
+    tags: ['Scrappy', 'Regal', 'Tenacious'],
+    images: {
+      icon_hero_card:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card.png',
+      icon_hero_card_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_sm.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_sm.webp',
+      minimap_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_mm.png',
+      minimap_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_mm.webp',
+      hero_card_critical:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card_critical.png',
+      hero_card_critical_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card_critical.webp',
+      hero_card_gloat:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card_gloat.png',
+      hero_card_gloat_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_card_gloat.webp',
+      top_bar_vertical_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_vertical.png',
+      top_bar_vertical_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/ratking_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/ratking_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/ratking_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/ratking.svg',
+    },
+  },
+  85: {
+    id: 85,
+    class_name: 'hero_chessmaster',
+    name: 'Solomon',
+    tags: ['Strategist', 'Focused', 'Checkmate'],
+    images: {
+      icon_hero_card:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card.png',
+      icon_hero_card_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_sm.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_sm.webp',
+      minimap_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_mm.png',
+      minimap_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_mm.webp',
+      hero_card_critical:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card_critical.png',
+      hero_card_critical_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card_critical.webp',
+      hero_card_gloat:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card_gloat.png',
+      hero_card_gloat_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_card_gloat.webp',
+      top_bar_vertical_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_vertical.png',
+      top_bar_vertical_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/chessmaster_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/chessmaster_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/chessmaster_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/solomon.svg',
+    },
+  },
+  86: {
+    id: 86,
+    class_name: 'hero_artist',
+    name: 'Violet',
+    tags: ['Ambitious', 'Nimble', 'Creative'],
+    images: {
+      icon_hero_card:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.png',
+      icon_hero_card_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.webp',
+      top_bar_vertical_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.png',
+      top_bar_vertical_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/artist_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/artist_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/artist_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/violet.svg',
+    },
+  },
+  87: {
+    id: 87,
+    class_name: 'hero_nurse',
+    name: 'Nurse Harrow',
+    tags: ['Strict', 'Terrifying', 'Savior'],
+    images: {
+      icon_hero_card:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.png',
+      icon_hero_card_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.webp',
+      top_bar_vertical_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.png',
+      top_bar_vertical_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/nurse_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/nurse_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/nurse_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/nurse.svg',
+    },
+  },
+  88: {
+    id: 88,
+    class_name: 'hero_baba',
+    name: 'Baba',
+    tags: ['Cackling', 'Beady', 'Hexing'],
+    images: {
+      icon_hero_card:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card.png',
+      icon_hero_card_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card.webp',
+      icon_image_small:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_sm.png',
+      icon_image_small_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_sm.webp',
+      minimap_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_mm.png',
+      minimap_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_mm.webp',
+      hero_card_critical:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card_critical.png',
+      hero_card_critical_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card_critical.webp',
+      hero_card_gloat:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card_gloat.png',
+      hero_card_gloat_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_card_gloat.webp',
+      top_bar_vertical_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_vertical.png',
+      top_bar_vertical_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/baba_vertical.webp',
+      background_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/baba_bg.png',
+      background_image_webp:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/images/heroes/backgrounds/baba_bg.webp',
+      name_image:
+        'https://assets-bucket.deadlock-api.com/assets-api-res/icons/heroes/hero_names/baba.svg',
+    },
   },
 };
 
