@@ -41,3 +41,42 @@ export function accountIdToSteamId64(accountId: number): string {
 export function isValidSteamId64(steamId: string): boolean {
   return /^\d{17}$/.test(steamId.trim());
 }
+
+export type ParsedSteamProfileInput =
+  | { type: 'steamId64'; steamId64: string }
+  | { type: 'vanity'; vanity: string };
+
+/**
+ * Parses a pasted Steam profile link or raw SteamID64 into either an
+ * already-resolved SteamID64 or a `/id/<vanity>` name that still needs
+ * resolving via the Steam Web API (see `resolveVanityUrl` in steamWebApi.ts).
+ *
+ * Accepts, with or without a `https://` scheme:
+ * - a raw 17-digit SteamID64
+ * - steamcommunity.com/profiles/<steamid64>
+ * - steamcommunity.com/id/<vanity>
+ */
+export function parseSteamProfileInput(
+  input: string,
+): ParsedSteamProfileInput | null {
+  const trimmed = input.trim();
+  if (trimmed === '') return null;
+
+  if (isValidSteamId64(trimmed)) {
+    return { type: 'steamId64', steamId64: trimmed };
+  }
+
+  const profileMatch = trimmed.match(
+    /steamcommunity\.com\/profiles\/(\d{17})/i,
+  );
+  if (profileMatch) {
+    return { type: 'steamId64', steamId64: profileMatch[1] };
+  }
+
+  const vanityMatch = trimmed.match(/steamcommunity\.com\/id\/([^\s/?#]+)/i);
+  if (vanityMatch) {
+    return { type: 'vanity', vanity: vanityMatch[1] };
+  }
+
+  return null;
+}
