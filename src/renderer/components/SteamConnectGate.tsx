@@ -20,7 +20,7 @@ type AutoPhase = 'waiting' | 'detected' | 'failed';
 
 export interface SteamConnectGateProps {
   /** Which view is gated — drives copy and button labels only; navigation stays in place. */
-  cameFrom: 'Match History' | 'Profile';
+  cameFrom: 'Match History' | 'Profile' | 'Hero Stats';
   /** Called once the user has explicitly confirmed a Steam account (auto-detected or pasted). */
   onConnected: () => void;
 }
@@ -132,13 +132,33 @@ export const SteamConnectGate: React.FC<SteamConnectGateProps> = ({
     onConnected();
   };
 
-  const toProfile = cameFrom === 'Profile';
-  const headline = toProfile
-    ? 'See how you stack up'
-    : 'See every match you play';
-  const intro = `${toProfile ? 'Your Profile' : 'Match History and your Profile'} need your Steam account. Connect once and everything fills in after every game.`;
-  const goLabel = toProfile ? 'Open Profile' : 'See my matches';
-  const yesLabel = toProfile ? 'Yes, open my Profile' : 'Yes, load my matches';
+  const COPY: Record<
+    SteamConnectGateProps['cameFrom'],
+    { headline: string; intro: string; goLabel: string; yesLabel: string }
+  > = {
+    Profile: {
+      headline: 'See how you stack up',
+      intro:
+        'Your Profile needs your Steam account. Connect once and everything fills in after every game.',
+      goLabel: 'Open Profile',
+      yesLabel: 'Yes, open my Profile',
+    },
+    'Match History': {
+      headline: 'See every match you play',
+      intro:
+        'Match History and your Profile need your Steam account. Connect once and everything fills in after every game.',
+      goLabel: 'See my matches',
+      yesLabel: 'Yes, load my matches',
+    },
+    'Hero Stats': {
+      headline: 'See the heroes you play',
+      intro:
+        '“My heroes” needs your Steam account to know which heroes you play. Connect once and it stays up to date after every game.',
+      goLabel: 'Show my heroes',
+      yesLabel: 'Yes, show my heroes',
+    },
+  };
+  const { headline, intro, goLabel, yesLabel } = COPY[cameFrom];
 
   const helpText = isBad
     ? "That doesn't look like a Steam profile link or a 17-digit SteamID64."

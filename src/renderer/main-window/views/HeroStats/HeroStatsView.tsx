@@ -12,6 +12,8 @@ import { useHeroStats } from './hooks/useHeroStats';
 import { useHeroStatsComparison } from './hooks/useHeroStatsComparison';
 import { useRankCompareStats } from './hooks/useRankCompareStats';
 import { useMyHeroIds } from './hooks/useMyHeroIds';
+import { useSteamId } from '../../../hooks/useSteamId';
+import { SteamConnectGate } from '../../../components/SteamConnectGate';
 import HeroStatsFiltersBar from './components/HeroStatsFilters';
 import HeroStatsTable from './components/HeroStatsTable';
 import HeroComparisonTable from './components/HeroComparisonTable';
@@ -136,8 +138,17 @@ const HeroStatsView: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
   const [myHeroesOnly, setMyHeroesOnly] = useState(false);
   const { heroIds: myHeroIds, loading: myHeroesLoading } = useMyHeroIds();
+  const { steamId } = useSteamId();
+  // Decoupled from `steamId` itself so the gate's auto-detected confirmation
+  // card has a moment to render instead of vanishing the instant GEP commits
+  // the ID in the background (same pattern as ProfileView).
+  const [gateAcknowledged, setGateAcknowledged] = useState(() => !!steamId);
+  useEffect(() => {
+    if (!steamId) setGateAcknowledged(false);
+  }, [steamId]);
+  const showSteamGate = myHeroesOnly && !gateAcknowledged;
   const noPlayedHeroes =
-    myHeroesOnly && !myHeroesLoading && myHeroIds.size === 0;
+    myHeroesOnly && !showSteamGate && !myHeroesLoading && myHeroIds.size === 0;
 
   // Rank-vs-rank comparison (Overall tab's "+ Compare with…"), distinct from
   // the Ranked-vs-Normal `viewMode` above. Not persisted — it's scoped to the
@@ -435,12 +446,17 @@ const HeroStatsView: React.FC = () => {
 
       {noPlayedHeroes && (
         <div className="hero-stats-info-banner">
-          No played heroes found yet. “My heroes” uses your match history — add
-          your Steam ID in Settings, or open the in-game match history tab once.
+          No played heroes found yet. “My heroes” fills in from your match
+          history — play a match, or open the in-game match history tab once.
         </div>
       )}
 
-      {activeLoading && !hasRows ? (
+      {showSteamGate ? (
+        <SteamConnectGate
+          cameFrom="Hero Stats"
+          onConnected={() => setGateAcknowledged(true)}
+        />
+      ) : activeLoading && !hasRows ? (
         <div className="hero-stats-loading">
           <div className="hero-stats-spinner" aria-hidden="true" />
           <span>Loading hero data...</span>
@@ -484,7 +500,7 @@ const HeroStatsView: React.FC = () => {
         </div>
       )}
 
-      {!activeLoading && (
+      {!activeLoading && !showSteamGate && (
         <div className="hero-stats-footer">
           {isComparison ? (
             <>{sortedComparisonRows.length} heroes compared · Ranked vs Normal</>
