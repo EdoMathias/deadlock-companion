@@ -1,0 +1,660 @@
+/* SteamConnectGate — connect-Steam flow shown by Match History and Profile
+   when no Steam ID is on file. */
+
+.steam-gate {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.steam-gate__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.steam-gate__connect {
+  padding: 22px 24px;
+}
+
+.steam-gate__preview {
+  padding: 0;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.steam-gate__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.steam-gate__headline {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+}
+
+.steam-gate__subtext {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.steam-gate__option-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.steam-gate__option-icon {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.steam-gate__option-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__option-desc {
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.steam-gate__badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.steam-gate__badge--waiting {
+  color: var(--color-warning);
+  background: rgba(200, 169, 106, 0.12);
+  border: 1px solid rgba(200, 169, 106, 0.4);
+}
+
+.steam-gate__badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+}
+
+.steam-gate__auto-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(114, 148, 127, 0.25);
+  border: 1px solid rgba(143, 179, 156, 0.5);
+}
+
+.steam-gate__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.steam-gate__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.steam-gate__avatar--lg {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-accent-primary);
+}
+
+.steam-gate__auto-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.steam-gate__auto-card-name {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.steam-gate__auto-card-meta {
+  font-size: 12px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(168, 70, 50, 0.18);
+  border: 1px solid rgba(208, 115, 94, 0.5);
+}
+
+.steam-gate__alert-icon {
+  color: #f4c0b3;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.steam-gate__alert-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-on-card);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.steam-gate__divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(239, 222, 191, 0.18);
+}
+
+.steam-gate__paste-box {
+  transition: box-shadow 0.2s ease;
+}
+
+.steam-gate__paste-box--highlight {
+  box-shadow: 0 0 0 2px var(--color-warning);
+}
+
+.steam-gate__input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.steam-gate__input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.steam-gate__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 34px 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  border: 1px solid rgba(114, 148, 127, 0.4);
+}
+
+.steam-gate__input--valid {
+  border-color: #8fb39c;
+}
+
+.steam-gate__input--invalid {
+  border-color: var(--color-danger);
+}
+
+.steam-gate__input-check {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #b9d6c2;
+}
+
+.steam-gate__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.steam-gate__btn--primary {
+  border-color: rgba(143, 179, 156, 0.6);
+  background: rgba(114, 148, 127, 0.35);
+  color: #e3f0e7;
+}
+
+.steam-gate__btn--ghost {
+  border-color: rgba(239, 222, 191, 0.15);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__btn--continue {
+  border-color: rgba(143, 179, 156, 0.6);
+  background: rgba(114, 148, 127, 0.35);
+  color: #e3f0e7;
+}
+
+.steam-gate__btn--continue:disabled {
+  cursor: not-allowed;
+  border-color: rgba(239, 222, 191, 0.12);
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.steam-gate__help {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__help--valid {
+  color: #b9d6c2;
+}
+
+.steam-gate__help--error {
+  color: #f4c0b3;
+}
+
+.steam-gate__checking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__spinner {
+  color: var(--color-warning);
+  animation: steam-gate-spin 0.8s linear infinite;
+}
+
+@keyframes steam-gate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.steam-gate__confirm-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+}
+
+.steam-gate__confirm-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.steam-gate__confirm-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.steam-gate__confirm-meta {
+  font-size: 12px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.steam-gate__footnote {
+  margin: 0;
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--color-text-on-card);
+  line-height: 1.5;
+}
+
+/* --- Preview / "what you'll get" panel --- */
+
+.steam-gate__preview-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 20px 0;
+}
+
+.steam-gate__preview-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__preview-sample-tag {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-on-card);
+  border: 1px solid rgba(239, 222, 191, 0.2);
+}
+
+.steam-gate__preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 20px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+}
+
+.steam-gate__preview-card:last-child {
+  margin-bottom: 20px;
+}
+
+.steam-gate__preview-card--chart {
+  flex: 1;
+  min-height: 120px;
+}
+
+.steam-gate__preview-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__sample-match {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px 7px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  border-left: 4px solid transparent;
+}
+
+.steam-gate__sample-match--win {
+  border-left-color: #8fb39c;
+}
+
+.steam-gate__sample-match--loss {
+  border-left-color: #d0735e;
+}
+
+.steam-gate__sample-outcome {
+  padding: 2px 0;
+  width: 40px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.steam-gate__sample-outcome--win {
+  color: #b9d6c2;
+  background: rgba(114, 148, 127, 0.25);
+  border: 1px solid rgba(143, 179, 156, 0.5);
+}
+
+.steam-gate__sample-outcome--loss {
+  color: #f4c0b3;
+  background: rgba(168, 70, 50, 0.25);
+  border: 1px solid rgba(208, 115, 94, 0.5);
+}
+
+.steam-gate__sample-portrait {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+}
+
+.steam-gate__sample-hero {
+  font-weight: 600;
+  width: 74px;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__sample-kda {
+  font-weight: 700;
+  color: #b9d6c2;
+  width: 54px;
+  font-variant-numeric: tabular-nums;
+}
+
+.steam-gate__sample-spm {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.steam-gate__sample-spm-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__sample-spm-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__sample-ago {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__chart-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.steam-gate__chart-legend {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.steam-gate__chart-swatch {
+  width: 10px;
+  height: 2px;
+}
+
+.steam-gate__chart-swatch--you {
+  background: var(--color-text-primary);
+}
+
+.steam-gate__chart-swatch--avg {
+  border-top: 2px dashed #c5b89a;
+}
+
+.steam-gate__chart-svg {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.steam-gate__chart-shade {
+  fill: rgba(208, 115, 94, 0.45);
+}
+
+.steam-gate__chart-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.steam-gate__chart-line--avg {
+  stroke: #c5b89a;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.steam-gate__chart-line--you {
+  stroke: var(--color-text-primary);
+  stroke-width: 2.5;
+}
+
+.steam-gate__bar-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+}
+
+.steam-gate__bar-label {
+  font-size: 12px;
+  color: var(--color-text-on-card);
+}
+
+.steam-gate__bar-track {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(34, 32, 33, 0.6);
+}
+
+.steam-gate__bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-sm);
+}
+
+.steam-gate__bar-fill--gold {
+  background: var(--color-warning);
+}
+
+.steam-gate__bar-fill--green {
+  background: #8fb39c;
+}
+
+.steam-gate__bar-fill--red {
+  background: #d0735e;
+}
+
+.steam-gate__bar-midline {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: rgba(239, 222, 191, 0.4);
+}
+
+.steam-gate__bar-pct {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.steam-gate__bar-pct--gold {
+  color: #ecd29c;
+}
+
+.steam-gate__bar-pct--green {
+  color: #b9d6c2;
+}
+
+.steam-gate__bar-pct--red {
+  color: #f4c0b3;
+}
+
+.steam-gate__preview-card--highlight {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.steam-gate__lane-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #b9d6c2;
+  background: rgba(114, 148, 127, 0.25);
+  border: 1px solid rgba(143, 179, 156, 0.5);
+}
+
+.steam-gate__lane-text {
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.steam-gate__lane-text strong {
+  color: #b9d6c2;
+}

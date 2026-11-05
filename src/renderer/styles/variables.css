@@ -18,7 +18,7 @@
   --color-text-primary: #efdebf;
   --color-text-secondary: #c5b89a;
   --color-text-muted: #9c8c72;
-  /* Lighter muted shade that keeps legible contrast on --color-bg-card (#3f5d4d). */
+  /* Contrast-safe body text on top of --color-bg-card (#3f5d4d); --color-text-secondary fails contrast there. */
   --color-text-on-card: #d8cbb0;
   --color-accent-primary: #72947f;
   --color-accent-secondary: #3f5d4d;

@@ -224,7 +224,7 @@ export interface AnalyticsEventProperties {
   ftue_reset: Record<string, never>;
 
   // --- Activation gate: Steam ID ---
-  steam_id_connected: { source: 'settings' | 'prompt' };
+  steam_id_connected: { source: 'settings' | 'prompt' | 'auto_detect' };
   steam_id_cleared: Record<string, never>;
 
   // --- Release notes ---
