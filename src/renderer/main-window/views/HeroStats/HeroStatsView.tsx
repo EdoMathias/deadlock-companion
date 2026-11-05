@@ -10,10 +10,15 @@ import { HEROES } from '../../../../shared/data/heroes';
 import { createLogger } from '../../../../shared/services/Logger';
 import { useHeroStats } from './hooks/useHeroStats';
 import { useHeroStatsComparison } from './hooks/useHeroStatsComparison';
+import { useRankCompareStats } from './hooks/useRankCompareStats';
+import { useMyHeroIds } from './hooks/useMyHeroIds';
+import { useSteamId } from '../../../hooks/useSteamId';
+import { SteamConnectGate } from '../../../components/SteamConnectGate';
 import HeroStatsFiltersBar from './components/HeroStatsFilters';
 import HeroStatsTable from './components/HeroStatsTable';
 import HeroComparisonTable from './components/HeroComparisonTable';
 import { track } from '../../../../shared/services/analytics';
+import type { RankCompareTarget } from './utils/rankCompare';
 import {
   DEFAULT_HERO_STATS_FILTERS,
   getHeroStatsComparisonSort,
@@ -41,7 +46,6 @@ const FILTER_KEYS: (keyof HeroStatsFilters)[] = [
   'max_average_badge',
   'min_unix_timestamp',
   'max_unix_timestamp',
-  'min_hero_matches',
   'min_hero_matches_total',
 ];
 
@@ -51,6 +55,26 @@ function isDefaultFilters(filters: HeroStatsFilters): boolean {
 
 function heroName(heroId: number): string {
   return HEROES[heroId]?.name ?? `#${heroId}`;
+}
+
+/**
+ * Client-side search + "My heroes" filter, applied the same way to both the
+ * Standard/Overall rows and the Ranked-vs-Normal comparison rows — the
+ * filter bar that drives this is shared across both tabs.
+ */
+function filterByNameAndMine<T extends { hero_id: number }>(
+  rows: T[],
+  query: string,
+  mineOnly: boolean,
+  myHeroIds: Set<number>,
+): T[] {
+  const q = query.trim().toLowerCase();
+  if (!q && !mineOnly) return rows;
+  return rows.filter((row) => {
+    if (mineOnly && !myHeroIds.has(row.hero_id)) return false;
+    if (q && !heroName(row.hero_id).toLowerCase().includes(q)) return false;
+    return true;
+  });
 }
 
 function getSortValue(row: HeroStatsComputed, key: HeroStatsSortKey): number {
@@ -63,6 +87,8 @@ function getSortValue(row: HeroStatsComputed, key: HeroStatsSortKey): number {
       return row.ban_rate;
     case 'matches':
       return row.matches;
+    case 'win_rate_delta':
+      return row.win_rate_delta ?? 0;
     default:
       return 0;
   }
@@ -105,6 +131,41 @@ const HeroStatsView: React.FC = () => {
 
   const isComparison = viewMode === 'comparison';
 
+  // Hero name search + "My heroes" toggle. Not persisted — like Item Stats'
+  // search box, a stale query silently hiding rows on return would be worse
+  // than retyping.
+  const [heroSearch, setHeroSearch] = useState('');
+  const [myHeroesOnly, setMyHeroesOnly] = useState(false);
+  const { heroIds: myHeroIds, loading: myHeroesLoading } = useMyHeroIds();
+  const { steamId } = useSteamId();
+  // Decoupled from `steamId` itself so the gate's auto-detected confirmation
+  // card has a moment to render instead of vanishing the instant GEP commits
+  // the ID in the background (same pattern as ProfileView).
+  const [gateAcknowledged, setGateAcknowledged] = useState(() => !!steamId);
+  useEffect(() => {
+    if (!steamId) setGateAcknowledged(false);
+  }, [steamId]);
+  const showSteamGate = myHeroesOnly && !gateAcknowledged;
+  const noPlayedHeroes =
+    myHeroesOnly && !showSteamGate && !myHeroesLoading && myHeroIds.size === 0;
+
+  // Rank-vs-rank comparison (Overall tab's "+ Compare with…"), distinct from
+  // the Ranked-vs-Normal `viewMode` above. Not persisted — it's scoped to the
+  // current rank selection and stale the moment that selection changes.
+  const [rankCompareTarget, setRankCompareTarget] = useState<RankCompareTarget | null>(
+    null,
+  );
+  const [rankCompareOpen, setRankCompareOpen] = useState(false);
+
+  // The quick targets are "one tier below/above the current range" — once
+  // the range itself moves, a stale target would silently compare against
+  // the wrong tier, so drop it instead.
+  useEffect(() => {
+    setRankCompareTarget(null);
+    setRankCompareOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.min_average_badge, filters.max_average_badge]);
+
   const { rows, loading, error, totalMatches, pickRateNormalized } =
     useHeroStats(filters);
   const {
@@ -112,13 +173,35 @@ const HeroStatsView: React.FC = () => {
     loading: comparisonLoading,
     error: comparisonError,
   } = useHeroStatsComparison(filters, isComparison);
+  const { stats: rankCompareStats } = useRankCompareStats(
+    filters,
+    isComparison ? null : rankCompareTarget,
+  );
+
+  const rowsWithRankCompare = useMemo(() => {
+    if (!rankCompareTarget || !rankCompareStats) return rows;
+    return rows.map((row) => {
+      const compare = rankCompareStats.get(row.hero_id);
+      if (!compare || compare.matches === 0) return row;
+      return {
+        ...row,
+        compare_win_rate: compare.win_rate,
+        win_rate_delta: row.win_rate - compare.win_rate,
+      };
+    });
+  }, [rows, rankCompareTarget, rankCompareStats]);
+
+  const visibleRows = useMemo(
+    () => filterByNameAndMine(rowsWithRankCompare, heroSearch, myHeroesOnly, myHeroIds),
+    [rowsWithRankCompare, heroSearch, myHeroesOnly, myHeroIds],
+  );
 
   const sortBy: HeroStatsSortKey = filters.sort_by ?? 'win_rate';
   const sortDirection: 'asc' | 'desc' = filters.sort_direction ?? 'desc';
 
   const sortedRows = useMemo(() => {
     const dir = sortDirection === 'asc' ? 1 : -1;
-    const copy = [...rows];
+    const copy = [...visibleRows];
 
     if (sortBy === 'name') {
       copy.sort(
@@ -130,11 +213,16 @@ const HeroStatsView: React.FC = () => {
       );
     }
     return copy;
-  }, [rows, sortBy, sortDirection]);
+  }, [visibleRows, sortBy, sortDirection]);
+
+  const visibleComparisonRows = useMemo(
+    () => filterByNameAndMine(comparisonRows, heroSearch, myHeroesOnly, myHeroIds),
+    [comparisonRows, heroSearch, myHeroesOnly, myHeroIds],
+  );
 
   const sortedComparisonRows = useMemo(() => {
     const dir = comparisonSort.direction === 'asc' ? 1 : -1;
-    const copy = [...comparisonRows];
+    const copy = [...visibleComparisonRows];
 
     if (comparisonSort.key === 'name') {
       copy.sort(
@@ -149,7 +237,7 @@ const HeroStatsView: React.FC = () => {
       );
     }
     return copy;
-  }, [comparisonRows, comparisonSort]);
+  }, [visibleComparisonRows, comparisonSort]);
 
   // Map each filter field to the analytics filter_type it represents.
   const FILTER_TYPE_BY_KEY: Partial<
@@ -158,7 +246,6 @@ const HeroStatsView: React.FC = () => {
       | 'game_mode'
       | 'rank_range'
       | 'date_range'
-      | 'min_matches'
       | 'min_matches_all_time'
     >
   > = {
@@ -170,7 +257,6 @@ const HeroStatsView: React.FC = () => {
     max_average_badge: 'rank_range',
     min_unix_timestamp: 'date_range',
     max_unix_timestamp: 'date_range',
-    min_hero_matches: 'min_matches',
     min_hero_matches_total: 'min_matches_all_time',
   };
 
@@ -218,6 +304,36 @@ const HeroStatsView: React.FC = () => {
       sort_by: key,
       sort_direction: direction,
     }));
+  };
+
+  const handleMyHeroesToggle = () => {
+    track('hero_stats_filtered', { filter_type: 'my_heroes' });
+    setMyHeroesOnly((prev) => !prev);
+  };
+
+  const handleRankCompareToggleOpen = () => setRankCompareOpen((prev) => !prev);
+
+  const handleRankComparePick = (target: RankCompareTarget) => {
+    track('hero_stats_rank_compared', {
+      compare_target:
+        target.kind === 'all'
+          ? 'all_ranks'
+          : target.kind === 'lower'
+          ? 'lower_adjacent'
+          : 'higher_adjacent',
+    });
+    setRankCompareTarget(target);
+    setFilters((prev) => ({ ...prev, sort_by: 'win_rate_delta', sort_direction: 'desc' }));
+  };
+
+  const handleRankCompareClear = () => {
+    setRankCompareTarget(null);
+    setRankCompareOpen(false);
+    setFilters((prev) =>
+      prev.sort_by === 'win_rate_delta'
+        ? { ...prev, sort_by: 'win_rate', sort_direction: 'desc' }
+        : prev,
+    );
   };
 
   const handleComparisonSortChange = (key: HeroComparisonSortKey) => {
@@ -308,6 +424,15 @@ const HeroStatsView: React.FC = () => {
         hideGameMode={isComparison}
         onReset={handleResetFilters}
         canReset={!isDefaultFilters(filters)}
+        rankCompareTarget={rankCompareTarget}
+        rankCompareOpen={rankCompareOpen}
+        onRankCompareToggleOpen={handleRankCompareToggleOpen}
+        onRankComparePick={handleRankComparePick}
+        onRankCompareClear={handleRankCompareClear}
+        searchQuery={heroSearch}
+        onSearchChange={setHeroSearch}
+        myHeroesOnly={myHeroesOnly}
+        onMyHeroesToggle={handleMyHeroesToggle}
       />
 
       {activeError && (
@@ -316,7 +441,19 @@ const HeroStatsView: React.FC = () => {
         </div>
       )}
 
-      {activeLoading && !hasRows ? (
+      {noPlayedHeroes && (
+        <div className="hero-stats-info-banner">
+          No played heroes found yet. “My heroes” fills in from your match
+          history — play a match, or open the in-game match history tab once.
+        </div>
+      )}
+
+      {showSteamGate ? (
+        <SteamConnectGate
+          cameFrom="Hero Stats"
+          onConnected={() => setGateAcknowledged(true)}
+        />
+      ) : activeLoading && !hasRows ? (
         <div className="hero-stats-loading">
           <div className="hero-stats-spinner" aria-hidden="true" />
           <span>Loading hero data...</span>
@@ -341,6 +478,8 @@ const HeroStatsView: React.FC = () => {
               sortDirection={sortDirection}
               onSortChange={handleSortChange}
               pickRateNormalized={pickRateNormalized}
+              compareActive={rankCompareTarget != null}
+              compareLabel={rankCompareTarget?.name}
             />
           )}
           {activeLoading && (
@@ -358,7 +497,7 @@ const HeroStatsView: React.FC = () => {
         </div>
       )}
 
-      {!activeLoading && (
+      {!activeLoading && !showSteamGate && (
         <div className="hero-stats-footer">
           {isComparison ? (
             <>{sortedComparisonRows.length} heroes compared · Ranked vs Normal</>

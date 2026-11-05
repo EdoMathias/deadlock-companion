@@ -9,6 +9,7 @@ import { getHero } from '../../../../shared/data/heroes';
 import HeroSelect from '../../../components/HeroSelect';
 import MatchModeBadge from '../../../components/MatchModeBadge';
 import ModeSelect from '../../../components/ModeSelect';
+import { SteamConnectGate } from '../../../components/SteamConnectGate';
 import { useGameEventMatches } from '../../../hooks/useGameEventMatches';
 import MatchDetailView from './MatchDetailView';
 import { createLogger } from '../../../../shared/services/Logger';
@@ -86,6 +87,16 @@ interface MergedMatchEntry {
  */
 const MatchHistoryView: React.FC = () => {
   const { steamId } = useSteamId();
+  // Decoupled from `steamId` itself so the gate's auto-detected confirmation
+  // card has a moment to render instead of vanishing the instant GEP commits
+  // the ID in the background (see SteamConnectGate's `onConnected`).
+  const [gateAcknowledged, setGateAcknowledged] = useState(() => !!steamId);
+  // Re-show the gate if the Steam ID is cleared from under this view (e.g. via
+  // Settings → General) — don't flip it true here, only the gate itself does
+  // that, via `onConnected`.
+  useEffect(() => {
+    if (!steamId) setGateAcknowledged(false);
+  }, [steamId]);
   const { hasSeenDataContribution, markDataContributionSeen, isFTUEComplete } =
     useFTUE();
   const [apiMatches, setApiMatches] = useState<PlayerMatchHistoryEntry[]>([]);
@@ -373,21 +384,16 @@ const MatchHistoryView: React.FC = () => {
     );
   }
 
-  if (!steamId) {
+  if (!gateAcknowledged) {
     return (
       <section className="view-container match-history-container">
         <div className="view-header">
           <h2 className="view-title">Match History</h2>
         </div>
-        <div className="empty-state">
-          <div className="empty-state-icon">📊</div>
-          <h3 className="empty-state-title">Steam ID Required</h3>
-          <p className="empty-state-description">
-            Your Steam ID will be detected automatically when you launch the
-            game. Alternatively, you can manually enter it in{' '}
-            <strong>Settings → General</strong>.
-          </p>
-        </div>
+        <SteamConnectGate
+          cameFrom="Match History"
+          onConnected={() => setGateAcknowledged(true)}
+        />
       </section>
     );
   }

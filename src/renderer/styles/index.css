@@ -24,6 +24,7 @@
 @import './components/ingest.css';
 @import './components/date-range-selector.css';
 @import './components/info-icon.css';
+@import './components/steam-connect-gate.css';
 
 /* 5. View-Specific Styles */
 @import './views/overview.css';

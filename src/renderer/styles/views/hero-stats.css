@@ -11,11 +11,65 @@
   margin-bottom: 16px;
 }
 
-.hero-stats-filters-row {
+/* One toolbar, two rows in a single bordered panel. Mirrors the mock's
+   filter-bar chrome without touching ModeSelect/DateRangeSelector/
+   RankRangeSlider's own markup.
+   - top row: filter cells (divider-separated) + Reset / search / "My heroes"
+   - rank row: rank selector, "+ Compare with…" and its quick-compare chips —
+     it grows as the rank label / compare chips do, so the top row never
+     reflows when the rank range changes. */
+.hero-stats-filters-cells {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.hero-stats-filters-top {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: stretch;
+}
+
+.hero-stats-filters-rank-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.hero-stats-filter-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-right: 1px solid var(--color-border);
+}
+
+.hero-stats-filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 8px 12px;
+}
+
+.hero-stats-filters-actions .stats-filter-reset {
+  margin-left: 0;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.hero-stats-filter-cell-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-secondary);
 }
 
 .hero-stats-min-matches {
@@ -26,10 +80,140 @@
   color: var(--color-text-secondary);
 }
 
-.hero-stats-rank-group {
-  display: inline-flex;
+/* "Find a hero" search + "My heroes" toggle (inside .hero-stats-filters-actions) */
+
+.hero-stats-search-input {
+  width: 150px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  outline: none;
+}
+
+.hero-stats-search-input:focus {
+  border-color: var(--color-accent-primary);
+}
+
+.hero-stats-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.hero-stats-my-heroes-toggle {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  color: var(--color-text-on-card);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.hero-stats-my-heroes-toggle:hover {
+  color: var(--color-text-primary);
+}
+
+.hero-stats-my-heroes-toggle--active {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  border-color: var(--color-accent-primary);
+  color: var(--color-text-primary);
+}
+
+/* "+ Compare with…" (rank-vs-rank comparison, Overall tab only) */
+
+.hero-stats-rank-compare-toggle {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  color: var(--color-text-on-card);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.hero-stats-rank-compare-toggle:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-primary);
+}
+
+.hero-stats-rank-compare-toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hero-stats-rank-compare-toggle--active {
+  border-style: solid;
+  background-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  color: var(--color-text-primary);
+}
+
+.hero-stats-rank-compare-row {
+  display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+  padding-left: 10px;
+  border-left: 1px solid var(--color-border);
+}
+
+.hero-stats-rank-compare-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.hero-stats-rank-compare-chip {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-card);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  color: var(--color-text-on-card);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hero-stats-rank-compare-chip:hover {
+  color: var(--color-text-primary);
+}
+
+.hero-stats-rank-compare-chip--active {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  border-color: var(--color-accent-primary);
+  color: var(--color-text-primary);
+}
+
+.hero-stats-rank-compare-remove {
+  height: 26px;
+  padding: 0 10px;
+  margin-left: 4px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+  color: var(--color-text-on-card);
+  font-family: var(--font-ark);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hero-stats-rank-compare-remove:hover {
+  color: var(--color-text-primary);
 }
 
 .hero-stats-filter-input {
@@ -56,6 +240,16 @@
   margin-bottom: 12px;
   background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
   border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.hero-stats-info-banner {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background-color: color-mix(in srgb, var(--color-accent-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
   border-radius: var(--radius-sm);
   color: var(--color-text-primary);
   font-size: 13px;
@@ -271,6 +465,91 @@
   color: var(--color-text-secondary);
 }
 
+/* Win-rate bar: grows from a center tick, green past 50%, red under it. */
+
+.hero-stats-winrate-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-stats-winrate-value {
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.hero-stats-winrate-bar {
+  position: relative;
+  width: 110px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--color-bg-primary) 80%, transparent);
+  flex-shrink: 0;
+}
+
+.hero-stats-winrate-bar-center {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background-color: color-mix(in srgb, var(--color-text-primary) 35%, transparent);
+}
+
+.hero-stats-winrate-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+}
+
+.hero-stats-winrate-bar-fill--pos {
+  background-color: var(--color-success);
+}
+
+.hero-stats-winrate-bar-fill--neg {
+  background-color: var(--color-danger);
+}
+
+/* Pick/Ban rate bars: single-direction fill, 20% rate = full bar. */
+
+.hero-stats-rate-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-stats-rate-value {
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.hero-stats-rate-bar {
+  position: relative;
+  width: 70px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: color-mix(in srgb, var(--color-bg-primary) 80%, transparent);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hero-stats-rate-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+}
+
+.hero-stats-rate-bar-fill--pick {
+  background-color: var(--color-accent-primary);
+}
+
+.hero-stats-rate-bar-fill--ban {
+  background-color: var(--color-warning);
+}
+
 /* Footer */
 
 .hero-stats-footer {
@@ -283,29 +562,37 @@
 
 /* View-mode toggle (Standard / Ranked vs Normal) */
 
+/* Title and tabs share one row, tabs hugging the title; the header's own
+   bottom border doubles as the tab underline rail. */
 .view-header--with-tabs {
-  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 0;
+}
+
+.view-header--with-tabs .view-title {
+  flex: none;
+  padding-bottom: 8px;
 }
 
 .hero-stats-mode-toggle {
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background-color: var(--color-bg-card);
+  display: flex;
+  gap: 4px;
 }
 
 .hero-stats-mode-tab {
-  padding: 5px 12px;
+  padding: 8px 18px;
+  margin-bottom: -1px;
   border: none;
-  border-radius: 6px;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--color-text-on-card);
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.1s, color 0.1s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .hero-stats-mode-tab:hover {
@@ -313,12 +600,8 @@
 }
 
 .hero-stats-mode-tab--active {
-  background-color: color-mix(
-    in srgb,
-    var(--color-accent-primary) 20%,
-    transparent
-  );
-  color: var(--color-accent-primary);
+  border-bottom-color: var(--color-accent-primary);
+  color: var(--color-text-primary);
 }
 
 /* Ranked-vs-Normal comparison cells */

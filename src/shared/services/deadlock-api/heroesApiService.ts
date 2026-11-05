@@ -37,7 +37,6 @@ function filtersToHash(filters: HeroStatsFilters): string {
     max_average_badge: rankOk ? filters.max_average_badge ?? null : null,
     min_unix_timestamp: filters.min_unix_timestamp ?? null,
     max_unix_timestamp: filters.max_unix_timestamp ?? null,
-    min_hero_matches: filters.min_hero_matches ?? null,
     min_hero_matches_total: filters.min_hero_matches_total ?? null,
   });
 }
@@ -52,7 +51,6 @@ function filtersToApiRequest(
     maxAverageBadge: rankOk ? filters.max_average_badge ?? null : null,
     minUnixTimestamp: filters.min_unix_timestamp ?? null,
     maxUnixTimestamp: filters.max_unix_timestamp ?? null,
-    minHeroMatches: filters.min_hero_matches ?? null,
     minHeroMatchesTotal: filters.min_hero_matches_total ?? null,
   };
 }
@@ -114,8 +112,6 @@ async function requestHeroStats(
     params.min_unix_timestamp = filters.min_unix_timestamp;
   if (filters.max_unix_timestamp != null)
     params.max_unix_timestamp = filters.max_unix_timestamp;
-  if (filters.min_hero_matches != null)
-    params.min_hero_matches = filters.min_hero_matches;
   if (filters.min_hero_matches_total != null)
     params.min_hero_matches_total = filters.min_hero_matches_total;
 

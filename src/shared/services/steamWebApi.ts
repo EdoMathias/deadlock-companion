@@ -1,7 +1,44 @@
 import { SteamProfile } from 'deadlock_api_client';
 import { steamIdToAccountId } from '../utils/steamUtils';
+import { createLogger } from './Logger';
 
 declare const __STEAM_WEB_KEY__: string;
+
+const logger = createLogger('steamWebApi');
+
+interface SteamVanityResponse {
+  response: {
+    success: number;
+    steamid?: string;
+    message?: string;
+  };
+}
+
+/**
+ * Resolves a Steam `/id/<vanity>` profile name to a SteamID64 via the Steam
+ * Web API's ResolveVanityURL. Returns null if the name has no match or the
+ * request fails.
+ */
+export async function resolveVanityUrl(
+  vanityName: string,
+): Promise<string | null> {
+  try {
+    const k = atob(__STEAM_WEB_KEY__);
+    const url = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${k}&vanityurl=${encodeURIComponent(vanityName)}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    const data: SteamVanityResponse = await res.json();
+    if (data?.response?.success !== 1 || !data.response.steamid) {
+      logger.log('No vanity match for', vanityName, data?.response?.message);
+      return null;
+    }
+    return data.response.steamid;
+  } catch (err) {
+    logger.error('Failed to resolve vanity URL', vanityName, err);
+    return null;
+  }
+}
 
 interface SteamPlayer {
   steamid: string;

@@ -21,8 +21,7 @@ interface UseHeroStatsResult {
   error: string | null;
   totalMatches: number;
   /**
-   * True when either `min_hero_matches` or `min_hero_matches_total` is
-   * set. In that mode the API aggregates over a restricted player pool,
+   * True when `min_hero_matches_total` is set. In that mode the API aggregates over a restricted player pool,
    * so the raw `matches / sumMatches` fraction stops representing true
    * real-world pick rate. We switch to `matches / maxMatches` (share
    * relative to the most-played hero in the filtered sample) and the
@@ -65,9 +64,7 @@ export function useHeroStats(filters: HeroStatsFilters): UseHeroStatsResult {
       }
       const banMatchesDenominator = totalBans / BANS_PER_MATCH;
 
-      const normalized =
-        (filters.min_hero_matches ?? 0) > 0 ||
-        (filters.min_hero_matches_total ?? 0) > 0;
+      const normalized = (filters.min_hero_matches_total ?? 0) > 0;
 
       const computed: HeroStatsComputed[] = stats.map((r) => {
         const matches = r.matches ?? 0;
