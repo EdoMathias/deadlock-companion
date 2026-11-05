@@ -174,6 +174,8 @@ export interface AnalyticsEventProperties {
       | 'date_range'
       | 'min_matches'
       | 'min_matches_all_time'
+      /** "My heroes" toggle — restricts the table to heroes the player has played. */
+      | 'my_heroes'
       /** The whole filter bar was restored to its defaults. */
       | 'reset';
   };
@@ -193,6 +195,14 @@ export interface AnalyticsEventProperties {
     view: 'hero_stats' | 'item_stats';
     column: string;
     direction: 'asc' | 'desc';
+  };
+  /**
+   * Fired when the user picks a rank to compare against on Hero Stats'
+   * Overall tab (the "+ Compare with…" control) — distinct from
+   * `table_mode_switched`, which tracks the separate Ranked-vs-Normal table.
+   */
+  hero_stats_rank_compared: {
+    compare_target: 'lower_adjacent' | 'higher_adjacent' | 'all_ranks';
   };
 
   // --- Match History & Profile ---

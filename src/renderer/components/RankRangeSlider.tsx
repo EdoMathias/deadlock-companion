@@ -103,9 +103,11 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
   const highInfo = highBadge > 0 ? badgeToTierSubrank(highBadge) : null;
 
   const isFiltered = lowPos > 0;
-  const triggerLabel = isFiltered
-    ? `Rank: ${badgeToLabel(lowBadge)}+`
-    : 'All Ranks';
+  const triggerLabel = !isFiltered
+    ? 'All Ranks'
+    : lowBadge === highBadge
+      ? badgeToLabel(lowBadge)
+      : `${badgeToLabel(lowBadge)} – ${badgeToLabel(highBadge)}`;
 
   const lowPercent = (lowPos / MAX_SLIDER_POS) * 100;
   const highPercent = (highPos / MAX_SLIDER_POS) * 100;
@@ -117,6 +119,53 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
       var(--color-accent-primary) ${highPercent}%,
       var(--color-bg-card) ${highPercent}%)`,
   };
+
+  const setRange = useCallback(
+    (newLow: number, newHigh: number) => {
+      setLowPos(newLow);
+      setHighPos(newHigh);
+      emitChange(newLow, newHigh);
+    },
+    [emitChange],
+  );
+
+  const presets = useMemo(() => {
+    // Split the tier list into four roughly-equal bands (Low/Mid/High/Top),
+    // front-loading the remainder so the split is stable however many
+    // tiers `ranks.ts` defines — not hardcoded to today's count of 11.
+    const n = SELECTABLE_RANKS.length;
+    const base = Math.floor(n / 4);
+    const remainder = n % 4;
+    const bandLabels = ['Low', 'Mid', 'High', 'Top'];
+    const bands: { label: string; startIdx: number; endIdx: number }[] = [];
+    let start = 0;
+    for (let i = 0; i < 4; i++) {
+      const size = base + (i < remainder ? 1 : 0);
+      bands.push({ label: bandLabels[i], startIdx: start, endIdx: start + size - 1 });
+      start += size;
+    }
+
+    const toPreset = (
+      label: string,
+      startIdx: number,
+      endIdx: number,
+      low: number,
+      high: number,
+    ) => ({
+      label,
+      low,
+      high,
+      title: `${SELECTABLE_RANKS[startIdx].name} – ${SELECTABLE_RANKS[endIdx].name}`,
+      active: lowPos === low && highPos === high,
+    });
+
+    return [
+      { label: 'Any', low: 0, high: MAX_SLIDER_POS, title: 'All ranks', active: lowPos === 0 },
+      ...bands.map((b) =>
+        toPreset(b.label, b.startIdx, b.endIdx, b.startIdx * 6 + 1, b.endIdx * 6 + 6),
+      ),
+    ];
+  }, [lowPos, highPos]);
 
   return (
     <div className="rank-slider" ref={containerRef}>
@@ -178,6 +227,21 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
 
           <div className="rank-slider__track-wrap">
             <div className="rank-slider__track" style={trackStyle} />
+            <div className="rank-slider__ticks" aria-hidden="true">
+              {SELECTABLE_RANKS.map((rank, i) => {
+                const tierStart = i * 6 + 1;
+                const tierEnd = i * 6 + 6;
+                const inRange = tierEnd >= lowPos && tierStart <= highPos;
+                const pct = (i / (SELECTABLE_RANKS.length - 1)) * 100;
+                return (
+                  <span
+                    key={rank.tier}
+                    className={`rank-slider__tick${inRange ? ' rank-slider__tick--active' : ''}`}
+                    style={{ left: `${pct}%` }}
+                  />
+                );
+              })}
+            </div>
             <input
               type="range"
               className="rank-slider__input rank-slider__input--low"
@@ -186,6 +250,7 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
               step={1}
               value={lowPos}
               onChange={handleLowChange}
+              aria-label="Lowest rank"
             />
             <input
               type="range"
@@ -195,20 +260,27 @@ const RankRangeSlider: React.FC<RankRangeSliderProps> = ({
               step={1}
               value={highPos}
               onChange={handleHighChange}
+              aria-label="Highest rank"
             />
           </div>
 
-          <button
-            type="button"
-            className="rank-slider__reset"
-            onClick={() => {
-              setLowPos(0);
-              setHighPos(MAX_SLIDER_POS);
-              onChange(undefined, undefined);
-            }}
-          >
-            Reset to All Ranks
-          </button>
+          <span className="rank-slider__hint">Drag either handle, or pick a preset</span>
+
+          <div className="rank-slider__presets" role="radiogroup" aria-label="Rank presets">
+            {presets.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                role="radio"
+                aria-checked={preset.active}
+                title={preset.title}
+                className={`rank-slider__preset${preset.active ? ' rank-slider__preset--active' : ''}`}
+                onClick={() => setRange(preset.low, preset.high)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -36,7 +36,9 @@ export type HeroStatsSortKey =
   | 'win_rate'
   | 'pick_rate'
   | 'ban_rate'
-  | 'matches';
+  | 'matches'
+  /** Only sortable while a rank-vs-rank comparison is active. */
+  | 'win_rate_delta';
 
 /** Raw hero performance row from `/v1/analytics/hero-stats`. */
 export interface HeroAnalyticsRow {
@@ -82,6 +84,14 @@ export interface HeroStatsComputed {
   win_rate: number;
   pick_rate: number;
   ban_rate: number;
+  /**
+   * Win rate in the rank the user picked to compare against (the Overall
+   * tab's "+ Compare with…" control). Only present while a comparison is
+   * active; absent for a hero with no games in that comparison rank.
+   */
+  compare_win_rate?: number;
+  /** `win_rate - compare_win_rate`. Same presence rules as `compare_win_rate`. */
+  win_rate_delta?: number;
 }
 
 /**

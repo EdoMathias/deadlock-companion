@@ -1,28 +1,11 @@
 import React from 'react';
 import type { HeroWinRateComparisonRow } from '../../../../../shared/types/heroStats';
 import { HEROES } from '../../../../../shared/data/heroes';
+import { formatPercent, formatDelta, deltaClass } from '../utils/winRateFormat';
 
 interface Props {
   row: HeroWinRateComparisonRow;
   rank: number;
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-/** Delta in percentage points, signed (e.g. `+2.3`, `-1.8`). */
-function formatDelta(value: number): string {
-  const pts = value * 100;
-  const sign = pts > 0 ? '+' : '';
-  return `${sign}${pts.toFixed(1)}`;
-}
-
-function deltaClass(value: number): string {
-  const pts = value * 100;
-  if (pts >= 0.05) return 'hero-compare-cell--delta-pos';
-  if (pts <= -0.05) return 'hero-compare-cell--delta-neg';
-  return 'hero-compare-cell--delta-neutral';
 }
 
 const HeroComparisonRow: React.FC<Props> = ({ row, rank }) => {

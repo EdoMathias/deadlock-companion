@@ -12,6 +12,10 @@ interface Props {
   sortDirection: 'asc' | 'desc';
   onSortChange: (key: HeroStatsSortKey) => void;
   pickRateNormalized: boolean;
+  /** Renders the comparison WR + Δ columns (Overall tab's "+ Compare with…"). */
+  compareActive?: boolean;
+  /** Plain rank name shown in the comparison column header, e.g. "Acolyte". */
+  compareLabel?: string;
 }
 
 const PICK_RATE_RAW_TOOLTIP =
@@ -20,11 +24,17 @@ const PICK_RATE_RAW_TOOLTIP =
 const PICK_RATE_NORMALIZED_TOOLTIP =
   'Each hero\'s games compared to the most-played hero in the filtered pool (top hero = 100%). Kicks in when a "Min matches" filter is on, because the usual pick rate stops meaning real-world popularity once the player pool is trimmed.';
 
+const RANK_COMPARE_DELTA_TOOLTIP =
+  "The selected rank range's win rate minus the comparison rank's win rate, in percentage points.";
+
 interface ColumnDef {
-  key: HeroStatsSortKey;
+  /** React key / aria id. Equal to `sortKey` for sortable columns. */
+  key: string;
   label: string;
   className: string;
   tooltip?: string;
+  /** Present only for columns the user can click to sort by. */
+  sortKey?: HeroStatsSortKey;
 }
 
 const HeroStatsTable: React.FC<Props> = ({
@@ -33,21 +43,42 @@ const HeroStatsTable: React.FC<Props> = ({
   sortDirection,
   onSortChange,
   pickRateNormalized,
+  compareActive = false,
+  compareLabel,
 }) => {
   const columns: ColumnDef[] = [
-    { key: 'name', label: 'Hero', className: 'hero-stats-th--hero' },
-    { key: 'win_rate', label: 'Win Rate', className: 'hero-stats-th--winrate' },
+    { key: 'name', sortKey: 'name', label: 'Hero', className: 'hero-stats-th--hero' },
+    { key: 'win_rate', sortKey: 'win_rate', label: 'Win Rate', className: 'hero-stats-th--winrate' },
+  ];
+  if (compareActive) {
+    columns.push(
+      {
+        key: 'compare_win_rate',
+        label: `WR · ${compareLabel ?? 'Compare'}`,
+        className: 'hero-stats-th--winrate',
+      },
+      {
+        key: 'win_rate_delta',
+        sortKey: 'win_rate_delta',
+        label: 'Δ',
+        className: 'hero-stats-th--winrate',
+        tooltip: RANK_COMPARE_DELTA_TOOLTIP,
+      },
+    );
+  }
+  columns.push(
     {
       key: 'pick_rate',
+      sortKey: 'pick_rate',
       label: pickRateNormalized ? 'Pick Rate (Normalized)' : 'Pick Rate',
       className: 'hero-stats-th--pickrate',
       tooltip: pickRateNormalized
         ? PICK_RATE_NORMALIZED_TOOLTIP
         : PICK_RATE_RAW_TOOLTIP,
     },
-    { key: 'ban_rate', label: 'Ban Rate', className: 'hero-stats-th--banrate' },
-    { key: 'matches', label: 'Matches', className: 'hero-stats-th--matches' },
-  ];
+    { key: 'ban_rate', sortKey: 'ban_rate', label: 'Ban Rate', className: 'hero-stats-th--banrate' },
+    { key: 'matches', sortKey: 'matches', label: 'Matches', className: 'hero-stats-th--matches' },
+  );
 
   return (
     <div className="hero-stats-table-wrapper">
@@ -61,13 +92,13 @@ const HeroStatsTable: React.FC<Props> = ({
               #
             </th>
             {columns.map((col) => {
-              const isSorted = sortBy === col.key;
+              const isSorted = col.sortKey != null && sortBy === col.sortKey;
               return (
                 <th
                   key={col.key}
                   className={`hero-stats-th ${col.className} ${isSorted ? 'hero-stats-th--sorted' : ''}`}
-                  onClick={() => onSortChange(col.key)}
-                  style={{ cursor: 'pointer' }}
+                  onClick={col.sortKey ? () => onSortChange(col.sortKey!) : undefined}
+                  style={col.sortKey ? { cursor: 'pointer' } : undefined}
                   aria-sort={
                     isSorted
                       ? sortDirection === 'asc'
@@ -98,7 +129,12 @@ const HeroStatsTable: React.FC<Props> = ({
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <HeroRow key={row.hero_id} row={row} rank={index + 1} />
+            <HeroRow
+              key={row.hero_id}
+              row={row}
+              rank={index + 1}
+              compareActive={compareActive}
+            />
           ))}
         </tbody>
       </table>

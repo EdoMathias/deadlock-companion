@@ -2481,16 +2481,16 @@
   top: calc(100% + 4px);
   left: 0;
   z-index: 100;
-  min-width: 340px;
+  min-width: 360px;
   background-color: var(--color-bg-secondary);
   border: 1px solid
     color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  padding: 12px 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .rank-slider__endpoints {
@@ -2548,6 +2548,29 @@
   pointer-events: none;
 }
 
+.rank-slider__ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 6px);
+  height: 4px;
+  pointer-events: none;
+}
+
+.rank-slider__tick {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 4px;
+  border-radius: 1px;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+}
+
+.rank-slider__tick--active {
+  background: var(--color-accent-primary);
+}
+
 .rank-slider__input {
   position: absolute;
   width: 100%;
@@ -2588,20 +2611,44 @@
   z-index: 1;
 }
 
-.rank-slider__reset {
-  align-self: center;
-  padding: 4px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-text-muted);
+.rank-slider__hint {
   font-size: 11px;
+  color: var(--color-text-secondary);
   font-family: var(--font-ark);
+}
+
+.rank-slider__presets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-primary);
+}
+
+.rank-slider__preset {
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--color-text-on-card);
+  font-family: var(--font-ark);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.rank-slider__reset:hover {
-  border-color: var(--color-accent-primary);
+.rank-slider__preset:hover {
+  color: var(--color-text-primary);
+}
+
+.rank-slider__preset--active {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent-primary) 35%,
+    transparent
+  );
   color: var(--color-text-primary);
 }
