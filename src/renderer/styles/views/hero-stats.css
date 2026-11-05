@@ -11,22 +11,34 @@
   margin-bottom: 16px;
 }
 
-.hero-stats-filters-row {
-  display: flex;
-}
-
-/* One toolbar: bordered panel of filter cells, each separated by a divider,
-   with Reset / search / "My heroes" docked at the far end. Mirrors the mock's
+/* One toolbar, two rows in a single bordered panel. Mirrors the mock's
    filter-bar chrome without touching ModeSelect/DateRangeSelector/
-   RankRangeSlider's own markup. Wraps only as a last resort on narrow windows. */
+   RankRangeSlider's own markup.
+   - top row: filter cells (divider-separated) + Reset / search / "My heroes"
+   - rank row: rank selector, "+ Compare with…" and its quick-compare chips —
+     it grows as the rank label / compare chips do, so the top row never
+     reflows when the rank range changes. */
 .hero-stats-filters-cells {
   display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  align-items: stretch;
+  flex-direction: column;
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+}
+
+.hero-stats-filters-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.hero-stats-filters-rank-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border);
 }
 
 .hero-stats-filter-cell {
@@ -66,12 +78,6 @@
   gap: 6px;
   font-size: 12px;
   color: var(--color-text-secondary);
-}
-
-.hero-stats-rank-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* "Find a hero" search + "My heroes" toggle (inside .hero-stats-filters-actions) */
@@ -160,6 +166,8 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  padding-left: 10px;
+  border-left: 1px solid var(--color-border);
 }
 
 .hero-stats-rank-compare-label {

@@ -72,6 +72,17 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Drops filters that no longer have a control, so a value saved by an older
+ * release can't keep narrowing the table with nothing to clear it.
+ */
+function stripRemovedHeroStatsKeys(filters: HeroStatsFilters): HeroStatsFilters {
+  const { min_hero_matches: _removed, ...rest } = filters as HeroStatsFilters & {
+    min_hero_matches?: number;
+  };
+  return rest;
+}
+
+/**
  * Reads the persisted prefs, merging each slice over the current defaults so
  * an object written by an older release can't produce a broken filter set.
  */
@@ -85,7 +96,7 @@ function load(): StatsFilterPrefs {
 
     return {
       hero_stats: isObject(parsed.hero_stats)
-        ? { ...base.hero_stats, ...parsed.hero_stats }
+        ? stripRemovedHeroStatsKeys({ ...base.hero_stats, ...parsed.hero_stats })
         : base.hero_stats,
       hero_stats_view_mode:
         parsed.hero_stats_view_mode === 'comparison' ? 'comparison' : 'standard',

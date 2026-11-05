@@ -17,12 +17,6 @@ export interface HeroStatsFilters {
   max_unix_timestamp?: number;
   /**
    * Only aggregate rows from players who have played this hero at least
-   * N times WITHIN the currently-filtered time/rank/mode range. Matches
-   * the Deadlock API `min_hero_matches` query parameter.
-   */
-  min_hero_matches?: number;
-  /**
-   * Only aggregate rows from players who have played this hero at least
    * N times in their ENTIRE history (across all time/ranks/modes).
    * Matches the Deadlock API `min_hero_matches_total` query parameter.
    */

@@ -46,7 +46,6 @@ const FILTER_KEYS: (keyof HeroStatsFilters)[] = [
   'max_average_badge',
   'min_unix_timestamp',
   'max_unix_timestamp',
-  'min_hero_matches',
   'min_hero_matches_total',
 ];
 
@@ -247,7 +246,6 @@ const HeroStatsView: React.FC = () => {
       | 'game_mode'
       | 'rank_range'
       | 'date_range'
-      | 'min_matches'
       | 'min_matches_all_time'
     >
   > = {
@@ -259,7 +257,6 @@ const HeroStatsView: React.FC = () => {
     max_average_badge: 'rank_range',
     min_unix_timestamp: 'date_range',
     max_unix_timestamp: 'date_range',
-    min_hero_matches: 'min_matches',
     min_hero_matches_total: 'min_matches_all_time',
   };
 

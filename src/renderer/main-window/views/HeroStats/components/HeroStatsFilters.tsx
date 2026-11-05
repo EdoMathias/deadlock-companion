@@ -41,9 +41,6 @@ interface Props {
   onMyHeroesToggle: () => void;
 }
 
-const MIN_HERO_MATCHES_TOOLTIP =
-  'Only count games from players who have played this hero at least N times in the selected period. Hides first-time tryouts so the numbers lean toward players who know the hero.';
-
 const MIN_HERO_MATCHES_TOTAL_TOOLTIP =
   'Only count games from players who have played this hero at least N times ever (across all patches). Shows how the hero performs in experienced hands.';
 
@@ -97,8 +94,8 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
 
   return (
     <div className="hero-stats-filters">
-      <div className="hero-stats-filters-row">
-        <div className="hero-stats-filters-cells">
+      <div className="hero-stats-filters-cells">
+        <div className="hero-stats-filters-top">
           {!hideGameMode && (
             <div className="hero-stats-filter-cell">
               <span className="hero-stats-filter-cell-label">Mode</span>
@@ -126,69 +123,11 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
           </div>
 
           <div className="hero-stats-filter-cell">
-            <span className="hero-stats-filter-cell-label">Rank</span>
-            <div className="hero-stats-rank-group">
-              <RankRangeSlider
-                minBadge={filters.min_average_badge}
-                maxBadge={filters.max_average_badge}
-                onChange={(min, max) =>
-                  update({ min_average_badge: min, max_average_badge: max })
-                }
-                disabled={isRankUnsupported}
-              />
-              {isRankUnsupported && <InfoIcon title={RANK_DISABLED_TOOLTIP} />}
-              {!hideGameMode && (
-                <button
-                  type="button"
-                  className={`hero-stats-rank-compare-toggle${
-                    rankCompareTarget ? ' hero-stats-rank-compare-toggle--active' : ''
-                  }`}
-                  disabled={compareOptions.length === 0}
-                  title={
-                    compareOptions.length === 0
-                      ? 'Pick a rank range first to compare it against another rank'
-                      : undefined
-                  }
-                  aria-expanded={rankCompareOpen || rankCompareTarget != null}
-                  onClick={onRankCompareToggleOpen}
-                >
-                  {rankCompareTarget ? `vs ${rankCompareTarget.name}` : '+ Compare with…'}
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="hero-stats-filter-cell">
-            <label
-              className="hero-stats-filter-cell-label"
-              htmlFor="hero-stats-min-hero-matches-input"
-            >
-              Min. matches (in range)
-            </label>
-            <div className="hero-stats-min-matches">
-              <InfoIcon title={MIN_HERO_MATCHES_TOOLTIP} />
-              <input
-                id="hero-stats-min-hero-matches-input"
-                type="number"
-                className="hero-stats-filter-input"
-                value={filters.min_hero_matches ?? 0}
-                min={0}
-                title={MIN_HERO_MATCHES_TOOLTIP}
-                onChange={(e) =>
-                  update({
-                    min_hero_matches: Math.max(0, Number(e.target.value)) || undefined,
-                  })
-                }
-              />
-            </div>
-          </div>
-
-          <div className="hero-stats-filter-cell">
             <label
               className="hero-stats-filter-cell-label"
               htmlFor="hero-stats-min-hero-matches-total-input"
             >
-              Min. matches (all-time)
+              Min. matches
             </label>
             <div className="hero-stats-min-matches">
               <InfoIcon title={MIN_HERO_MATCHES_TOTAL_TOOLTIP} />
@@ -244,44 +183,74 @@ const HeroStatsFiltersBar: React.FC<Props> = ({
             </button>
           </div>
         </div>
-      </div>
 
-      {!hideGameMode && (rankCompareOpen || rankCompareTarget) && compareOptions.length > 0 && (
-        <div
-          className="hero-stats-rank-compare-row"
-          role="group"
-          aria-label="Compare with another rank"
-        >
-          <span className="hero-stats-rank-compare-label">
-            Compare {rankRangeLabel} with
-          </span>
-          {compareOptions.map((option) => (
+        <div className="hero-stats-filters-rank-row">
+          <span className="hero-stats-filter-cell-label">Rank</span>
+          <RankRangeSlider
+            minBadge={filters.min_average_badge}
+            maxBadge={filters.max_average_badge}
+            onChange={(min, max) =>
+              update({ min_average_badge: min, max_average_badge: max })
+            }
+            disabled={isRankUnsupported}
+          />
+          {isRankUnsupported && <InfoIcon title={RANK_DISABLED_TOOLTIP} />}
+          {!hideGameMode && (
             <button
-              key={option.kind}
               type="button"
-              aria-pressed={rankCompareTarget?.kind === option.kind}
-              className={`hero-stats-rank-compare-chip${
-                rankCompareTarget?.kind === option.kind
-                  ? ' hero-stats-rank-compare-chip--active'
-                  : ''
+              className={`hero-stats-rank-compare-toggle${
+                rankCompareTarget ? ' hero-stats-rank-compare-toggle--active' : ''
               }`}
-              onClick={() => onRankComparePick(option)}
+              disabled={compareOptions.length === 0}
+              title={
+                compareOptions.length === 0
+                  ? 'Pick a rank range first to compare it against another rank'
+                  : undefined
+              }
+              aria-expanded={rankCompareOpen || rankCompareTarget != null}
+              onClick={onRankCompareToggleOpen}
             >
-              {option.chipLabel}
-            </button>
-          ))}
-          {rankCompareTarget && (
-            <button
-              type="button"
-              className="hero-stats-rank-compare-remove"
-              aria-label="Remove comparison"
-              onClick={onRankCompareClear}
-            >
-              × Remove comparison
+              {rankCompareTarget ? `vs ${rankCompareTarget.name}` : '+ Compare with…'}
             </button>
           )}
+          {!hideGameMode && (rankCompareOpen || rankCompareTarget) && compareOptions.length > 0 && (
+            <div
+              className="hero-stats-rank-compare-row"
+              role="group"
+              aria-label="Compare with another rank"
+            >
+              <span className="hero-stats-rank-compare-label">
+                Compare {rankRangeLabel} with
+              </span>
+              {compareOptions.map((option) => (
+                <button
+                  key={option.kind}
+                  type="button"
+                  aria-pressed={rankCompareTarget?.kind === option.kind}
+                  className={`hero-stats-rank-compare-chip${
+                    rankCompareTarget?.kind === option.kind
+                      ? ' hero-stats-rank-compare-chip--active'
+                      : ''
+                  }`}
+                  onClick={() => onRankComparePick(option)}
+                >
+                  {option.chipLabel}
+                </button>
+              ))}
+              {rankCompareTarget && (
+                <button
+                  type="button"
+                  className="hero-stats-rank-compare-remove"
+                  aria-label="Remove comparison"
+                  onClick={onRankCompareClear}
+                >
+                  × Remove comparison
+                </button>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

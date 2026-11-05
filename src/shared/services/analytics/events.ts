@@ -172,7 +172,6 @@ export interface AnalyticsEventProperties {
       | 'game_mode'
       | 'rank_range'
       | 'date_range'
-      | 'min_matches'
       | 'min_matches_all_time'
       /** "My heroes" toggle — restricts the table to heroes the player has played. */
       | 'my_heroes'
